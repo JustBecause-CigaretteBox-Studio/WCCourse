@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+Package/node_modules/
+
+# Build outputs
+Package/dist/
+win-unpacked/
+
+# IDE / Editor
+.vscode/
+
+# Work buddy files
+.workbuddy/
+_pre_escape_backup_*/
+
+# Temp / build artifacts
+*.obj
+*.pdb
+vc140.pdb
+test666.cpp
+test666.obj
+test666.pdb
+_count_modules.js
+
+# OS files
+.DS_Store
+Thumbs.db
