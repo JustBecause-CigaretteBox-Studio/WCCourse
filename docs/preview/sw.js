@@ -14,6 +14,17 @@ const CACHE_URLS = [
   './第二阶段预告.html',
   './捐赠.html',
   './images/ch6-game.png',
+  './images/ch6-game-editor.png',
+  './images/ch4/ch4-img1.webp',
+  './images/ch4/ch4-img2.webp',
+  './images/ch4/ch4-img3.webp',
+  './images/ch4/ch4-img4.webp',
+  './images/ch4/ch4-img5.webp',
+  './images/ch4/ch4-img6.webp',
+  './images/ch4/ch4-img7.webp',
+  './images/ch4/ch4-img8.webp',
+  './images/ch4/ch4-img9.webp'
+];
   './images/ch6-game-editor.png'
 ];
 
