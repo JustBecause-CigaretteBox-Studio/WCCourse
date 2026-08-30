@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    练习项目系统 · 内置 C++ / Python IDE
+    ─────────────────────────────────────────────────────────────
+    完全本地运行的单文件网页。
+    依赖同目录下的 skulpt.min.js、skulpt-stdlib.js、JSCPP.bundle.js。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <script>var AppStore = window.AppStore || window.AppStore; var AppStore = window.AppStore || window.AppStore;</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="编程入门课练习项目系统，内置 C++/Python IDE，可离线运行。">
+  <title>野鸡动画编程课 · 练习项目</title>
+  <style>
+  /* ══════════════════════════════════════════════════════════
+     1. 主题变量（与主页/章节文件一致）
+     ══════════════════════════════════════════════════════════ */
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+    --accent:       #0ea5e9;
+    --accent-hover: #0284c7;
+    --ok:           #10b981;
+    --warn:         #f59e0b;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+    --accent:       #38bdf8;
+    --accent-hover: #0ea5e9;
+    --ok:           #34d399;
+    --warn:         #fbbf24;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     2. 基础与布局
+     ══════════════════════════════════════════════════════════ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+    min-height: 100vh;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+  /* ── 顶栏 ── */
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  .icon-btn.home-btn {
+    background: #38bdf8; color: #fff; border-color: #38bdf8;
+    font-weight: 700; font-size: 15px; padding: 0 22px;
+    border-radius: 9999px;
+  }
+  .icon-btn.home-btn:hover { background: #0ea5e9; border-color: #0ea5e9; }
+
+  /* ── 主体布局 ── */
+  .layout {
+    max-width: 1200px; margin: 0 auto; padding: 24px 16px 80px;
+    display: grid; gap: 20px;
+  }
+  @media (min-width: 860px) { .layout { grid-template-columns: 260px 1fr; } }
+
+  /* ── 侧边栏 ── */
+  .sidebar h2 { font-size: 14px; color: var(--text-faint); margin-bottom: 12px; letter-spacing: 1px; }
+  .project-list { display: flex; flex-direction: column; gap: 8px; }
+  .project-item {
+    text-align: left; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--text); cursor: pointer; transition: .15s;
+  }
+  .project-item:hover { border-color: var(--accent); }
+  .project-item.active { border-color: var(--accent); background: var(--bg-soft); }
+  .project-item .title { font-weight: 700; font-size: 14px; }
+  .project-item .meta { font-size: 12px; color: var(--text-faint); margin-top: 4px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; margin-right: 6px; }
+  .badge.easy { background: #d1fae5; color: #047857; }
+  html.dark .badge.easy { background: rgba(16,185,129,.2); color: #6ee7b7; }
+  .badge.hard { background: #ede9fe; color: #6d28d9; }
+  html.dark .badge.hard { background: rgba(139,92,246,.2); color: #c4b5fd; }
+
+  /* ── 项目详情 ── */
+  .project-main { min-width: 0; }
+  .project-card {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px;
+  }
+  .project-card h1 { font-size: 26px; font-weight: 900; }
+  .project-card .subtitle { color: var(--text-soft); margin-top: 8px; font-size: 14px; line-height: 1.8; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0; }
+  .tags span {
+    font-size: 12px; color: var(--text-faint);
+    background: var(--bg-soft); padding: 4px 10px; border-radius: 99px;
+  }
+
+  .section { margin-top: 28px; }
+  .section h3 { font-size: 16px; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .section h3::before {
+    content: ""; display: inline-block; width: 4px; height: 18px;
+    border-radius: 99px; background: var(--accent);
+  }
+  .section p, .section li { font-size: 14px; line-height: 2; color: var(--text-soft); }
+  .section ul { padding-left: 22px; }
+  .section li { margin-bottom: 6px; }
+  .suggest {
+    padding: 12px 16px; border-radius: 10px;
+    background: var(--bg-soft); border-left: 4px solid var(--warn);
+    color: var(--text-soft); font-size: 13px; line-height: 1.8;
+  }
+
+  /* ── 提示区 ── */
+  .hints-box { border: 1px dashed var(--border); border-radius: 12px; padding: 16px; background: var(--bg-soft); }
+  .hint { display: none; padding: 12px; margin-bottom: 10px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border); }
+  .hint.visible { display: block; }
+  .hint-title { font-weight: 700; font-size: 13px; color: var(--text); margin-bottom: 6px; }
+  .hint-body { font-size: 13px; line-height: 1.9; color: var(--text-soft); }
+  .hint-body code { background: var(--code-inline-bg); padding: 2px 5px; border-radius: 4px; font-family: "SFMono-Regular", Consolas, monospace; }
+  .hint-body pre { font-family: "SFMono-Regular", Consolas, monospace; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+  .hint-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--text-soft); font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .hint-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .hint-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* ── IDE ── */
+  .ide-wrap { margin-top: 28px; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .ide-header {
+    display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+    background: var(--bg-soft); border-bottom: 1px solid var(--border);
+  }
+  .lang-tabs { display: flex; gap: 6px; }
+  .lang-tab {
+    padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--text-soft); font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .lang-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .ide-actions { margin-left: auto; display: flex; gap: 8px; }
+  .run-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 14px; border-radius: 8px; border: 0;
+    background: var(--ok); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .run-btn:hover { filter: brightness(1.05); }
+  .run-btn:disabled { opacity: .6; cursor: wait; }
+  .reset-btn {
+    padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--text-soft); font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+
+  .ide-body { display: grid; height: 520px; max-height: 70vh; overflow: hidden; }
+  @media (min-width: 720px) { .ide-body { grid-template-columns: 1fr 240px; } }
+  .editor-pane { display: flex; flex-direction: column; border-right: 1px solid var(--border); overflow: hidden; min-height: 0; }
+  .editor-label, .panel-label {
+    font-size: 11px; font-weight: 700; color: var(--text-faint); padding: 8px 12px;
+    border-bottom: 1px solid var(--border); background: var(--bg-soft);
+  }
+  textarea.code {
+    width: 100%; flex: 1; min-height: 0; resize: none; overflow: auto;
+    border: 0; padding: 14px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 13px; line-height: 1.7; background: var(--bg-card); color: var(--text);
+    outline: none; tab-size: 4;
+  }
+  .side-panels { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+  .input-panel, .output-panel { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+  .input-panel { flex: 0 0 35%; border-bottom: 1px solid var(--border); min-height: 80px; }
+  .output-panel { flex: 1; }
+  textarea.io {
+    flex: 1; width: 100%; min-height: 0; border: 0; padding: 12px;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px;
+    background: var(--bg-card); color: var(--text); outline: none; resize: none;
+    overflow: auto;
+  }
+  .output-panel pre {
+    flex: 1; margin: 0; padding: 12px; overflow: auto; min-height: 0;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px; line-height: 1.7;
+    background: var(--bg-card); color: var(--text-soft); white-space: pre-wrap; word-break: break-word;
+  }
+  .output-panel pre.error { color: #ef4444; }
+  .empty-output { color: var(--text-faint); font-style: italic; }
+
+  .status-bar {
+    padding: 8px 14px; background: var(--bg-soft); border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--text-faint); display: flex; justify-content: space-between;
+  }
+
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding: 32px 16px; }
+
+  .loading-overlay {
+    display: none; position: fixed; inset: 0; z-index: 50;
+    background: rgba(14,17,32,.7); color: #fff;
+    align-items: center; justify-content: center; flex-direction: column; gap: 12px;
+  }
+  .loading-overlay.active { display: flex; }
+  .spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,.2); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     顶栏
+     ════════════════════════════════════════════════════════════ -->
+<header>
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="logo">&lt;/&gt;</span>
+      <span>野鸡动画编程课 · 项目</span>
+    </a>
+    <div class="header-right">
+      <a class="icon-btn home-btn" href="index.html" title="返回课程主页">返回主页</a>
+      <button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════════
+     主体
+     ════════════════════════════════════════════════════════════ -->
+<div class="layout">
+  <aside class="sidebar">
+    <h2>练习项目</h2>
+    <div class="project-list" id="project-list"></div>
+  </aside>
+
+  <main class="project-main" id="project-main">
+    <!-- 项目详情由 JS 渲染 -->
+  </main>
+</div>
+
+<footer class="site">
+  <p>代码在本地浏览器中运行，不会上传到网络。</p>
+</footer>
+
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <p>正在初始化运行环境…</p>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     运行时依赖（均位于同目录，可离线使用）
+     ════════════════════════════════════════════════════════════ -->
+<script src="skulpt.min.js"></script>
+<script src="skulpt-stdlib.js"></script>
+<script src="JSCPP.bundle.js"></script>
+
+<!-- ════════════════════════════════════════════════════════════
+     交互脚本
+     ════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { AppStore.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return AppStore.getItem(key); } catch (e) { return null; } }
+
+  /* ── 1. 主题切换 ── */
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* ── 2. 项目数据 ──
+     说明：
+     · starterCode 只搭好框架，不给出核心实现。
+     · hints 逐步放出示例代码，最后一个提示给出完整参考代码。
+  */
+  var PROJECTS = [
+    {
+      id: "math-generator",
+      title: "出题自动机 · 口算题生成器",
+      level: "easy",
+      levelText: "初级",
+      suggest: "建议已完成第 1、2 章",
+      tags: ["随机数", "循环", "条件判断", "输入输出"],
+      desc: [
+        "小学数学课上，老师常常让大家做口算练习。其实，这类题目完全可以交给电脑批量生成。",
+        "在这个项目里，你要写一个小小的「出题自动机」：它先问你想做多少道题、数字范围是多少，然后随机生成加减乘除口算题，并给出答案。"
+      ],
+      requirements: [
+        "询问用户想生成多少道题（例如 10 道）。",
+        "让用户选择数字范围（例如 1~20）。",
+        "随机生成两个数和一种运算符（+、-、×、÷）。",
+        "保证减法结果不为负数；除法必须能整除（没有余数）。",
+        "把生成的题目和答案整齐地输出到屏幕上。",
+        "（可选挑战）把题目保存到文件，或让用户输入答案后判分。"
+      ],
+      hints: [
+        {
+          title: "提示 1：先搭好输入部分",
+          body: `先读取「题目数量」和「最大数字」。<br><br><strong>Python 示例：</strong><pre style='background:var(--code-inline-bg);padding:8px;border-radius:6px;overflow:auto'>n = int(input('要生成几道题？'))
+max_num = int(input('数字最大到多少？'))</pre><strong>C++ 示例：</strong><pre style='background:var(--code-inline-bg);padding:8px;border-radius:6px;overflow:auto'>int n, max_num;
+cout &lt;&lt; "要生成几道题？";
+cin &gt;&gt; n;
+cout &lt;&lt; "数字最大到多少？";
+cin &gt;&gt; max_num;</pre>`
+        },
+        {
+          title: "提示 2：随机数怎么生成",
+          body: `在循环里每次生成两个随机数。Python 用 <code>random.randint(1, max_num)</code>，C++ 用框架里已经给出的 <code>myRand() % max_num + 1</code>。<br><br><strong>Python 示例：</strong><pre style='background:var(--code-inline-bg);padding:8px;border-radius:6px;overflow:auto'>import random
+for i in range(1, n + 1):
+    a = random.randint(1, max_num)
+    b = random.randint(1, max_num)</pre><strong>C++ 示例：</strong><pre style='background:var(--code-inline-bg);padding:8px;border-radius:6px;overflow:auto'>for (int i = 1; i &lt;= n; i++) {
+    int a = myRand() % max_num + 1;
+    int b = myRand() % max_num + 1;
+}</pre>`
+        },
+        {
+          title: "提示 3：让除法能整除",
+          body: `不要直接随机生成两个数再相除。先随机生成「除数」和「商」，让「被除数 = 除数 × 商」。<br><br><strong>示例：</strong><pre style='background:var(--code-inline-bg);padding:8px;border-radius:6px;overflow:auto'>if op == '/':
+    b = random.randint(1, max_num)
+    ans = random.randint(1, max_num)
+    a = b * ans
+    print(f'{a} / {b} = ?')</pre>`
+        },
+        {
+          title: "提示 4：让减法不为负",
+          body: `生成两个数后比较大小，用大的减小的；或者只生成 <code>a</code>，再生成一个 1~a 的 <code>b</code>。<br><br><strong>示例：</strong><pre style='background:var(--code-inline-bg);padding:8px;border-radius:6px;overflow:auto'>if op == '-':
+    a = random.randint(1, max_num)
+    b = random.randint(1, a)
+    print(f'{a} - {b} = ?')</pre>`
+        },
+        {
+          title: "提示 5：完整参考代码",
+          body: `下面是一份完整实现，供你对照思路。建议先自己尝试，再看答案。<br><br><strong>Python：</strong><pre style='background:var(--code-inline-bg);padding:8px;border-radius:6px;overflow:auto;font-size:12px'>import random
+
+n = int(input('要生成几道题？'))
+max_num = int(input('数字最大到多少？'))
+ops = ['+', '-', '*', '/']
+
+for i in range(1, n + 1):
+    op = random.choice(ops)
+    if op == '+':
+        a = random.randint(1, max_num)
+        b = random.randint(1, max_num)
+        ans = a + b
+    elif op == '-':
+        a = random.randint(1, max_num)
+        b = random.randint(1, a)
+        ans = a - b
+    elif op == '*':
+        a = random.randint(1, max_num)
+        b = random.randint(1, max_num)
+        ans = a * b
+    else:
+        b = random.randint(1, max_num)
+        ans = random.randint(1, max_num)
+        a = b * ans
+    print(f'{i}) {a} {op} {b} = ?')
+
+print('--- 答案 ---')
+# 如果要输出答案，可把 ans 保存到列表再打印</pre><strong>C++：</strong><pre style='background:var(--code-inline-bg);padding:8px;border-radius:6px;overflow:auto;font-size:12px'>#include &lt;iostream&gt;
+using namespace std;
+
+// 自定义随机函数，避免 JSCPP 的 rand() 多次运行后状态异常
+int myRand() {
+    static int seed = 12345;
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed;
+}
+
+int main() {
+    int n, max_num;
+    cout &lt;&lt; "要生成几道题？";
+    cin &gt;&gt; n;
+    cout &lt;&lt; "数字最大到多少？";
+    cin &gt;&gt; max_num;
+
+    for (int i = 1; i &lt;= n; i++) {
+        int op = myRand() % 4;
+        int a, b, ans;
+        if (op == 0) { a = myRand() % max_num + 1; b = myRand() % max_num + 1; ans = a + b; cout &lt;&lt; i &lt;&lt; ") " &lt;&lt; a &lt;&lt; " + " &lt;&lt; b &lt;&lt; " = ?" &lt;&lt; endl; }
+        else if (op == 1) { a = myRand() % max_num + 1; b = myRand() % a + 1; ans = a - b; cout &lt;&lt; i &lt;&lt; ") " &lt;&lt; a &lt;&lt; " - " &lt;&lt; b &lt;&lt; " = ?" &lt;&lt; endl; }
+        else if (op == 2) { a = myRand() % max_num + 1; b = myRand() % max_num + 1; ans = a * b; cout &lt;&lt; i &lt;&lt; ") " &lt;&lt; a &lt;&lt; " * " &lt;&lt; b &lt;&lt; " = ?" &lt;&lt; endl; }
+        else { b = myRand() % max_num + 1; ans = myRand() % max_num + 1; a = b * ans; cout &lt;&lt; i &lt;&lt; ") " &lt;&lt; a &lt;&lt; " / " &lt;&lt; b &lt;&lt; " = ?" &lt;&lt; endl; }
+    }
+    return 0;
+}</pre>`
+        }
+      ],
+      starterCode: {
+        cpp: '#include <iostream>\nusing namespace std;\n\n/*\n  自定义随机函数 myRand()\n  ---------------------\n  这个函数会按固定规则生成一个“伪随机数”。\n  所谓“伪随机”，就是看起来没有规律，但只要种子 seed 不变，\n  每次重新运行程序得到的序列都一模一样。\n\n  用法：\n    myRand() % N          得到 0 ~ N-1 之间的整数\n    myRand() % N + 1      得到 1 ~ N 之间的整数\n    myRand() % (max - min + 1) + min   得到 min ~ max 之间的整数\n*/\nint myRand() {\n    static int seed = 12345;\n    seed = (seed * 9301 + 49297) % 233280;\n    return seed;\n}\n\nint main() {\n    // ----- 框架已为你搭好，在这两条线之间开始写代码 -------\n\n\n\n    // ----- 框架已为你搭好，在这两条线之间开始写代码 -------\n\n    return 0;\n}',
+        python: '# ----- 框架已为你搭好，在这两条线之间开始写代码 --------\n\n\n\n# ----- 框架已为你搭好，在这两条线之间开始写代码 --------\n'
+      }
+    },
+    {
+      id: "flowchart-generator",
+      title: "程序流程题生成器",
+      level: "hard",
+      levelText: "进阶",
+      suggest: "建议已完成第 1、2 章",
+      tags: ["条件判断", "流程图", "输入输出", "随机生成"],
+      desc: [
+        "小学、初中的数学试卷里经常有这样一类题：「模拟一个计算机程序，输入一个数，根据不同条件对这个数进行操作」。",
+        "例如：输入一个数，如果是偶数就除以 2，如果是奇数就乘 3 加 1，如果大于 100 就减去 10……",
+        "这个项目要你做一个「流程题生成器」：自动生成这样的题目、给出示例输入输出，并用简单的文字流程图展示判断过程。"
+      ],
+      requirements: [
+        "随机生成 2~4 个判断条件（例如：是偶数、大于 50、能被 3 整除）。",
+        "为每个条件随机生成一个操作（例如：加 5、乘 2、减 10）。",
+        "按条件优先级组合成一个完整的处理流程。",
+        "输出题目描述和一个示例输入/输出。",
+        "用缩进或箭头画出文字版流程图（例如：输入 → 判断 → 操作 → 输出）。",
+        "（可选挑战）让用户输入一个数，程序按生成的规则计算出结果。"
+      ],
+      hints: [
+        {
+          title: "提示 1：把题目拆成小块",
+          body: `整个题目由三部分组成：条件（如 <code>x % 2 == 0</code>）、操作（如 <code>x = x + 5</code>）、执行顺序（从上往下依次判断）。先准备两个列表装条件文字和操作文字。`
+        },
+        {
+          title: "提示 2：随机生成规则",
+          body: `准备两个列表，每次随机抽取一条条件和一种操作，组成一条规则。<br><br><strong>Python 示例：</strong><pre style='background:var(--code-inline-bg);padding:8px;border-radius:6px;overflow:auto'>import random
+conds = ['是偶数', '大于 50', '能被 3 整除']
+ops = ['加 5', '乘 2', '减 10']
+rule = [
+    (random.choice(conds), random.choice(ops)),
+    (random.choice(conds), random.choice(ops))
+]</pre><strong>C++ 示例：</strong><pre style='background:var(--code-inline-bg);padding:8px;border-radius:6px;overflow:auto;font-size:12px'>// 用 0、1、2 分别代表三种条件和操作
+// myRand() 在题目框架里已经给出
+int c1 = myRand() % 3, o1 = myRand() % 3;
+int c2 = myRand() % 3, o2 = myRand() % 3;
+// 0: 是偶数, 1: 大于 50, 2: 能被 3 整除
+// 0: 加 5,   1: 乘 2,   2: 减 10</pre>`
+        },
+        {
+          title: "提示 3：根据规则写真正的判断",
+          body: `把文字条件翻译成代码。例如「是偶数」对应 <code>x % 2 == 0</code>，「大于 50」对应 <code>x > 50</code>。然后按顺序执行操作。<br><br><strong>Python 示例：</strong><pre style='background:var(--code-inline-bg);padding:8px;border-radius:6px;overflow:auto'>x = 24
+if x % 2 == 0:
+    x = x // 2
+    print('是偶数，除以 2，得到', x)
+if x &gt; 50:
+    x = x - 10
+    print('大于 50，减 10，得到', x)</pre>`
+        },
+        {
+          title: "提示 4：输出文字流程图",
+          body: `不需要真的画图，用缩进和箭头即可。<br><br><strong>示例输出：</strong><pre style='background:var(--code-inline-bg);padding:8px;border-radius:6px;overflow:auto'>开始 → 输入 x
+  ├─ 如果 x 是偶数 → x = x / 2
+  ├─ 如果 x &gt; 50 → x = x - 10
+  └─ 输出 x → 结束</pre>`
+        },
+        {
+          title: "提示 5：完整参考代码",
+          body: `下面是一份完整实现。你可以先尝试自己写，再对照答案。<br><br><strong>Python：</strong><pre style='background:var(--code-inline-bg);padding:8px;border-radius:6px;overflow:auto;font-size:12px'>import random
+
+conds = ['是偶数', '大于 50', '能被 3 整除']
+ops = ['加 5', '乘 2', '减 10']
+c1, o1 = random.choice(conds), random.choice(ops)
+c2, o2 = random.choice(conds), random.choice(ops)
+
+print('输入一个整数 x，按以下规则计算：')
+print(f'1. 如果 x {c1}，则 x {o1}')
+print(f'2. 如果 x {c2}，则 x {o2}')
+print('3. 输出最终的 x')
+print()
+print('文字流程图：')
+print('开始 → 输入 x')
+print(f'  ├─ 如果 x {c1} → x {o1}')
+print(f'  ├─ 如果 x {c2} → x {o2}')
+print('  └─ 输出 x → 结束')
+
+# 示例计算
+x = 24
+print(f'\\n例如输入 {x}：')
+if c1 == '是偶数': x = x // 2
+elif c1 == '大于 50': x = x - 10 if x &gt; 50 else x
+# ... 其它条件同理
+print('结果：', x)</pre><strong>C++：</strong><pre style='background:var(--code-inline-bg);padding:8px;border-radius:6px;overflow:auto;font-size:11px'>#include &lt;iostream&gt;
+using namespace std;
+
+// 自定义随机函数，避免 JSCPP 的 rand() 多次运行后状态异常
+int myRand() {
+    static int seed = 12345;
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed;
+}
+
+void printCond(int c) {
+    if (c == 0) cout &lt;&lt; "是偶数";
+    else if (c == 1) cout &lt;&lt; "大于 50";
+    else cout &lt;&lt; "能被 3 整除";
+}
+
+void printOp(int o) {
+    if (o == 0) cout &lt;&lt; "加 5";
+    else if (o == 1) cout &lt;&lt; "乘 2";
+    else cout &lt;&lt; "减 10";
+}
+
+int main() {
+    int c1 = myRand() % 3, o1 = myRand() % 3;
+    int c2 = myRand() % 3, o2 = myRand() % 3;
+
+    cout &lt;&lt; "输入一个整数 x，按以下规则计算：" &lt;&lt; endl;
+    cout &lt;&lt; "1. 如果 x "; printCond(c1); cout &lt;&lt; "，则 x "; printOp(o1); cout &lt;&lt; endl;
+    cout &lt;&lt; "2. 如果 x "; printCond(c2); cout &lt;&lt; "，则 x "; printOp(o2); cout &lt;&lt; endl;
+    cout &lt;&lt; "3. 输出最终的 x" &lt;&lt; endl &lt;&lt; endl;
+    cout &lt;&lt; "文字流程图：" &lt;&lt; endl;
+    cout &lt;&lt; "开始 → 输入 x" &lt;&lt; endl;
+    cout &lt;&lt; "  ├─ 如果 x "; printCond(c1); cout &lt;&lt; " → x "; printOp(o1); cout &lt;&lt; endl;
+    cout &lt;&lt; "  ├─ 如果 x "; printCond(c2); cout &lt;&lt; " → x "; printOp(o2); cout &lt;&lt; endl;
+    cout &lt;&lt; "  └─ 输出 x → 结束" &lt;&lt; endl;
+
+    int x;
+    cout &lt;&lt; "请输入一个整数：";
+    cin &gt;&gt; x;
+    if (c1 == 0 &amp;&amp; x % 2 == 0) x = x / 2;
+    if (c1 == 1 &amp;&amp; x &gt; 50) x = x - 10;
+    if (c2 == 0 &amp;&amp; x % 2 == 0) x = x / 2;
+    if (c2 == 1 &amp;&amp; x &gt; 50) x = x - 10;
+    cout &lt;&lt; "结果：" &lt;&lt; x &lt;&lt; endl;
+    return 0;
+}</pre>`
+        }
+      ],
+
+      starterCode: {
+        cpp: '#include <iostream>\nusing namespace std;\n\n/*\n  自定义随机函数 myRand()\n  ---------------------\n  这个函数会按固定规则生成一个“伪随机数”。\n  所谓“伪随机”，就是看起来没有规律，但只要种子 seed 不变，\n  每次重新运行程序得到的序列都一模一样。\n\n  用法：\n    myRand() % N          得到 0 ~ N-1 之间的整数\n    myRand() % N + 1      得到 1 ~ N 之间的整数\n    myRand() % (max - min + 1) + min   得到 min ~ max 之间的整数\n*/\nint myRand() {\n    static int seed = 12345;\n    seed = (seed * 9301 + 49297) % 233280;\n    return seed;\n}\n\nint main() {\n    // ----- 框架已为你搭好，在这两条线之间开始写代码 -------\n\n\n\n    // ----- 框架已为你搭好，在这两条线之间开始写代码 -------\n\n    return 0;\n}',
+        python: '# ----- 框架已为你搭好，在这两条线之间开始写代码 --------\n\n\n\n# ----- 框架已为你搭好，在这两条线之间开始写代码 --------\n'
+      }
+    }
+  ];
+
+  var currentId = read("coding-101-current-project") || PROJECTS[0].id;
+  var currentLang = read("coding-101-project-lang") || "python";
+
+  // 代码缓存版本号：更新 starterCode 后提升版本，避免用户继续加载旧的 rand() 代码
+  var CODE_VERSION = 3;
+  var savedCodeVersion = parseInt(read("coding-101-project-code-version") || "0", 10);
+  var projectCode = {};
+  if (savedCodeVersion === CODE_VERSION) {
+    try { projectCode = JSON.parse(read("coding-101-project-code") || "{}"); } catch (e) {}
+  } else {
+    store("coding-101-project-code-version", CODE_VERSION);
+  }
+
+  /* ── 3. 渲染侧边栏 ── */
+  var listEl = $("#project-list");
+  PROJECTS.forEach(function (p) {
+    var btn = document.createElement("button");
+    btn.className = "project-item" + (p.id === currentId ? " active" : "");
+    btn.innerHTML = '<div class="title"><span class="badge ' + p.level + '">' + p.levelText + '</span>' + p.title + '</div>' +
+                    '<div class="meta">' + p.suggest + '</div>';
+    btn.addEventListener("click", function () {
+      currentId = p.id;
+      renderProject();
+      updateActiveSidebar();
+      store("coding-101-current-project", currentId);
+    });
+    listEl.appendChild(btn);
+  });
+
+  function updateActiveSidebar() {
+    $$('.project-item').forEach(function (btn, i) {
+      btn.classList.toggle("active", PROJECTS[i].id === currentId);
+    });
+  }
+
+  /* ── 4. 渲染项目详情 ── */
+  function renderProject() {
+    var p = PROJECTS.find(function (x) { return x.id === currentId; });
+    if (!p) return;
+
+    var tagsHtml = p.tags.map(function (t) { return "<span>" + t + "</span>"; }).join("");
+    var reqHtml = p.requirements.map(function (r) { return "<li>" + r + "</li>"; }).join("");
+    var descHtml = p.desc.map(function (d) { return "<p>" + d + "</p>"; }).join("");
+
+    // 每次进入页面时提示默认全部收起，不沿用上次保存的展开状态
+    var revealed = 0;
+
+    $("#project-main").innerHTML =
+      '<div class="project-card">' +
+        '<h1>' + p.title + '</h1>' +
+        '<div class="subtitle">' + descHtml + '</div>' +
+        '<div class="tags">' + tagsHtml + '</div>' +
+        '<div class="suggest">💡 ' + p.suggest + '</div>' +
+
+        '<div class="section">' +
+          '<h3>项目要求</h3>' +
+          '<ul>' + reqHtml + '</ul>' +
+        '</div>' +
+
+        '<div class="section">' +
+          '<h3>渐进提示</h3>' +
+          '<div class="hints-box" id="hints-box"></div>' +
+        '</div>' +
+
+        '<div class="ide-wrap">' +
+          '<div class="ide-header">' +
+            '<div class="lang-tabs">' +
+              '<button class="lang-tab ' + (currentLang === "python" ? "active" : "") + '" data-lang="python">Python</button>' +
+              '<button class="lang-tab ' + (currentLang === "cpp" ? "active" : "") + '" data-lang="cpp">C++</button>' +
+            '</div>' +
+            '<div class="ide-actions">' +
+              '<button class="reset-btn" id="reset-code">重置代码</button>' +
+              '<button class="run-btn" id="run-code">▶ 运行</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="ide-body">' +
+            '<div class="editor-pane">' +
+              '<div class="editor-label">代码编辑器</div>' +
+              '<textarea class="code" id="code-editor" spellcheck="false" placeholder="在这里写代码…"></textarea>' +
+            '</div>' +
+            '<div class="side-panels">' +
+              '<div class="input-panel">' +
+                '<div class="panel-label">输入（每行一个）</div>' +
+                '<textarea class="io" id="code-input" placeholder="程序需要的输入写在这里…"></textarea>' +
+              '</div>' +
+              '<div class="output-panel">' +
+                '<div class="panel-label">输出</div>' +
+                '<pre id="code-output"><span class="empty-output">点击「运行」查看结果</span></pre>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="status-bar">' +
+            '<span id="status-lang">Python</span>' +
+            '<span id="status-info">就绪</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    renderHints(p, revealed);
+    setupTabs(p);
+    setupEditor(p);
+    setupRun(p);
+  }
+
+  function renderHints(p, revealed) {
+    var box = $("#hints-box");
+    if (!box) return;
+    var html = "";
+    p.hints.forEach(function (h, i) {
+      html += '<div class="hint ' + (i < revealed ? "visible" : "") + '">' +
+                '<div class="hint-title">' + h.title + '</div>' +
+                '<div class="hint-body">' + h.body + '</div>' +
+              '</div>';
+    });
+    var left = Math.max(0, p.hints.length - revealed);
+    html += '<button class="hint-btn" id="next-hint" ' + (left === 0 ? "disabled" : "") + '>' +
+              (left === 0 ? "所有提示已显示" : "显示下一个提示（还剩 " + left + " 个）") +
+            '</button>';
+    box.innerHTML = html;
+
+    var btn = $("#next-hint");
+    if (btn && !btn.disabled) {
+      btn.addEventListener("click", function () {
+        revealed = Math.min(p.hints.length, revealed + 1);
+        renderHints(p, revealed);
+      });
+    }
+  }
+
+  function setupTabs(p) {
+    $$('.lang-tab').forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        // 保存当前代码
+        projectCode[currentId + "-" + currentLang] = $("#code-editor").value;
+        store("coding-101-project-code", JSON.stringify(projectCode));
+
+        currentLang = tab.dataset.lang;
+        store("coding-101-project-lang", currentLang);
+        renderProject();
+      });
+    });
+  }
+
+  function setupEditor(p) {
+    var editor = $("#code-editor");
+    var key = p.id + "-" + currentLang;
+    editor.value = projectCode[key] || p.starterCode[currentLang] || "";
+
+    // Tab 键插入 4 个空格
+    editor.addEventListener("keydown", function (e) {
+      if (e.key === "Tab") {
+        e.preventDefault();
+        var start = this.selectionStart;
+        var end = this.selectionEnd;
+        this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
+        this.selectionStart = this.selectionEnd = start + 4;
+      }
+    });
+
+    editor.addEventListener("input", function () {
+      projectCode[key] = this.value;
+      store("coding-101-project-code", JSON.stringify(projectCode));
+    });
+
+    $("#reset-code").addEventListener("click", function () {
+      if (confirm("确定要重置为初始代码吗？你修改过的内容会丢失。")) {
+        projectCode[key] = p.starterCode[currentLang];
+        store("coding-101-project-code", JSON.stringify(projectCode));
+        renderProject();
+      }
+    });
+
+    $("#status-lang").textContent = currentLang === "python" ? "Python" : "C++";
+  }
+
+  /* ── 5. 运行代码 ── */
+  function setOutput(html, isError) {
+    var out = $("#code-output");
+    out.innerHTML = html;
+    out.classList.toggle("error", !!isError);
+  }
+
+  function setStatus(text) { $("#status-info").textContent = text; }
+
+  function runPython(code, inputText) {
+    var output = [];
+    var inputLines = inputText.replace(/\r/g, "").split("\n").filter(function (x) { return x !== ""; });
+    var inputIndex = 0;
+
+    function outf(text) { output.push(text); }
+
+    function builtinRead(x) {
+      if (Sk.builtinFiles === undefined || Sk.builtinFiles.files[x] === undefined)
+        throw "File not found: '" + x + "'";
+      return Sk.builtinFiles.files[x];
+    }
+
+    Sk.configure({
+      output: outf,
+      read: builtinRead,
+      inputfun: function (args) {
+        if (inputIndex < inputLines.length) return inputLines[inputIndex++];
+        return "";
+      },
+      inputfunTakesPrompt: true,
+      execLimit: 10000
+    });
+
+    return Sk.misceval.asyncToPromise(function () {
+      return Sk.importMainWithBody("__main__", false, code);
+    }).then(function () {
+      return output.join("");
+    }).catch(function (err) {
+      throw err.toString ? err.toString() : String(err);
+    });
+  }
+
+  function runCpp(code, inputText) {
+    var output = [];
+    var exitCode = JSCPP.run(code, inputText.replace(/\r/g, ""), {
+      stdio: {
+        write: function (s) { output.push(s); }
+      }
+    });
+    return output.join("") + (output.length ? "" : "（程序已结束，无输出）");
+  }
+
+  function setupRun(p) {
+    $("#run-code").addEventListener("click", function () {
+      var code = $("#code-editor").value;
+      var input = $("#code-input").value;
+      var btn = this;
+      btn.disabled = true;
+      setOutput("<span class='empty-output'>运行中…</span>", false);
+      setStatus("运行中…");
+
+      var runner = currentLang === "python" ? runPython : runCpp;
+
+      // 用 setTimeout 让 UI 先刷新
+      setTimeout(function () {
+        try {
+          var result = runner(code, input);
+          if (result && typeof result.then === "function") {
+            result.then(function (text) {
+              setOutput(escapeHtml(text) || "（程序已结束，无输出）", false);
+              setStatus("运行完成");
+            }).catch(function (err) {
+              setOutput("运行出错：\n" + escapeHtml(String(err)), true);
+              setStatus("运行出错");
+            }).finally(function () { btn.disabled = false; });
+          } else {
+            setOutput(escapeHtml(result) || "（程序已结束，无输出）", false);
+            setStatus("运行完成");
+            btn.disabled = false;
+          }
+        } catch (err) {
+          setOutput("运行出错：\n" + escapeHtml(String(err)), true);
+          setStatus("运行出错");
+          btn.disabled = false;
+        }
+      }, 50);
+    });
+  }
+
+  function escapeHtml(text) {
+    var div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  /* ── 6. 初始化 ── */
+  renderProject();
+
+})();
+</script>
+
+</body>
+</html>

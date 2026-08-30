@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    把功能打包 · 新手编程入门课（第 2 章）
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开，
+    无需联网、无需安装任何东西。
+
+    文件结构（与第 1 章一致，按顺序阅读即可）：
+      1. <style>   —— 全部样式（主题变量 / 布局 / 组件 / 深色模式）
+      2. <body>    —— 全部教学内容（顶栏 / 目录 / 六个小节）
+      3. <script>  —— 全部交互（主题 / 语言 / 测验 / 运行台 / 进度）
+
+    学习进度保存在 AppStore 的 "coding-101-ch2-progress"，
+    课程主页（index.html）会读取这个键来显示本章完成度。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <script>var AppStore = window.AppStore || window.AppStore; var AppStore = window.AppStore || window.AppStore;</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="写给完全新手的编程入门课第 2 章：从 a + b 的老问题出发，学会把重复使用的功能封装成函数，理解参数与返回值，并认识数组。支持 C++ / Python 双语、深色模式，单文件离线可用。">
+  <title>野鸡动画编程课 · 第 2 章</title>
+
+  <style>
+  /* ══════════════════════════════════════════════════════════
+     1. 主题变量（与第 1 章保持一致）
+     ══════════════════════════════════════════════════════════ */
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     2. 基础与布局
+     ══════════════════════════════════════════════════════════ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s;
+  }
+  code, pre, .mono {
+    font-family: "JetBrains Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+  }
+  ::selection { background: rgba(14,165,233,.25); }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  .layout { display: flex; gap: 32px; padding-top: 32px; }
+
+  /* ── 顶栏 ── */
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .progress-mini { display: none; align-items: center; gap: 8px; font-size: 12px; color: var(--text-faint); }
+  @media (min-width: 768px) { .progress-mini { display: flex; } }
+  .bar { width: 96px; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+
+  /* 语言切换（C++ / Python） */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button {
+    border: 0; border-radius: 6px; padding: 4px 10px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    background: transparent; color: var(--text-faint);
+  }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  .icon-btn.home-btn {
+    background: #38bdf8; color: #fff; border-color: #38bdf8;
+    font-weight: 700; font-size: 15px; padding: 0 22px;
+    border-radius: 9999px;
+  }
+  .icon-btn.home-btn:hover { background: #0ea5e9; border-color: #0ea5e9; }
+  #toc-btn { display: flex; }
+  @media (min-width: 1024px) { #toc-btn { display: none; } }
+
+  /* ── 侧边目录 ── */
+  aside { display: none; width: 260px; flex-shrink: 0; }
+  @media (min-width: 1024px) {
+    aside { display: block; position: sticky; top: 80px; height: calc(100vh - 96px); overflow-y: auto; }
+  }
+  .aside-title { font-size: 12px; font-weight: 700; letter-spacing: 2px; color: var(--text-faint); margin-bottom: 12px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 8px; margin-bottom: 4px;
+    color: var(--text-soft); text-decoration: none; font-size: 14px;
+  }
+  .nav-item:hover { background: var(--bg-soft); }
+  .nav-item.active { background: #e0f2fe; color: #0369a1; font-weight: 700; }
+  html.dark .nav-item.active { background: rgba(3,105,161,.35); color: #7dd3fc; }
+  .nav-num {
+    display: flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 99px; flex-shrink: 0;
+    background: var(--code-inline-bg); color: var(--text-faint);
+    font-size: 11px; font-weight: 700;
+  }
+  .nav-item.done .nav-num { background: #10b981; color: #fff; }
+  .nav-sub { display: block; font-size: 12px; font-weight: 400; color: var(--text-faint); }
+  .progress-card { margin-top: 24px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); font-size: 12px; }
+  .progress-card .bar { width: 100%; margin-top: 8px; }
+  #toc-panel { display: none; border-top: 1px solid var(--border); padding: 12px 16px; background: var(--bg-card); }
+  #toc-panel.open { display: block; }
+
+  /* ── 主内容 ── */
+  main { flex: 1; min-width: 0; padding-bottom: 96px; }
+  section.lesson {
+    scroll-margin-top: 96px;
+    margin-bottom: 40px; padding: 28px;
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-section);
+  }
+  @media (max-width: 640px) { section.lesson { padding: 20px; } }
+  .lesson-head { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 24px; }
+  .lesson-no { font-size: 12px; font-weight: 700; letter-spacing: 2px; color: #0284c7; }
+  html.dark .lesson-no { color: #38bdf8; }
+  .lesson-head h2 { font-size: 24px; font-weight: 900; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body p { font-size: 15px; line-height: 2; color: var(--text-soft); margin-bottom: 24px; }
+  .lesson-body h3 { font-size: 18px; font-weight: 700; margin: 32px 0 24px; }
+  .lesson-body strong { color: var(--text); }
+  .hl-rose { color: #e11d48; } html.dark .hl-rose { color: #fb7185; }
+  .hl-sky  { color: #0369a1; } html.dark .hl-sky  { color: #38bdf8; }
+  code.inline {
+    background: var(--code-inline-bg); color: #e11d48;
+    border-radius: 4px; padding: 2px 6px; font-size: 13.5px;
+  }
+  html.dark code.inline { color: #fb7185; }
+
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 16px; }
+
+  /* ══════════════════════════════════════════════════════════
+     3. 组件
+     ══════════════════════════════════════════════════════════ */
+
+  /* ── Hero 头图 ── */
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 16px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 44px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 30px; } }
+  .hero p { max-width: 560px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .hero .start-btn {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 28px;
+    padding: 12px 24px; border-radius: 12px;
+    background: #0ea5e9; color: #fff; font-weight: 700; font-size: 14px;
+    text-decoration: none; box-shadow: 0 8px 20px rgba(14,165,233,.35);
+  }
+  .hero .meta { margin-left: 16px; font-size: 12px; color: #94a3b8; }
+
+  /* ── 通用小卡片 ── */
+  .card {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-card); padding: 20px;
+  }
+  .grid-2 { display: grid; gap: 12px; margin-bottom: 24px; }
+  @media (min-width: 640px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+  .card-label { font-size: 13px; font-weight: 700; color: var(--text-faint); margin-bottom: 8px; }
+  .card-big { font-size: 18px; font-weight: 700; }
+
+  /* ── 代码块 / 运行结果块 ── */
+  .code-block, .output-block { border-radius: 12px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 8px 24px rgba(15,23,42,.12); }
+  .code-block { border: 1px solid #2a2f45; background: #1c1f2e; }
+  .code-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-bottom: 1px solid #2a2f45; background: #232738;
+    font-size: 12px; color: #94a3b8;
+  }
+  .dot { width: 12px; height: 12px; border-radius: 99px; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+  .code-lang-badge {
+    margin-left: 8px; padding: 2px 6px; border-radius: 4px;
+    background: rgba(255,255,255,.1); font-size: 10px; font-weight: 700; color: #7dd3fc;
+  }
+  .code-block pre { padding: 16px; overflow-x: auto; font-size: 13.5px; line-height: 1.9; color: #cbd5e1; }
+  .code-block .ln { display: inline-block; width: 24px; margin-right: 16px; text-align: right; color: #475569; user-select: none; }
+  .tok-kw  { color: #82aaff; font-weight: 600; }
+  .tok-str { color: #f2c14e; }
+  .tok-num { color: #ff9e64; }
+  .tok-com { color: #7f8c6f; font-style: italic; }
+  .tok-op  { color: #89ddff; }
+
+  .output-block { border: 1px solid rgba(6,78,59,.5); background: #101812; }
+  .output-head {
+    padding: 8px 16px; border-bottom: 1px solid rgba(6,78,59,.5); background: #152115;
+    font-size: 12px; font-weight: 600; color: rgba(52,211,153,.9);
+  }
+  .output-block pre { padding: 16px; font-size: 14px; line-height: 1.9; color: #d1fae5; overflow-x: auto; }
+
+  /* ── 提示框 ── */
+  .callout { border: 1px solid; border-radius: 12px; padding: 20px; margin-bottom: 24px; font-size: 15px; line-height: 1.9; }
+  .callout .callout-title { font-weight: 700; margin-bottom: 6px; }
+  .callout p + p { margin-top: 8px; }
+  .callout code { background: rgba(255,255,255,.7); border-radius: 4px; padding: 2px 5px; font-size: 13.5px; }
+  html.dark .callout code { background: rgba(255,255,255,.1); }
+  .callout.idea { border-color: #bae6fd; background: #f0f9ff; color: #0c4a6e; }
+  .callout.warn { border-color: #fecdd3; background: #fff1f2; color: #881337; }
+  .callout.key  { border-color: #ddd6fe; background: #f5f3ff; color: #4c1d95; }
+  html.dark .callout.idea { border-color: #075985; background: rgba(8,47,73,.4);  color: #bae6fd; }
+  html.dark .callout.warn { border-color: #9f1239; background: rgba(76,5,25,.4);   color: #fecdd3; }
+  html.dark .callout.key  { border-color: #6d28d9; background: rgba(46,16,101,.4); color: #ddd6fe; }
+
+  /* ── 彩色行内小标签（拆解函数定义用） ── */
+  .badge-sky, .badge-green, .badge-purple {
+    display: inline-block; border-radius: 6px; padding: 4px 8px;
+    font-size: inherit; font-weight: 600; line-height: inherit;
+  }
+  .badge-sky    { background: #e0f2fe; color: #0369a1; }
+  .badge-green  { background: #d1fae5; color: #047857; }
+  .badge-purple { background: #ede9fe; color: #6d28d9; }
+  html.dark .badge-sky    { background: rgba(14,165,233,.22); color: #7dd3fc; }
+  html.dark .badge-green  { background: rgba(16,185,129,.22); color: #6ee7b7; }
+  html.dark .badge-purple { background: rgba(139,92,246,.22); color: #c4b5fd; }
+
+  .box-sky, .box-green, .box-purple {
+    border-radius: 8px; padding: 12px; font-size: 14px; line-height: 1.7;
+    color: var(--text-soft);
+  }
+  .box-sky    { background: #f0f9ff; }
+  .box-green  { background: #ecfdf5; }
+  .box-purple { background: #f5f3ff; }
+  .box-sky strong, .box-green strong, .box-purple strong { font-weight: 700; }
+  .box-sky strong    { color: #0369a1; }
+  .box-green strong  { color: #047857; }
+  .box-purple strong { color: #6d28d9; }
+  html.dark .box-sky    { background: rgba(14,165,233,.15); color: #e0f2fe; }
+  html.dark .box-green  { background: rgba(16,185,129,.15); color: #d1fae5; }
+  html.dark .box-purple { background: rgba(139,92,246,.15); color: #ede9fe; }
+  html.dark .box-sky strong    { color: #7dd3fc; }
+  html.dark .box-green strong  { color: #6ee7b7; }
+  html.dark .box-purple strong { color: #c4b5fd; }
+
+  /* ── 章节预告卡片 ── */
+  .next-chapter {
+    border: 1px solid #ddd6fe;
+    background: linear-gradient(135deg, #f5f3ff, #fdf4ff);
+    border-radius: 12px; padding: 20px;
+  }
+  .next-chapter > div:first-child { font-weight: 700; color: #5b21b6; margin-bottom: 8px; }
+  .next-chapter p { margin: 0; font-size: 14px; line-height: 1.9; }
+  html.dark .next-chapter {
+    border-color: rgba(139,92,246,.4);
+    background: linear-gradient(135deg, rgba(46,16,101,.35), rgba(88,28,135,.3));
+  }
+  html.dark .next-chapter > div:first-child { color: #c4b5fd; }
+  html.dark .next-chapter p { color: #ddd6fe; }
+
+  /* ── 任务虚线框 ── */
+  .task-box {
+    border: 2px dashed #fcd34d; border-radius: 12px;
+    background: rgba(255,251,235,.7); padding: 20px; margin-bottom: 24px;
+    font-size: 15px; line-height: 2; color: var(--text-soft);
+  }
+  html.dark .task-box { border-color: #b45309; background: rgba(69,39,10,.3); }
+  .task-box .task-title { font-size: 14px; font-weight: 700; color: #b45309; margin-bottom: 8px; }
+  html.dark .task-box .task-title { color: #fbbf24; }
+
+  /* ── DNA 链展示 ── */
+  .dna-card {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    background: var(--bg-card); margin-bottom: 24px;
+  }
+  .dna-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--bg-soft);
+    font-size: 13px; font-weight: 700; color: var(--text-soft);
+  }
+  .dna-head button {
+    border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px;
+    background: var(--bg-card); color: var(--text-soft); font-size: 12px; cursor: pointer;
+  }
+  .dna-head button:hover { background: var(--bg-soft); }
+  .dna-card pre {
+    padding: 16px; font-size: 14px; line-height: 2; color: var(--text-soft);
+    white-space: pre-wrap; word-break: break-all;
+  }
+  .dna-card pre .base { color: #0369a1; font-weight: 700; letter-spacing: 2px; }
+  html.dark .dna-card pre .base { color: #38bdf8; }
+
+  /* ── 数组图示 ── */
+  .array-visual { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+  .array-cell { text-align: center; }
+  .array-cell .val {
+    display: flex; align-items: center; justify-content: center;
+    width: 64px; height: 64px; border-radius: 10px;
+    border: 2px solid #7dd3fc; background: #f0f9ff;
+    font-size: 18px; font-weight: 700; color: #0369a1;
+  }
+  html.dark .array-cell .val { border-color: rgba(56,189,248,.5); background: rgba(14,165,233,.12); color: #7dd3fc; }
+  .array-cell .idx { margin-top: 6px; font-size: 12px; color: var(--text-faint); }
+
+  /* ── 小测验 ── */
+  .quiz { border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); padding: 20px; margin-bottom: 24px; }
+  .quiz-q { display: flex; gap: 8px; font-size: 15px; font-weight: 600; }
+  .quiz-q::before { content: "❓"; }
+  .quiz pre.mini { margin-top: 12px; padding: 12px; border-radius: 8px; background: #1c1f2e; color: #cbd5e1; font-size: 13.5px; line-height: 1.7; overflow-x: auto; }
+  .quiz-opts { display: grid; gap: 8px; margin-top: 16px; }
+  .quiz-opt {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-soft); font-size: 14px; cursor: pointer; text-align: left;
+    color: var(--text-soft);
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: #c4b5fd; background: #f5f3ff; }
+  html.dark .quiz-opt:hover:not(:disabled) { background: rgba(46,16,101,.35); }
+  .quiz-opt:disabled { cursor: default; }
+  .quiz-opt.correct { border-color: #6ee7b7; background: #ecfdf5; color: #065f46; }
+  .quiz-opt.wrong   { border-color: #fda4af; background: #fff1f2; color: #9f1239; }
+  .quiz-opt.dim     { opacity: .5; }
+  html.dark .quiz-opt.correct { border-color: #059669; background: rgba(6,78,59,.4); color: #a7f3d0; }
+  html.dark .quiz-opt.wrong   { border-color: #be123c; background: rgba(76,5,25,.4);  color: #fda4af; }
+  .quiz-explain { display: none; margin-top: 16px; padding: 14px; border-radius: 8px; border: 1px solid; font-size: 14px; line-height: 1.7; }
+  .quiz-explain.show { display: block; }
+  .quiz-explain.right { border-color: #a7f3d0; background: #ecfdf5; color: #065f46; }
+  .quiz-explain.bad   { border-color: #fecdd3; background: #fff1f2; color: #9f1239; }
+  html.dark .quiz-explain.right { border-color: #059669; background: rgba(6,78,59,.4); color: #a7f3d0; }
+  html.dark .quiz-explain.bad   { border-color: #be123c; background: rgba(76,5,25,.4);  color: #fda4af; }
+
+  /* ── 迷你运行台 ── */
+  .playground { border: 1px solid #334155; border-radius: 12px; overflow: hidden; background: #14161f; margin-bottom: 24px; box-shadow: 0 8px 24px rgba(15,23,42,.15); }
+  .playground-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 16px; border-bottom: 1px solid #334155; background: #1b1e2a;
+    font-size: 12px; color: #94a3b8;
+  }
+  .playground-head button { border: 0; background: none; color: #64748b; font-size: 12px; cursor: pointer; }
+  .playground-head button:hover { color: #cbd5e1; }
+  .playground-body { display: grid; gap: 16px; padding: 20px; }
+  @media (min-width: 640px) { .playground-body.cols-2 { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 640px) { .playground-body.cols-4 { grid-template-columns: repeat(4, 1fr); } }
+  .playground label span { display: block; margin-bottom: 6px; font-size: 12px; color: #38bdf8; }
+  .playground input {
+    width: 100%; padding: 10px 12px; border-radius: 8px;
+    border: 1px solid #475569; background: #0e1017; color: #e2e8f0;
+    font-size: 14px; outline: none;
+  }
+  .playground input:focus { border-color: #0ea5e9; }
+  .playground input::placeholder { color: #475569; }
+  .run-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin: 0 20px 20px; padding: 10px; border: 0; border-radius: 8px;
+    background: #059669; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .run-btn:hover { background: #10b981; }
+  .run-output { display: none; margin: 0 20px 20px; padding: 16px; border: 1px solid #334155; border-radius: 8px; background: #0e1017; font-size: 14px; }
+  .run-output.show { display: block; }
+  .run-output .cap { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+  .run-output .ok  { color: #6ee7b7; word-break: break-all; }
+  .run-output .err { color: #fda4af; }
+
+  /* ── 「我学完了」按钮 ── */
+  .done-row { display: flex; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 20px; margin-top: 32px; }
+  .done-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 20px; border: 0; border-radius: 12px;
+    background: #1c1f2e; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  html.dark .done-btn { background: #0284c7; }
+  .done-btn.done { background: #d1fae5; color: #047857; }
+  html.dark .done-btn.done { background: rgba(6,78,59,.6); color: #6ee7b7; }
+
+  /* ══════════════════════════════════════════════════════════
+     4. 双语切换的关键规则
+     ══════════════════════════════════════════════════════════ */
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+
+<body class="lang-cpp">
+
+<!-- ════════════════════════════════════════════════════════════
+     顶栏
+     ════════════════════════════════════════════════════════════ -->
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>野鸡动画编程课</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/8 节</span>
+      </div>
+      <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+      <a class="icon-btn home-btn" href="index.html">返回主页</a>
+      <button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+      <button class="icon-btn" id="toc-btn">📖 目录</button>
+    </div>
+  </div>
+  <div id="toc-panel"></div>
+</header>
+
+<div class="container layout">
+
+  <!-- ════════════════════════════════════════════════════════
+       侧边目录
+       ════════════════════════════════════════════════════════ -->
+  <aside>
+    <div class="aside-title">📋 课程目录</div>
+    <nav id="nav">
+      <a class="nav-item" href="#lesson-1" data-lesson="lesson-1"><span class="nav-num">1</span><span>回忆：a + b 的老朋友<span class="nav-sub">重复的烦恼</span></span></a>
+      <a class="nav-item" href="#lesson-2" data-lesson="lesson-2"><span class="nav-num">2</span><span>简写的力量<span class="nav-sub">一段 DNA 的启示</span></span></a>
+      <a class="nav-item" href="#lesson-3" data-lesson="lesson-3"><span class="nav-num">3</span><span>函数：把功能打包<span class="nav-sub">参数与返回值</span></span></a>
+      <a class="nav-item" href="#lesson-4" data-lesson="lesson-4"><span class="nav-num">4</span><span>没有返回值的函数<span class="nav-sub">只做事情，不交回结果</span></span></a>
+      <a class="nav-item" href="#lesson-5" data-lesson="lesson-5"><span class="nav-num">5</span><span>再来一个函数<span class="nav-sub">二进制，反码和 ones_complement 函数</span></span></a>
+      <a class="nav-item" href="#lesson-6" data-lesson="lesson-6"><span class="nav-num">6</span><span>数组：一排编好号的格子<span class="nav-sub">下标从 0 开始 · 列表与字典</span></span></a>
+      <a class="nav-item" href="#lesson-7" data-lesson="lesson-7"><span class="nav-num">7</span><span>闯关练习<span class="nav-sub">检验一下</span></span></a>
+      <a class="nav-item" href="#lesson-8" data-lesson="lesson-8"><span class="nav-num">8</span><span>注释与伪代码<span class="nav-sub">先想清楚再写</span></span></a>
+    </nav>
+    <div class="progress-card">
+      <div style="display:flex;justify-content:space-between;font-weight:700;color:var(--text-soft)">
+        <span>学习进度</span><span id="progress-pct">0%</span>
+      </div>
+      <div class="bar"><i id="bar-side"></i></div>
+      <p id="progress-cheer" style="display:none;margin-top:8px;color:#059669;font-weight:700">🎉 第 2 章全部学完，继续保持！</p>
+    </div>
+  </aside>
+
+  <main>
+
+  <!-- ════════════════════════════════════════════════════════
+       Hero 头图
+       ════════════════════════════════════════════════════════ -->
+  <div class="hero">
+    <span class="tag">第 2 章 · 函数与数组</span>
+    <h1>把功能打包</h1>
+    <p>
+      上一章我们让电脑算出了 a + b。这一章解决一个新问题：
+      同一段功能要用上成百上千次时，怎么办？答案是把功能
+      <strong style="color:#7dd3fc">打包成函数</strong>，顺便认识一下能装下一排数据的
+      <strong style="color:#fcd34d">数组</strong>。
+    </p>
+    <a class="start-btn" href="#lesson-1">开始第 1 小节 →</a>
+    <span class="meta">8 个小节 · 约 40 分钟 · 附闯关练习</span>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       第 1 小节：回忆：a + b 的老朋友
+       ════════════════════════════════════════════════════════ -->
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>回忆：a + b 的老朋友</h2>
+      <div class="lesson-sub">重复的烦恼</div>
+    </div>
+    <div class="lesson-body">
+
+      <p>
+        回忆上一章的 a + b 问题：现在你已经学会了如何把两个数加在一起——
+        读入 a 和 b，算出 a + b，把结果输出来。
+      </p>
+
+      <div class="lang lang-cpp">
+        <div class="code-block" data-file="review.cpp" data-lang="cpp"><pre>int a, b;
+cin &gt;&gt; a &gt;&gt; b;
+cout &lt;&lt; a + b;</pre></div>
+      </div>
+      <div class="lang lang-py">
+        <div class="code-block" data-file="review.py" data-lang="python"><pre>a = int(input())
+b = int(input())
+print(a + b)</pre></div>
+      </div>
+
+      <p>
+        然而这只是一个很小的功能。在实际的大型项目中，
+        这样的小功能会被<strong class="hl-rose">成百上千次</strong>地使用。
+      </p>
+
+      <p>想象一下：如果每用一次「两数相加」，都要把这几行代码重新写一遍——</p>
+
+      <div class="lang lang-cpp">
+        <div class="code-block" data-file="repeat.cpp" data-lang="cpp"><pre>// 第 1 次：算两个数的和
+int a1, b1;
+cin &gt;&gt; a1 &gt;&gt; b1;
+cout &lt;&lt; a1 + b1;
+
+// 第 2 次：再算两个数的和
+int a2, b2;
+cin &gt;&gt; a2 &gt;&gt; b2;
+cout &lt;&lt; a2 + b2;
+
+// 第 3 次：……
+// 第 1000 次：😵</pre></div>
+      </div>
+      <div class="lang lang-py">
+        <div class="code-block" data-file="repeat.py" data-lang="python"><pre># 第 1 次：算两个数的和
+a1 = int(input())
+b1 = int(input())
+print(a1 + b1)
+
+# 第 2 次：再算两个数的和
+a2 = int(input())
+b2 = int(input())
+print(a2 + b2)
+
+# 第 3 次：……
+# 第 1000 次：😵</pre></div>
+      </div>
+
+      <p>
+        先不说写起来有多累——如果哪天需求变了，比如「加法之前先检查一下输入是否合法」，
+        你就得把这一千处<strong>挨个改一遍</strong>。漏掉一处，就是一个 bug。
+      </p>
+
+      <div class="callout idea">
+        <div class="callout-title">💡 想一想</div>
+        <p>
+          面对「同一个东西要反复使用」的情况，人类的通用做法是什么？
+          下一小节我们会从一个意想不到的例子——DNA——里找到答案。
+        </p>
+      </div>
+
+      <div class="done-row">
+        <button class="done-btn" data-lesson="lesson-1">✓ 我学完了这一小节</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
+       第 2 小节：简写的力量
+       ════════════════════════════════════════════════════════ -->
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>简写的力量</h2>
+      <div class="lesson-sub">一段 DNA 的启示</div>
+    </div>
+    <div class="lesson-body">
+
+      <p>
+        对于需要反复使用的东西，我们常常把它<strong>简写</strong>。
+        生活中到处是这样的例子：「脱氧核糖核酸」没人天天挂在嘴上，大家说「DNA」。
+      </p>
+
+      <p>说到 DNA——例如，这是一段 DNA 单链：</p>
+
+      <div class="dna-card">
+        <div class="dna-head"><span>🧬 一段 DNA 单链（简写形式）</span></div>
+        <pre><span class="base">ACCATTATGGATCATCGGTAACATGCC</span></pre>
+      </div>
+
+      <p>而这是<strong>完全相同</strong>的一段 DNA 单链，只是把每个字母写成了全称：</p>
+
+      <div class="dna-card">
+        <div class="dna-head">
+          <span>🧬 同一段 DNA 单链（全称形式）</span>
+          <button id="dna-toggle">展开看看有多长</button>
+        </div>
+        <pre id="dna-full" style="display:none">腺嘌呤脱氧核糖核苷酸胞嘧啶脱氧核糖核苷酸胞嘧啶脱氧核糖核苷酸腺嘌呤脱氧核糖核苷酸胸腺嘧啶脱氧核糖核苷酸胸腺嘧啶脱氧核糖核苷酸腺嘌呤脱氧核糖核苷酸胸腺嘧啶脱氧核糖核苷酸鸟嘌呤脱氧核糖核苷酸鸟嘌呤脱氧核糖核苷酸腺嘌呤脱氧核糖核苷酸胸腺嘧啶脱氧核糖核苷酸胞嘧啶脱氧核糖核苷酸腺嘌呤脱氧核糖核苷酸胸腺嘧啶脱氧核糖核苷酸胞嘧啶脱氧核糖核苷酸鸟嘌呤脱氧核糖核苷酸鸟嘌呤脱氧核糖核苷酸胸腺嘧啶脱氧核糖核苷酸腺嘌呤脱氧核糖核苷酸腺嘌呤脱氧核糖核苷酸胞嘧啶脱氧核糖核苷酸腺嘌呤脱氧核糖核苷酸胸腺嘧啶脱氧核糖核苷酸鸟嘌呤脱氧核糖核苷酸胞嘧啶脱氧核糖核苷酸胞嘧啶脱氧核糖核苷酸</pre>
+      </div>
+
+      <p>
+        如果生物学家每次交流都要念全称，一篇论文恐怕得有几公里长。
+        这就是简写的好处：
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-label">简写之前</div>
+          <div class="card-big" style="font-size:15px;line-height:1.8">长、难读、抄写时容易出错，而且错一个字母很难被发现</div>
+        </div>
+        <div class="card">
+          <div class="card-label">简写之后</div>
+          <div class="card-big" style="font-size:15px;line-height:1.8">短、一眼能看完、不容易写错，改起来也只改一处</div>
+        </div>
+      </div>
+
+      <div class="callout key">
+        <div class="callout-title">🔑 简写的本质</div>
+        <p>
+          简写，就是<strong>给一个反复出现的东西起一个短名字</strong>。
+          名字背后是什么不重要，重要的是：用的时候写名字就行。
+        </p>
+      </div>
+
+      <p>
+        代码里也有一模一样的需求。下一小节，我们就把这个思路用在代码上。
+      </p>
+
+      <div class="done-row">
+        <button class="done-btn" data-lesson="lesson-2">✓ 我学完了这一小节</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
+       第 3 小节：函数：把功能打包
+       ════════════════════════════════════════════════════════ -->
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>函数：把功能打包</h2>
+      <div class="lesson-sub">参数与返回值</div>
+    </div>
+    <div class="lesson-body">
+
+      <p>
+        同样地，对于代码中重复使用的功能，我们通常将它们封装为一个<strong>函数</strong>。
+      </p>
+
+      <p>
+        其实，函数的英文 <code class="inline">function</code>，翻译为「<strong>功能</strong>」更加易于理解：
+        一个函数，就是一个被打包好的、可以随时取用的功能。
+      </p>
+
+      <p>我们先来试着封装一个函数——把上一章的「两数相加」打包起来：</p>
+
+      <div class="lang lang-cpp">
+        <div class="code-block" data-file="function.cpp" data-lang="cpp"><pre>int a_plus_b(int a, int b) {
+    return a + b;
+}</pre></div>
+      </div>
+      <div class="lang lang-py">
+        <div class="code-block" data-file="function.py" data-lang="python"><pre>def a_plus_b(a, b):
+    return a + b</pre></div>
+      </div>
+
+      <p>这三行（Python 是两行）包含了函数的全部要素。逐个拆开看：</p>
+
+      <div class="grid-2" style="grid-template-columns:1fr">
+        <div class="box-sky">
+          <strong>函数名：a_plus_b</strong><br>
+          给这个功能起的「短名字」，就像给 DNA 起名字一样。以后想用这个功能，喊它的名字就行。
+        </div>
+        <div class="box-green">
+          <strong>参数：(int a, int b) / (a, b)</strong><br>
+          功能运转需要的「原料」。这个函数需要两个整数才能干活，所以括号里写着 a 和 b。
+          调用它的时候，把具体的数塞进来。当然，<strong>函数可以没有参数，返回值也一样</strong>
+        </div>
+        <div class="box-purple">
+          <strong>返回值：return a + b</strong><br>
+          功能干完活之后「交回来」的结果。<code>return</code> 的意思是：
+          算出 a + b，把这个结果交还给调用它的人，然后函数结束。
+          <span class="lang lang-cpp">最前面的 <code>int</code> 是在声明：这个函数交回来的结果是一个整数。</span>
+        </div>
+      </div>
+
+      <p>封装好之后，「两数相加」这个功能就变成了一行调用：</p>
+
+      <div class="lang lang-cpp">
+        <div class="code-block" data-file="call.cpp" data-lang="cpp"><pre>int result = a_plus_b(3, 4);
+cout &lt;&lt; result;</pre></div>
+        <div class="output-block">
+          <div class="output-head">▶ 运行结果</div>
+          <pre>7</pre>
+        </div>
+      </div>
+      <div class="lang lang-py">
+        <div class="code-block" data-file="call.py" data-lang="python"><pre>result = a_plus_b(3, 4)
+print(result)</pre></div>
+        <div class="output-block">
+          <div class="output-head">▶ 运行结果</div>
+          <pre>7</pre>
+        </div>
+      </div>
+
+      <p>
+        <code class="inline">a_plus_b(3, 4)</code> 的意思是：
+        把 3 和 4 作为参数交给 a_plus_b，等它算完，把返回值拿回来。
+        至于里面具体怎么加的——不用关心，就像用 DNA 三个字母时不用念全称一样。
+      </p>
+
+      <p>别光看，下面这个运行台里已经封装好了 a_plus_b，直接调用它试试：</p>
+
+      <!-- 运行台 1：调用 a_plus_b -->
+      <div class="playground">
+        <div class="playground-head">
+          <span class="lang lang-cpp">🖥️ 迷你运行台 —— cout &lt;&lt; a_plus_b(a, b);</span>
+          <span class="lang lang-py">🖥️ 迷你运行台 —— print(a_plus_b(a, b))</span>
+          <button id="pg1-reset">↺ 清空</button>
+        </div>
+        <div class="playground-body cols-2">
+          <label>
+            <span class="mono">参数 a</span>
+            <input id="pg1-a" class="mono" placeholder="输入整数 a">
+          </label>
+          <label>
+            <span class="mono">参数 b</span>
+            <input id="pg1-b" class="mono" placeholder="输入整数 b">
+          </label>
+        </div>
+        <button class="run-btn" id="pg1-run">▶ 调用函数</button>
+        <div class="run-output mono" id="pg1-out">
+          <div class="cap">函数的返回值：</div>
+          <div class="ok" id="pg1-ok"></div>
+          <div class="err" id="pg1-err"></div>
+        </div>
+      </div>
+
+      <div class="quiz" data-answer="2">
+        <div class="quiz-q">调用 <span class="mono">a_plus_b(20, 22)</span>，返回值是多少？</div>
+        <div class="quiz-opts">
+          <button class="quiz-opt mono" data-val="0" data-explain="不对。程序实际输出是 42，不是 20。20 和 22 作为参数进入函数，函数算出 20 + 22 = 42 并 return 回来。返回值是算出来的结果，不是参数本身，也不是表达式文字。" type="button">20</button>
+          <button class="quiz-opt mono" data-val="1" data-explain="不对。程序实际输出是 42，不是 22。20 和 22 作为参数进入函数，函数算出 20 + 22 = 42 并 return 回来。返回值是算出来的结果，不是参数本身，也不是表达式文字。" type="button">22</button>
+          <button class="quiz-opt mono" data-val="2" data-explain="20 和 22 作为参数进入函数，函数算出 20 + 22 = 42 并 return 回来。返回值是算出来的结果，不是参数本身，也不是表达式文字。" type="button">42</button>
+          <button class="quiz-opt mono" data-val="3" data-explain="不对。a + b 不是本题的正确答案。42 才是正确的。20 和 22 作为参数进入函数，函数算出 20 + 22 = 42 并 return 回来。返回值是算出来的结果，不是参数本身，也不是表达式文字。" type="button">a + b</button>
+        </div>
+        <div class="quiz-explain"></div>
+      </div>
+
+      <div class="callout key">
+        <div class="callout-title">🔑 第 3 小节小结</div>
+        <p>1. 函数 = 打包好的功能，英文 function 翻译成「功能」更贴切。</p>
+        <p>2. 三要素：<strong>名字</strong>（怎么喊它）、<strong>参数</strong>（给它什么原料）、<strong>返回值</strong>（它交回什么结果）。</p>
+        <p>3. 用的时候写 <code>函数名(参数)</code>，这一整坨会被替换成返回值。</p>
+      </div>
+
+      <div class="done-row">
+        <button class="done-btn" data-lesson="lesson-3">✓ 我学完了这一小节</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
+       第 4 小节：没有返回值的函数
+       ════════════════════════════════════════════════════════ -->
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>没有返回值的函数</h2>
+      <div class="lesson-sub">只做事情，不交回结果</div>
+    </div>
+    <div class="lesson-body">
+
+      <p>
+        上一小节的函数都像一台"计算器"：输入原料，加工后<strong>交回一个结果</strong>。
+        但生活中还有很多函数不需要交回结果，它们只是<strong>把事情做完</strong>。
+      </p>
+
+      <p>
+        比如，每天早上闹钟响了，你不需要它"返回"一个值，只需要它<strong>响铃</strong>；
+        打印机打印文件，也不需要返回数字，只需要把纸<strong>印出来</strong>。
+      </p>
+
+      <div class="callout idea">
+        <div class="callout-title">💡 想一想</div>
+        <p>
+          下面这些功能，哪些需要返回结果，哪些只是"做事情"？<br>
+          计算圆的面积 · 把一段文字显示在屏幕上 · 判断一个数是不是偶数 · 播放一段音乐
+        </p>
+      </div>
+
+      <p>代码里也有同样的区分，C++用void表示函数没有返回值，Python更加简便，函数里不写return即可。下面这个函数只是向屏幕打一声招呼，不需要返回任何值：</p>
+
+      <div class="lang lang-cpp">
+        <div class="code-block" data-file="sayhi.cpp" data-lang="cpp"><pre>#include &lt;iostream&gt;
+using namespace std;
+
+void say_hi(string name) {
+    cout &lt;&lt; "你好，" &lt;&lt; name &lt;&lt; "！" &lt;&lt; endl;
+}</pre></div>
+      </div>
+      <div class="lang lang-py">
+        <div class="code-block" data-file="sayhi.py" data-lang="python"><pre>def say_hi(name):
+    print("你好，" + name + "！")</pre></div>
+      </div>
+
+      <p>调用它的时候，不需要用变量接住返回值，直接写函数名：</p>
+
+      <div class="lang lang-cpp">
+        <div class="code-block" data-file="call_sayhi.cpp" data-lang="cpp"><pre>int main() {
+    say_hi("小明");
+    say_hi("小红");
+    return 0;
+}</pre></div>
+        <div class="output-block">
+          <div class="output-head">▶ 运行结果</div>
+          <pre>你好，小明！
+你好，小红！</pre>
+        </div>
+      </div>
+      <div class="lang lang-py">
+        <div class="code-block" data-file="call_sayhi.py" data-lang="python"><pre>say_hi("小明")
+say_hi("小红")</pre></div>
+        <div class="output-block">
+          <div class="output-head">▶ 运行结果</div>
+          <pre>你好，小明！
+你好，小红！</pre>
+        </div>
+      </div>
+
+      <p>
+        <span class="lang lang-cpp">在 C++ 里，这种不返回值的函数用 <code class="inline">void</code> 开头，意思是"空"。</span>
+        <span class="lang lang-py">在 Python 里，函数可以没有 <code class="inline">return</code> 语句，函数执行完就自然结束。</span>
+      </p>
+
+      <p>再来看一个"画分隔线"的函数：输入一个数字，打印那么多个横线。</p>
+
+      <div class="lang lang-cpp">
+        <div class="code-block" data-file="line.cpp" data-lang="cpp"><pre>void print_line(int n) {
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; "-";
+    }
+    cout &lt;&lt; endl;
+}</pre></div>
+      </div>
+      <div class="lang lang-py">
+        <div class="code-block" data-file="line.py" data-lang="python"><pre>def print_line(n):
+    for i in range(n):
+        print("-", end="")
+    print()</pre></div>
+      </div>
+
+      <div class="lang lang-cpp">
+        <div class="code-block" data-file="call_line.cpp" data-lang="cpp"><pre>print_line(10);</pre></div>
+      </div>
+      <div class="lang lang-py">
+        <div class="code-block" data-file="call_line.py" data-lang="python"><pre>print_line(10)</pre></div>
+      </div>
+
+      <div class="output-block">
+        <div class="output-head">▶ 运行结果</div>
+        <pre>----------</pre>
+      </div>
+
+      <div class="callout key">
+        <div class="callout-title">🔑 有返回值 vs 没有返回值</div>
+        <p><strong>有返回值</strong>：等效为一个变量，调用它是为了拿到结果，通常用变量接住。</p>
+        <p><strong>没有返回值</strong>：等效为一串代码，调用它是为了让它完成某件事，不需要接结果。</p>
+      </div>
+
+      <div class="quiz" data-answer="1">
+        <div class="quiz-q">下面哪个函数<strong>没有</strong>返回值？</div>
+        <div class="lang lang-cpp">
+          <pre class="mini">void show_time(int h, int m) {
+    cout &lt;&lt; h &lt;&lt; ":" &lt;&lt; m;
+}
+
+int double_it(int x) {
+    return x * 2;
+}</pre>
+        </div>
+        <div class="lang lang-py">
+          <pre class="mini">def show_time(h, m):
+    print(str(h) + ":" + str(m))
+
+def double_it(x):
+    return x * 2</pre>
+        </div>
+        <div class="quiz-opts">
+          <button class="quiz-opt mono" data-val="0" data-explain="不对。double_it 不是本题的正确答案。show_time 才是正确的。show_time 只是把小时和分钟显示出来，没有 return，所以没有返回值；double_it 用 return 交回了 x * 2。" type="button">double_it</button>
+          <button class="quiz-opt mono" data-val="1" data-explain="show_time 只是把小时和分钟显示出来，没有 return，所以没有返回值；double_it 用 return 交回了 x * 2。" type="button">show_time</button>
+          <button class="quiz-opt mono" data-val="2" data-explain="不对。两个都有 不是本题的正确答案。show_time 才是正确的。show_time 只是把小时和分钟显示出来，没有 return，所以没有返回值；double_it 用 return 交回了 x * 2。" type="button">两个都有</button>
+          <button class="quiz-opt mono" data-val="3" data-explain="不对。两个都没有 不是本题的正确答案。show_time 才是正确的。show_time 只是把小时和分钟显示出来，没有 return，所以没有返回值；double_it 用 return 交回了 x * 2。" type="button">两个都没有</button>
+        </div>
+        <div class="quiz-explain"></div>
+      </div>
+
+      <div class="done-row">
+        <button class="done-btn" data-lesson="lesson-4">✓ 我学完了这一小节</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
+       第 5 小节：再来一个函数
+       ════════════════════════════════════════════════════════ -->
+  <section class="lesson" id="lesson-5">
+    <div class="lesson-head">
+      <div class="lesson-no">第 5 小节</div>
+      <h2>再来一个函数</h2>
+      <div class="lesson-sub">二进制，反码和 ones_complement 函数</div>
+    </div>
+    <div class="lesson-body">
+      <p>刚刚我们封装了a_plus_b函数，但是你可能发现：a_plus_b(1,1)甚至没有直接写1+1方便</p>
+      <p>这是因为刚才只是向你演示如何封装函数，实际上计算加法这个功能过于简单，没有必要封装为函数</p>
+      <p>我们再来完成一个更复杂的功能，体验函数是如何简化代码的</p>
+      <br>
+      <p>
+        我们日常最熟悉的是<strong>十进制</strong>，逢十进一。但电脑内部只认 <strong>0 和 1</strong>，也就是<strong>二进制</strong>。
+      </p>
+
+      <div class="callout idea">
+        <div class="callout-title">💡 十进制 vs 二进制</div>
+        <p>
+          十进制的 <code class="inline">13</code> 表示 1×10^1 + 3×10^0。<br>
+          二进制的 <code class="inline">1101</code> 表示 1×2^3 + 1×2^2 + 0×2^1 + 1×2^0 
+          <br>
+          （问问AI ^ 是什么意思，或者自己猜出来）
+          <br>
+          同一个数，写法不同，但值可以相同。
+        </p>
+      </div>
+
+      <p>
+        计算机里表示负数的方式有好几种。我们先看最直观的一种，叫<strong>反码（one's complement）</strong>：
+        把二进制每一位上的 0 换成 1、1 换成 0，就得到了反码。
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>十进制</th><th>二进制</th><th>反码（逐位取反）</th><th>反码的十进制</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td class="mono">0</td><td class="mono">1</td><td>1</td></tr>
+            <tr><td>13</td><td class="mono">1101</td><td class="mono">0010</td><td>2</td></tr>
+            <tr><td>128</td><td class="mono">10000000</td><td class="mono">01111111</td><td>127</td></tr>
+            <tr><td>255</td><td class="mono">11111111</td><td class="mono">0</td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>ones_complement：输入十进制，输出反码的十进制</h3>
+
+      <p>
+        现在我们要写一个函数 <code class="inline">ones_complement(x)</code>：
+        输入一个十进制数 <code class="inline">x</code>，输出它的二进制数的反码对应的十进制数，按下面三步得到结果：
+      </p>
+
+      <ol style="padding-left:20px;line-height:1.9;color:var(--text-soft)">
+        <li>把 x 转成二进制：有多少位就算多少位，逐位取出 0 或 1</li>
+        <li>把每一位取反：0 变 1，1 变 0</li>
+        <li>把取反后的二进制重新转回十进制并返回</li>
+      </ol>
+
+      <div class="lang lang-cpp">
+        <div class="code-block" data-file="onescomp.cpp" data-lang="cpp"><pre>int ones_complement(int x) {
+    if (x == 0) return 1;
+    int result = 0;
+    int place = 1;
+    while (x &gt; 0) {
+        int bit = x % 2;        // 第 1 步：取出最低位的二进制数字
+        int flipped = 1 - bit;  // 第 2 步：取反
+        result = result + flipped * place;  // 第 3 步：拼到结果里
+        x = x / 2;
+        place = place * 2;
+    }
+    return result;
+}</pre></div>
+      </div>
+      <div class="lang lang-py">
+        <div class="code-block" data-file="onescomp.py" data-lang="python"><pre>def ones_complement(x):
+    if x == 0:
+        return 1
+    result = 0
+    place = 1
+    while x &gt; 0:
+        bit = x % 2        # 第 1 步：取出最低位的二进制数字
+        flipped = 1 - bit  # 第 2 步：取反
+        result = result + flipped * place  # 第 3 步：拼到结果里
+        x = x // 2
+        place = place * 2
+    return result</pre></div>
+      </div>
+
+      <div class="callout warn">
+        <div class="callout-title">⚠️ 注意</div>
+        <p>
+          这里只处理非负整数。0 比较特殊：它的二进制只有一位 <code class="inline">0</code>，取反后是 <code class="inline">1</code>，所以返回 1。
+        </p>
+      </div>
+
+      <p>来试试看——输入一个十进制数，看它生成的反码再转回十进制是多少：</p>
+
+      <!-- 运行台 2：调用 ones_complement -->
+      <div class="playground">
+        <div class="playground-head">
+          <span class="lang lang-cpp">🖥️ 迷你运行台 —— cout &lt;&lt; ones_complement(x);</span>
+          <span class="lang lang-py">🖥️ 迷你运行台 —— print(ones_complement(x))</span>
+          <button id="pg2-reset">↺ 清空</button>
+        </div>
+        <div class="playground-body">
+          <label><span class="mono">x（十进制）</span><input id="pg2-x" class="mono" placeholder="如 13"></label>
+        </div>
+        <button class="run-btn" id="pg2-run">▶ 调用函数</button>
+        <div class="run-output mono" id="pg2-out">
+          <div class="cap">反码转回十进制的结果：</div>
+          <div class="ok" id="pg2-ok"></div>
+          <div class="err" id="pg2-err"></div>
+        </div>
+      </div>
+
+      <div class="quiz" data-answer="1">
+        <div class="quiz-q">
+          <span class="mono">ones_complement(13)</span> 的返回值是多少？
+        </div>
+        <div class="quiz-opts">
+          <button class="quiz-opt mono" data-val="0" data-explain="不对。程序实际输出是 13，不是 2。13 的二进制是 1101，有几位算几位，逐位取反得到 0010，对应的十进制是 2。" type="button">2</button>
+          <button class="quiz-opt mono" data-val="1" data-explain="13 的二进制是 1101，有几位算几位，逐位取反得到 0010，对应的十进制是 2。" type="button">13</button>
+          <button class="quiz-opt mono" data-val="2" data-explain="不对。程序实际输出是 13，不是 242。13 的二进制是 1101，有几位算几位，逐位取反得到 0010，对应的十进制是 2。" type="button">242</button>
+          <button class="quiz-opt mono" data-val="3" data-explain="不对。程序实际输出是 13，不是 -13。13 的二进制是 1101，有几位算几位，逐位取反得到 0010，对应的十进制是 2。" type="button">-13</button>
+        </div>
+        <div class="quiz-explain"></div>
+      </div>
+
+      <p>像这样我们就成功封装了一个生成反码的函数。以后使用只需要写一行ones_complement(x)调用这个函数，不再需要写很多行代码。</p>
+
+            <div class="callout idea">
+        <div class="callout-title">💡 扩展函数的功能</div>
+        <p>
+          其实你还可以扩展函数功能，例如给函数多加一个参数numeral_base，表示输入的数字是几进制的，这样就可以计算任意进制数的反码了。
+          例如也可以再加一个参数numeral_out，表示输出的反码是几进制的。
+        </p>
+      </div>
+
+      <div class="done-row">
+        <button class="done-btn" data-lesson="lesson-5">✓ 我学完了这一小节</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
+       第 6 小节：数组
+       ════════════════════════════════════════════════════════ -->
+  <section class="lesson" id="lesson-6">
+    <div class="lesson-head">
+      <div class="lesson-no">第 6 小节</div>
+      <h2>数组：一排编好号的格子</h2> 
+      <div class="lesson-sub">下标从 0 开始</div>
+    </div>
+    <div class="lesson-body">
+
+      <p>
+        函数解决的是「功能重复」的问题。但数据也有类似的烦恼——
+        假设要记录一个小组 5 位同学的成绩，难道要起 5 个变量名？
+      </p>
+
+      <div class="lang lang-cpp">
+        <div class="code-block" data-file="five_vars.cpp" data-lang="cpp"><pre>int score1 = 83;
+int score2 = 92;
+int score3 = 77;
+int score4 = 88;
+int score5 = 95;
+// 如果一个班有 50 个人呢……</pre></div>
+      </div>
+      <div class="lang lang-py">
+        <div class="code-block" data-file="five_vars.py" data-lang="python"><pre>score1 = 83
+score2 = 92
+score3 = 77
+score4 = 88
+score5 = 95
+# 如果一个班有 50 个人呢……</pre></div>
+      </div>
+
+      <p>
+        和函数的思路一样：把一排同类的数据打包，起<strong>一个</strong>名字。
+        这个打包好的「一排格子」，叫做<strong>数组</strong>，Python 中称为<strong>列表</strong>
+      </p>
+
+      <div class="lang lang-cpp">
+        <div class="code-block" data-file="array.cpp" data-lang="cpp"><pre>int scores[5] = {83, 92, 77, 88, 95};</pre></div>
+      </div>
+      <div class="lang lang-py">
+        <div class="code-block" data-file="array.py" data-lang="python"><pre>scores = [83, 92, 77, 88, 95]</pre></div>
+      </div>
+
+      <p>它长这样——5 个格子排成一排，每个格子有自己的编号：</p>
+
+      <div class="array-visual">
+        <div class="array-cell"><div class="val mono">83</div><div class="idx mono">scores[0]</div></div>
+        <div class="array-cell"><div class="val mono">92</div><div class="idx mono">scores[1]</div></div>
+        <div class="array-cell"><div class="val mono">77</div><div class="idx mono">scores[2]</div></div>
+        <div class="array-cell"><div class="val mono">88</div><div class="idx mono">scores[3]</div></div>
+        <div class="array-cell"><div class="val mono">95</div><div class="idx mono">scores[4]</div></div>
+      </div>
+
+      <div class="callout warn">
+        <div class="callout-title">⚠️ 易错点：编号从 0 开始</div>
+        <p>
+          数组格子的编号（术语叫「<strong>下标</strong>」）是从 <strong>0</strong> 开始的，不是 1。
+          所以第一个格子是 <code>scores[0]</code>，第五个格子是 <code>scores[4]</code>。
+          至于 <code>scores[5]</code>——这个格子不存在，强行访问就会出错。
+        </p>
+      </div>
+
+      <p>
+        取数据的方式是 <code class="inline">scores[下标]</code>。
+        比如 <code class="inline">scores[2]</code> 就是 77。来亲手取一下：
+      </p>
+
+      <!-- 运行台 3：按下标取数组元素 -->
+      <div class="playground">
+        <div class="playground-head">
+          <span class="lang lang-cpp">🖥️ 迷你运行台 —— cout &lt;&lt; scores[i];（scores = {83, 92, 77, 88, 95}）</span>
+          <span class="lang lang-py">🖥️ 迷你运行台 —— print(scores[i])（scores = [83, 92, 77, 88, 95]）</span>
+        </div>
+        <div class="playground-body">
+          <label>
+            <span class="mono">下标 i（试试 0 ~ 4，也可以故意输个 5）</span>
+            <input id="pg3-i" class="mono" placeholder="输入下标 i">
+          </label>
+        </div>
+        <button class="run-btn" id="pg3-run">▶ 取出 scores[i]</button>
+        <div class="run-output mono" id="pg3-out">
+          <div class="cap">结果：</div>
+          <div class="ok" id="pg3-ok"></div>
+          <div class="err" id="pg3-err"></div>
+        </div>
+      </div>
+
+      <div class="quiz" data-answer="0">
+        <div class="quiz-q"><span class="mono">scores[0] + scores[4]</span> 等于多少？</div>
+        <div class="quiz-opts">
+          <button class="quiz-opt mono" data-val="0" data-explain="scores[0] 是 83（第一个格子，下标是 0），scores[4] 是 95（第五个格子，下标是 4），83 + 95 = 178。" type="button">178</button>
+          <button class="quiz-opt mono" data-val="1" data-explain="不对。程序实际输出是 178，不是 187。scores[0] 是 83（第一个格子，下标是 0），scores[4] 是 95（第五个格子，下标是 4），83 + 95 = 178。" type="button">187</button>
+          <button class="quiz-opt mono" data-val="2" data-explain="不对。程序实际输出是 178，不是 175。scores[0] 是 83（第一个格子，下标是 0），scores[4] 是 95（第五个格子，下标是 4），83 + 95 = 178。" type="button">175</button>
+          <button class="quiz-opt mono" data-val="3" data-explain="不对。这段代码可以正常执行，不会报错。正确输出是 178。 scores[0] 是 83（第一个格子，下标是 0），scores[4] 是 95（第五个格子，下标是 4），83 + 95 = 178。" type="button">报错</button>
+        </div>
+        <div class="quiz-explain"></div>
+      </div>
+
+      <!-- ───────── C++ 版：数组的类型规矩 ───────── -->
+      <div class="lang lang-cpp">
+        <h3>数组里的类型规矩</h3>
+
+        <p>
+          在 C++ 里，这一排格子有一个严格的规矩：<strong>一整排必须是同一种类型</strong>。
+          <code class="inline">int scores[5]</code> 这排格子就只能装 int，
+          想装小数得换成 <code class="inline">double scores[5]</code>。
+        </p>
+
+        <p>
+          为什么要这么严格？因为电脑取 <code class="inline">scores[2]</code> 时，用的是一条捷径：
+          <strong>第一个格子的位置 + 2 × 每个格子的大小</strong>，直接跳过去拿。不同格子大小不一样。
+          int 格子每个占 4 个字节，double 格子每个占 8 个字节——
+          只有整排格子大小完全一致，这条捷径才算得出来。这也是数组取数据飞快的原因。
+        </p>
+
+        <div class="code-block" data-file="array_types.cpp" data-lang="cpp"><pre>int a[3] = {1, 2, 3.9};      // 3.9 硬塞进 int 格子：砍掉尾巴
+double b[3] = {1, 2, 3.9};   // double 格子：相安无事
+string c[2] = {"小明", "小红"}; // 装文字就用 string 数组
+
+cout &lt;&lt; a[2] &lt;&lt; "\n";   // 不是 3.9，也不是 4
+cout &lt;&lt; b[2] &lt;&lt; "\n";
+cout &lt;&lt; c[1];</pre></div>
+
+        <div class="output-block">
+          <div class="output-head">▶ 运行结果</div>
+          <pre>3
+3.9
+小红</pre>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-title">⚠️ 类型注意事项（C++）</div>
+          <p>1. 创建数组时类型就定死了，整排必须一致，不能这一格 int、下一格 string。</p>
+          <p>2. 小数塞进 int 数组会被<strong>砍掉尾巴</strong>（3.9 变 3，不是四舍五入）。</p>
+          <p>3. 选类型时想清楚这排格子要装什么：成绩用 int，单价用 double，名字用 string。</p>
+        </div>
+      </div>
+
+      <!-- ───────── Python 版：列表什么都能装 ───────── -->
+      <div class="lang lang-py">
+        <h3>列表的格子什么都能装</h3>
+
+        <p>
+          Python 的格子会「自动认货」，所以列表没有 C++ 那样的严格规矩——
+          同一排里<strong>可以混装</strong>不同类型的东西：
+        </p>
+
+        <div class="code-block" data-file="list_types.py" data-lang="python"><pre>bag = [18, 3.14, "小明"]   # 整数、小数、文字，混装也没问题
+
+print(bag[0])
+print(bag[2])</pre></div>
+
+        <div class="output-block">
+          <div class="output-head">▶ 运行结果</div>
+          <pre>18
+小明</pre>
+        </div>
+
+        <p>
+          不过要注意：<strong>能混装，不代表该混装</strong>。
+          实际写程序时，一排列表通常还是装同类数据（比如一排成绩、一排名字），
+          处理起来才不容易乱。
+        </p>
+
+        <p>列表还有几个常用本领，记住这四个就够用：</p>
+
+        <div class="code-block" data-file="list_skills.py" data-lang="python"><pre>scores = [83, 92, 77]
+
+scores.append(88)     # 往排尾再加一个格子
+print(len(scores))    # len：数数有几个格子
+print(scores[0])      # 取下标：看第一个格子
+
+scores[0] = 90        # 改格子：把 83 换成 90
+print(scores)</pre></div>
+
+        <div class="output-block">
+          <div class="output-head">▶ 运行结果</div>
+          <pre>4
+83
+[90, 92, 77, 88]</pre>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-title">⚠️ 类型注意事项（Python 列表）</div>
+          <p>1. 列表可以混装类型，但同排装同类数据更不容易出错。</p>
+          <p>2. <code>len(scores)</code> 是格子个数，最后一个合法下标是 <code>len(scores) - 1</code>。</p>
+          <p>3. <code>append</code> 加在排尾，下标会随着格子变多而往后顺延。</p>
+        </div>
+
+        <h3>字典：带名字的格子</h3>
+
+        <p>
+          列表靠「编号」找格子。但生活中我们常常是靠「名字」找东西的——
+          比如查通讯录：你不会说「第 137 个联系人是谁」，而是说「小明的电话是多少」。
+          这种<strong>按名字找格子</strong>的结构，叫做<strong>字典</strong>。
+        </p>
+
+        <div class="code-block" data-file="dict.py" data-lang="python"><pre>phone = {"小明": "13800000001", "小红": "13800000002"}
+
+print(phone["小明"])        # 按名字取格子
+
+phone["小刚"] = "13800000003"  # 存一个新格子
+phone["小明"] = "13900000001"  # 改格子里的东西
+
+print("小红" in phone)      # 查一查这个名字在不在
+print(len(phone))           # 字典里有多少个格子</pre></div>
+
+        <div class="output-block">
+          <div class="output-head">▶ 运行结果</div>
+          <pre>13800000001
+True
+3</pre>
+        </div>
+
+        <p>字典里的「名字」叫<strong>键</strong>，格子里装的东西叫<strong>值</strong>，一对键值<strong>（键值对）</strong>就是一个格子。</p>
+
+        <div class="callout warn">
+          <div class="callout-title">⚠️ 易错点：取不存在的键会报错</div>
+          <p>
+            <code>phone["小王"]</code> 如果「小王」还没存进去，程序会直接报错（KeyError）。
+            取之前先用 <code>"小王" in phone</code> 问一句，就安全了。
+          </p>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-label">什么时候用列表</div>
+            <p style="margin:0;font-size:14px;line-height:1.8">
+              数据是<strong>一排有顺序的东西</strong>：成绩表、购物车、排行榜。
+              按位置（第几个）取用。
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-label">什么时候用字典</div>
+            <p style="margin:0;font-size:14px;line-height:1.8">
+              数据是<strong>一堆带名字的东西</strong>：通讯录、商品价格、用户信息。
+              按名字（键）取用。
+            </p>
+          </div>
+        </div>
+
+        <div class="quiz" data-answer="2">
+          <div class="quiz-q">小试牛刀：下面程序的输出是什么？</div>
+          <pre class="mini">phone = {"小明": "138"}
+phone["小红"] = "137"
+phone["小明"] = "139"
+print(phone["小明"], len(phone))</pre>
+          <div class="quiz-opts">
+            <button class="quiz-opt mono" data-val="0" data-explain="不对。程序实际输出是 139 2，不是 138 3。「小明」的格子被改成了 139；「小红」是新增的格子。一共只有「小明」「小红」两个格子，
+            所以输出 139 2。重复存同一个键不会新增格子，只会更新内容。" type="button">138 3</button>
+            <button class="quiz-opt mono" data-val="1" data-explain="不对。程序实际输出是 139 2，不是 139 3。「小明」的格子被改成了 139；「小红」是新增的格子。一共只有「小明」「小红」两个格子，
+            所以输出 139 2。重复存同一个键不会新增格子，只会更新内容。" type="button">139 3</button>
+            <button class="quiz-opt mono" data-val="2" data-explain="「小明」的格子被改成了 139；「小红」是新增的格子。一共只有「小明」「小红」两个格子，
+            所以输出 139 2。重复存同一个键不会新增格子，只会更新内容。" type="button">139 2</button>
+            <button class="quiz-opt mono" data-val="3" data-explain="不对。这段代码可以正常执行，不会报错。正确输出是 139 2。 「小明」的格子被改成了 139；「小红」是新增的格子。一共只有「小明」「小红」两个格子，
+            所以输出 139 2。重复存同一个键不会新增格子，只会更新内容。" type="button">报错</button>
+          </div>
+          <div class="quiz-explain"></div>
+        </div>
+      </div>
+
+      <div class="callout key">
+        <div class="callout-title">🔑 第 6 小节小结</div>
+        <p>1. 数组/列表 = 一排编好号的格子，装一排同类的数据，共用一个名字。</p>
+        <p>2. 取数据用 <code>名字[下标]</code>，下标<strong>从 0 开始</strong>，合法下标是 0 ~ 个数-1。</p>
+        <div class="lang lang-cpp" style="display:block">
+          <p>3. C++ 数组整排必须同一种类型（靠统一格子大小才能按捷径取数据）；小数塞进 int 数组会被砍尾巴。</p>
+        </div>
+        <div class="lang lang-py" style="display:block">
+          <p>3. Python 列表可以混装类型，但建议同排装同类；append 加排尾，len 数格子。</p>
+          <p>4. Python 字典按「名字（键）」找格子：存、改、取、in 检查；取不存在的键会报错。</p>
+        </div>
+      </div>
+
+      <div class="done-row">
+        <button class="done-btn" data-lesson="lesson-6">✓ 我学完了这一小节</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
+       第 7 小节：闯关练习
+       ════════════════════════════════════════════════════════ -->
+  <section class="lesson" id="lesson-7">
+    <div class="lesson-head">
+      <div class="lesson-no">第 7 小节</div>
+      <h2>闯关练习</h2>
+      <div class="lesson-sub">检验一下</div>
+    </div>
+    <div class="lesson-body">
+
+      <p>三道小题，全部读代码写结果。不用动笔，心里算出来再点选项。</p>
+
+      <div class="quiz" data-answer="3">
+        <div class="quiz-q">第 1 关：下面这段代码输出什么？</div>
+        <div class="lang lang-cpp">
+          <pre class="mini">int a_plus_b(int a, int b) {
+    return a + b;
+}
+
+cout &lt;&lt; a_plus_b(100, 23);</pre>
+        </div>
+        <div class="lang lang-py">
+          <pre class="mini">def a_plus_b(a, b):
+    return a + b
+
+print(a_plus_b(100, 23))</pre>
+        </div>
+        <div class="quiz-opts">
+          <button class="quiz-opt mono" data-val="0" data-explain="不对。a + b 不是本题的正确答案。123 才是正确的。100 和 23 作为参数进入函数，return 100 + 23，返回值 123 被输出。" type="button">a + b</button>
+          <button class="quiz-opt mono" data-val="1" data-explain="不对。程序实际输出是 123，不是 100。100 和 23 作为参数进入函数，return 100 + 23，返回值 123 被输出。" type="button">100</button>
+          <button class="quiz-opt mono" data-val="2" data-explain="不对。程序实际输出是 123，不是 77。100 和 23 作为参数进入函数，return 100 + 23，返回值 123 被输出。" type="button">77</button>
+          <button class="quiz-opt mono" data-val="3" data-explain="100 和 23 作为参数进入函数，return 100 + 23，返回值 123 被输出。" type="button">123</button>
+        </div>
+        <div class="quiz-explain"></div>
+      </div>
+
+      <div class="quiz" data-answer="1">
+        <div class="quiz-q">第 2 关：<span class="mono">ones_complement(128)</span> 的返回值是？</div>
+        <div class="quiz-opts">
+          <button class="quiz-opt mono" data-val="0" data-explain="不对。127 不是本题的正确答案。128 才是正确的。回忆第 5 小节：128 的二进制是 10000000，有几位算几位，逐位取反得到 01111111，对应的十进制是 127。" type="button">127</button>
+          <button class="quiz-opt mono" data-val="1" data-explain="回忆第 5 小节：128 的二进制是 10000000，有几位算几位，逐位取反得到 01111111，对应的十进制是 127。" type="button">128</button>
+          <button class="quiz-opt mono" data-val="2" data-explain="不对。255 不是本题的正确答案。128 才是正确的。回忆第 5 小节：128 的二进制是 10000000，有几位算几位，逐位取反得到 01111111，对应的十进制是 127。" type="button">255</button>
+          <button class="quiz-opt mono" data-val="3" data-explain="不对。0 不是本题的正确答案。128 才是正确的。回忆第 5 小节：128 的二进制是 10000000，有几位算几位，逐位取反得到 01111111，对应的十进制是 127。" type="button">0</button>
+        </div>
+        <div class="quiz-explain"></div>
+      </div>
+
+      <div class="quiz" data-answer="2">
+        <div class="quiz-q">第 3 关：数组 <span class="mono">scores = {83, 92, 77, 88, 95}</span>，下面哪个写法<strong>会出错</strong>？</div>
+        <div class="quiz-opts">
+          <button class="quiz-opt mono" data-val="0" data-explain="不对。scores[0] 不是本题的正确答案。scores[5] 才是正确的。5 个格子的合法下标是 0 ~ 4。scores[5] 想访问第 6 个格子，但它不存在——越界了。" type="button">scores[0]</button>
+          <button class="quiz-opt mono" data-val="1" data-explain="不对。scores[3] 不是本题的正确答案。scores[5] 才是正确的。5 个格子的合法下标是 0 ~ 4。scores[5] 想访问第 6 个格子，但它不存在——越界了。" type="button">scores[3]</button>
+          <button class="quiz-opt mono" data-val="2" data-explain="5 个格子的合法下标是 0 ~ 4。scores[5] 想访问第 6 个格子，但它不存在——越界了。" type="button">scores[5]</button>
+          <button class="quiz-opt mono" data-val="3" data-explain="不对。scores[2] + scores[4] 不是本题的正确答案。scores[5] 才是正确的。5 个格子的合法下标是 0 ~ 4。scores[5] 想访问第 6 个格子，但它不存在——越界了。" type="button">scores[2] + scores[4]</button>
+        </div>
+        <div class="quiz-explain"></div>
+      </div>
+
+      <div class="lang lang-cpp">
+        <div class="callout key">
+          <div class="callout-title">🔑 第 2 章 · 你已经学会</div>
+          <p>✅ 为什么需要封装：重复的功能写一千遍，改起来就是一千个 bug</p>
+          <p>✅ 简写的力量：给反复出现的东西起一个短名字</p>
+          <p>✅ 函数：名字、参数、返回值，写一次随处用</p>
+          <p>✅ 进制与反码：把二进制逐位取反，再转回十进制</p>
+          <p>✅ 数组：一排编好号的格子，下标从 0 开始</p>
+        </div>
+      </div>
+      <div class="lang lang-py">
+        <div class="callout key">
+          <div class="callout-title">🔑 第 2 章 · 你已经学会</div>
+          <p>✅ 为什么需要封装：重复的功能写一千遍，改起来就是一千个 bug</p>
+          <p>✅ 简写的力量：给反复出现的东西起一个短名字</p>
+          <p>✅ 函数：名字、参数、返回值，写一次随处用</p>
+          <p>✅ 进制与反码：把二进制逐位取反，再转回十进制</p>
+          <p>✅ 数组（列表）：一排编好号的格子，下标从 0 开始</p>
+        </div>
+      </div>
+
+      <div class="done-row">
+        <button class="done-btn" data-lesson="lesson-7">✓ 我学完了这一小节</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
+       第 8 小节：注释与伪代码
+       ════════════════════════════════════════════════════════ -->
+  <section class="lesson" id="lesson-8">
+    <div class="lesson-head">
+      <div class="lesson-no">第 8 小节</div>
+      <h2>注释与伪代码</h2>
+      <div class="lesson-sub">先想清楚再写</div>
+    </div>
+    <div class="lesson-body">
+
+      <p>
+        写程序的时候，我们不仅要让电脑看懂，也要让以后的自己看懂。
+        注释就是写在代码里的说明，电脑会跳过它，但人可以读懂。
+      </p>
+
+      <div class="lang lang-cpp">
+        <div class="code-block" data-file="comment.cpp" data-lang="cpp"><pre>// 这是单行注释：说明下面这行在做什么
+int score = 85;
+
+/*
+  这是多行注释。
+  可以写好几行，用来解释一段代码的整体思路。
+*/
+int bonus = 10;</pre></div>
+      </div>
+      <div class="lang lang-py">
+        <div class="code-block" data-file="comment.py" data-lang="python"><pre># Python 里用井号开头表示注释
+score = 85
+
+# 也可以写在代码后面，解释这行的作用
+bonus = 10  # 额外加分</pre></div>
+      </div>
+
+      <p>
+        好的注释通常不写「这句在做什么」——因为代码本身已经说明了。
+        更好的注释写「为什么要这样做」，或者把一大段代码的意图概括出来。
+      </p>
+
+      <div class="callout idea">
+        <div class="callout-title">💡 想一想</div>
+        <p>
+          下面两段代码，哪一段更容易看懂？
+        </p>
+      </div>
+
+      <div class="lang lang-cpp">
+        <div class="code-block" data-file="bad.cpp" data-lang="cpp"><pre>int a = 10;
+int b = 20;
+int c = a + b;</pre></div>
+      </div>
+      <div class="lang lang-py">
+        <div class="code-block" data-file="bad.py" data-lang="python"><pre>a = 10
+b = 20
+c = a + b</pre></div>
+      </div>
+
+      <div class="lang lang-cpp">
+        <div class="code-block" data-file="good.cpp" data-lang="cpp"><pre>// 计算语文和数学的总分
+int chinese = 10;
+int math = 20;
+int total = chinese + math;</pre></div>
+      </div>
+      <div class="lang lang-py">
+        <div class="code-block" data-file="good.py" data-lang="python"><pre># 计算语文和数学的总分
+chinese = 10
+math = 20
+total = chinese + math</pre></div>
+      </div>
+
+      <p>
+        除了注释，还有另一种常用的工具：伪代码。
+        伪代码不是真正的程序，而是用接近自然语言的方式，把解题步骤先写下来。
+      </p>
+
+      <p>比如，要计算 1 到 100 的和，可以先用伪代码描述：</p>
+
+      <div class="code-block" data-file="pseudocode.txt" data-lang="text"><pre>1. 准备一个变量 sum，初始值为 0
+2. 让 i 从 1 走到 100
+3. 每次把 i 加到 sum 里
+4. 循环结束后，输出 sum</pre></div>
+
+      <p>
+        把伪代码翻译成真正的代码，就清晰多了。
+        遇到复杂问题时，先写伪代码再写代码，能大大减少出错。
+      </p>
+
+      <div class="callout key">
+        <div class="callout-title">🔑 这一小节的核心</div>
+        <p>注释是给人看的说明，电脑会忽略。</p>
+        <p>好注释解释「为什么」，而不是重复「做什么」。</p>
+        <p>伪代码是用自然语言描述的解题步骤，写代码之前先想清楚。</p>
+      </div>
+
+      <div class="done-row">
+        <button class="done-btn" data-lesson="lesson-8">✓ 我学完了这一小节</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site">
+    <p>写给新手的编程课 · 第 2 章</p>
+    <p>写一次，随处用；改一处，处处生效。</p>
+  </footer>
+
+  </main>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     交互脚本
+     ════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  "use strict";
+
+  /* ────────────────────────────────────────────────
+     1. 工具函数
+     ──────────────────────────────────────────────── */
+  var $  = function (sel, root) { return (root || document).querySelector(sel); };
+  var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
+  function escapeHTML(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function store(key, val) { try { AppStore.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return AppStore.getItem(key); } catch (e) { return null; } }
+
+  /* ────────────────────────────────────────────────
+     2. 深色 / 浅色主题切换（与主页、第 1 章共用同一个 key）
+     ──────────────────────────────────────────────── */
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* ────────────────────────────────────────────────
+     3. C++ / Python 语言切换
+     ──────────────────────────────────────────────── */
+  var LANG_KEY = "coding-101-language";
+  var langBtns = $$("#lang-toggle button");
+
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    langBtns.forEach(function (b) { b.classList.toggle("active", b.dataset.lang === lang); });
+  }
+  applyLang(read(LANG_KEY) === "python" ? "python" : "cpp");
+
+  langBtns.forEach(function (b) {
+    b.addEventListener("click", function () {
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  /* ────────────────────────────────────────────────
+     4. DNA 全称的展开 / 收起
+     ──────────────────────────────────────────────── */
+  var dnaFull = $("#dna-full"), dnaToggle = $("#dna-toggle");
+  dnaToggle.addEventListener("click", function () {
+    var hidden = dnaFull.style.display === "none";
+    dnaFull.style.display = hidden ? "block" : "none";
+    dnaToggle.textContent = hidden ? "太长了，收起来" : "展开看看有多长";
+  });
+
+  /* ────────────────────────────────────────────────
+     5. 小测验
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+
+  /* ────────────────────────────────────────────────
+     6. 代码块渲染：窗口栏、行号、语法高亮
+     ──────────────────────────────────────────────── */
+  var CPP_KEYWORDS = ("int double float char bool long short void string if else for while do switch case break continue " +
+                      "return using namespace include std true false const").split(" ");
+  var PY_KEYWORDS  = ("def if elif else for while in is not and or return import from as with pass break continue " +
+                      "True False None print input int str float range len sum max min class lambda try except").split(" ");
+
+  function highlightLine(line, lang) {
+    var keywords = lang === "python" ? PY_KEYWORDS : CPP_KEYWORDS;
+    var commentCh = lang === "python" ? "#" : "//";
+    var out = "", i = 0, n = line.length;
+
+    while (i < n) {
+      if (line.substr(i, commentCh.length) === commentCh &&
+          (commentCh === "#" ? true : line[i + 1] === "/")) {
+        out += '<span class="tok-com">' + escapeHTML(line.slice(i)) + "</span>";
+        break;
+      }
+      var ch = line[i], rest = line.slice(i), m;
+      if (ch === '"' || ch === "'") {
+        m = rest.match(/^(["'])(?:[^\\"']|\\.)*?\1/);
+        if (m) { out += '<span class="tok-str">' + escapeHTML(m[0]) + "</span>"; i += m[0].length; continue; }
+      }
+      m = rest.match(/^\d+(\.\d+)?/);
+      if (m) { out += '<span class="tok-num">' + m[0] + "</span>"; i += m[0].length; continue; }
+      m = rest.match(/^[A-Za-z_][A-Za-z0-9_]*/);
+      if (m) {
+        out += keywords.indexOf(m[0]) >= 0
+          ? '<span class="tok-kw">' + m[0] + "</span>"
+          : escapeHTML(m[0]);
+        i += m[0].length; continue;
+      }
+      m = rest.match(/^(<<|>>|<=|>=|==|!=|&&|\|\||\+\+|--|\/\/)/) || rest.match(/^[+\-*\/%=<>!;{}()\[\],:@]/);
+      if (m) { out += '<span class="tok-op">' + escapeHTML(m[0]) + "</span>"; i += m[0].length; continue; }
+      out += escapeHTML(ch); i++;
+    }
+    return out;
+  }
+
+  $$(".code-block").forEach(function (block) {
+    var pre  = $("pre", block);
+    var lang = block.dataset.lang || "cpp";
+    var file = block.dataset.file || (lang === "python" ? "main.py" : "main.cpp");
+
+    var head = document.createElement("div");
+    head.className = "code-head";
+    head.innerHTML =
+      '<span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>' +
+      '<span style="margin-left:8px">⌨ ' + escapeHTML(file) + "</span>" +
+      '<span class="code-lang-badge">' + (lang === "python" ? "Python" : "C++") + "</span>";
+    block.insertBefore(head, pre);
+
+    var html = pre.textContent.replace(/^\n+|\n+$/g, "").split("\n").map(function (line, idx) {
+      return '<span class="ln">' + (idx + 1) + "</span>" + (line ? highlightLine(line, lang) : " ");
+    }).join("\n");
+    pre.innerHTML = html;
+  });
+
+  /* ────────────────────────────────────────────────
+     7. 运行台工具：读取非负整数输入
+     ──────────────────────────────────────────────── */
+  function readIntInput(input) {
+    var v = input.value.trim().replace(/[,\s]/g, "");
+    if (!/^-?\d+$/.test(v)) return null;
+    return v;
+  }
+
+  /* 运行台 1：a_plus_b(a, b)，用 BigInt 支持超大整数 */
+  (function () {
+    var inA = $("#pg1-a"), inB = $("#pg1-b");
+    var outBox = $("#pg1-out"), outOK = $("#pg1-ok"), outErr = $("#pg1-err");
+
+    $("#pg1-run").addEventListener("click", function () {
+      var va = readIntInput(inA), vb = readIntInput(inB);
+      outOK.textContent = ""; outErr.textContent = "";
+      outBox.classList.add("show");
+      if (va === null || vb === null) {
+        outErr.textContent = "Error: 参数类型不对（请输入两个整数）";
+        return;
+      }
+      setTimeout(function () {
+        outOK.textContent = (BigInt(va) + BigInt(vb)).toString();
+      }, 200);
+    });
+    inB.addEventListener("keydown", function (e) { if (e.key === "Enter") $("#pg1-run").click(); });
+    $("#pg1-reset").addEventListener("click", function () {
+      inA.value = inB.value = "";
+      outBox.classList.remove("show");
+    });
+  })();
+
+  /* 运行台 2：ones_complement(x) */
+  (function () {
+    var inX = $("#pg2-x");
+    var outBox = $("#pg2-out"), outOK = $("#pg2-ok"), outErr = $("#pg2-err");
+
+    $("#pg2-run").addEventListener("click", function () {
+      var vx = readIntInput(inX);
+      outOK.textContent = ""; outErr.textContent = "";
+      outBox.classList.add("show");
+      if (vx === null) {
+        outErr.textContent = "Error: x 必须是整数";
+        return;
+      }
+      var x = BigInt(vx);
+      if (x < 0) {
+        outErr.textContent = "Error: x 必须是非负整数";
+        return;
+      }
+      setTimeout(function () {
+        if (x == 0) {
+          outOK.textContent = "1";
+          return;
+        }
+        var result = BigInt(0);
+        var place = BigInt(1);
+        while (x > 0) {
+          var bit = x % BigInt(2);
+          var flipped = BigInt(1) - bit;
+          result = result + flipped * place;
+          x = x / BigInt(2);
+          place = place * BigInt(2);
+        }
+        outOK.textContent = result.toString();
+      }, 200);
+    });
+    inX.addEventListener("keydown", function (e) { if (e.key === "Enter") $("#pg2-run").click(); });
+    $("#pg2-reset").addEventListener("click", function () {
+      inX.value = "";
+      outBox.classList.remove("show");
+    });
+  })();
+
+  /* 运行台 3：scores[i]，演示下标与越界 */
+  (function () {
+    var scores = [83, 92, 77, 88, 95];
+    var inI = $("#pg3-i");
+    var outBox = $("#pg3-out"), outOK = $("#pg3-ok"), outErr = $("#pg3-err");
+
+    $("#pg3-run").addEventListener("click", function () {
+      var v = readIntInput(inI);
+      outOK.textContent = ""; outErr.textContent = "";
+      outBox.classList.add("show");
+      if (v === null) {
+        outErr.textContent = "Error: 下标必须是一个整数";
+        return;
+      }
+      var i = parseInt(v, 10);
+      if (i < 0 || i >= scores.length) {
+        outErr.textContent = "Error: 下标越界！scores 只有 5 个格子（下标 0 ~ 4），没有 scores[" + i + "]";
+        return;
+      }
+      outOK.textContent = "scores[" + i + "] = " + scores[i];
+    });
+    inI.addEventListener("keydown", function (e) { if (e.key === "Enter") $("#pg3-run").click(); });
+  })();
+
+  /* ────────────────────────────────────────────────
+     8. 学习进度（主页读取的 key：coding-101-ch2-progress）
+     ──────────────────────────────────────────────── */
+  var PROGRESS_KEY = "coding-101-ch2-progress";
+  var LESSON_IDS = ["lesson-1", "lesson-2", "lesson-3", "lesson-4", "lesson-5", "lesson-6", "lesson-7", "lesson-8"];
+  var progress = {};
+  try { progress = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+
+  function refreshProgress() {
+    var doneCount = LESSON_IDS.filter(function (id) { return progress[id]; }).length;
+    var pct = Math.round(doneCount / LESSON_IDS.length * 100);
+
+    $("#bar-top").style.width = pct + "%";
+    $("#bar-side").style.width = pct + "%";
+    $("#progress-text").textContent = doneCount + "/8 节";
+    $("#progress-pct").textContent = pct + "%";
+    $("#progress-cheer").style.display = pct === 100 ? "block" : "none";
+
+    LESSON_IDS.forEach(function (id) {
+      var done = !!progress[id];
+      $$('.nav-item[data-lesson="' + id + '"]').forEach(function (a) { a.classList.toggle("done", done); });
+      $$('.done-btn[data-lesson="' + id + '"]').forEach(function (btn) {
+        btn.classList.toggle("done", done);
+        btn.textContent = done ? "✓ 已完成，点击可取消" : "✓ 我学完了这一小节";
+      });
+    });
+  }
+
+  $$(".done-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var id = btn.dataset.lesson;
+      progress[id] = !progress[id];
+      store(PROGRESS_KEY, JSON.stringify(progress));
+      refreshProgress();
+    });
+  });
+  refreshProgress();
+
+  /* ────────────────────────────────────────────────
+     9. 移动端目录面板 + 滚动定位高亮
+     ──────────────────────────────────────────────── */
+  var tocPanel = $("#toc-panel");
+  tocPanel.innerHTML = "";
+  var navClone = $("#nav").cloneNode(true);
+  navClone.removeAttribute("id");
+  tocPanel.appendChild(navClone);
+
+  $("#toc-btn").addEventListener("click", function () { tocPanel.classList.toggle("open"); });
+  tocPanel.addEventListener("click", function (e) {
+    if (e.target.closest("a")) tocPanel.classList.remove("open");
+  });
+
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      $$(".nav-item").forEach(function (a) {
+        a.classList.toggle("active", a.dataset.lesson === entry.target.id);
+      });
+    });
+  }, { rootMargin: "-20% 0px -70% 0px" });
+  LESSON_IDS.forEach(function (id) { observer.observe(document.getElementById(id)); });
+
+})();
+</script>
+
+
+<!-- 全部小节学完 → 跳转庆祝页（只跳一次） -->
+<script>
+(function () {
+  function allDone() {
+    var keys   = ["coding-101-progress", "coding-101-ch2-progress", "coding-101-ch3-progress", "coding-101-ch4-progress", "coding-101-ch5-progress"];
+    var totals = [6, 8, 7, 7, 5];
+    try {
+      for (var i = 0; i < keys.length; i++) {
+        var d = JSON.parse(AppStore.getItem(keys[i]) || "{}");
+        var n = 0;
+        for (var k in d) { if (d[k]) n++; }
+        if (n < totals[i]) return false;
+      }
+      return true;
+    } catch (e) { return false; }
+  }
+  function maybeCelebrate() {
+    try { if (AppStore.getItem("coding-101-congrats-shown")) return; } catch (e) {}
+    if (allDone()) {
+      try { AppStore.setItem("coding-101-congrats-shown", "1"); } catch (e) {}
+      location.href = "完成恭喜.html";
+    }
+  }
+  window.__maybeCelebrate = maybeCelebrate;
+  /* 页面加载时检查一次（主页由此直接跳转） */
+  maybeCelebrate();
+  /* 章节页：点击「我学完了这一小节」后复检 */
+  document.addEventListener("click", function (ev) {
+    if (ev.target.closest && ev.target.closest(".done-btn")) setTimeout(maybeCelebrate, 120);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+{
+  "name": "yeji-coding-course",
+  "version": "1.0.0",
+  "description": "野鸡动画编程课 · Electron 桌面版",
+  "main": "main.js",
+  "author": "Cigarette Box Studio",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win && node build-mac.js"
+  },
+  "build": {
+    "appId": "com.cigarettebox.yeji-coding-course",
+    "productName": "野鸡动画编程课",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "app/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "野鸡动画编程课.exe"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "artifactName": "野鸡动画编程课-macOS-${arch}.zip",
+      "category": "public.app-category.education"
+    }
+  },
+  "devDependencies": {
+    "adm-zip": "^0.6.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^24.13.3",
+    "electron-packager": "^17.1.2"
+  }
+}

@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    练习题目系统 · 精选 OJ 题目与渐进提示
+    ─────────────────────────────────────────────────────────────
+    完全本地运行的单文件网页。
+    题目数据内置，点击题号可跳转到原题页面。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <script>var AppStore = window.AppStore || window.AppStore; var AppStore = window.AppStore || window.AppStore;</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="编程入门课练习题目系统，内置精选 OJ 题目、渐进式提示，可离线查看题面并跳转原题。">
+  <title>野鸡动画编程课 · 练习题目</title>
+  <style>
+  /* ══════════════════════════════════════════════════════════
+     1. 主题变量（与主页/章节文件一致）
+     ══════════════════════════════════════════════════════════ */
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+    --accent:       #0ea5e9;
+    --accent-hover: #0284c7;
+    --ok:           #10b981;
+    --warn:         #f59e0b;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+    --accent:       #38bdf8;
+    --accent-hover: #0ea5e9;
+    --ok:           #34d399;
+    --warn:         #fbbf24;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     2. 基础与布局
+     ══════════════════════════════════════════════════════════ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+    min-height: 100vh;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+  /* ── 顶栏 ── */
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  .icon-btn.home-btn {
+    background: #38bdf8; color: #fff; border-color: #38bdf8;
+    font-weight: 700; font-size: 15px; padding: 0 22px;
+    border-radius: 9999px;
+  }
+  .icon-btn.home-btn:hover { background: #0ea5e9; border-color: #0ea5e9; }
+
+  /* ── 主体布局 ── */
+  .layout {
+    max-width: 1200px; margin: 0 auto; padding: 24px 16px 80px;
+    display: grid; gap: 20px;
+  }
+  @media (min-width: 860px) { .layout { grid-template-columns: 220px 1fr; } }
+
+  /* ── 侧边栏 ── */
+  .sidebar h2 { font-size: 14px; color: var(--text-faint); margin-bottom: 12px; letter-spacing: 1px; }
+  .diff-list { display: flex; flex-direction: column; gap: 8px; }
+  .diff-item {
+    text-align: left; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--text); cursor: pointer; transition: .15s;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .diff-item:hover { border-color: var(--accent); }
+  .diff-item.active { border-color: var(--accent); background: var(--bg-soft); }
+  .diff-item .title { font-weight: 700; font-size: 14px; }
+  .diff-item .count { font-size: 12px; color: var(--text-faint); }
+
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 99px;
+    font-size: 11px; font-weight: 700; margin-right: 6px;
+  }
+  .badge.entry  { background: #d1fae5; color: #047857; }
+  .badge.easy   { background: #dbeafe; color: #1d4ed8; }
+  .badge.medium { background: #fef3c7; color: #b45309; }
+  .badge.hard   { background: #fee2e2; color: #b91c1c; }
+  .badge.expert { background: #ede9fe; color: #6d28d9; }
+  html.dark .badge.entry  { background: rgba(16,185,129,.2); color: #6ee7b7; }
+  html.dark .badge.easy   { background: rgba(59,130,246,.2); color: #93c5fd; }
+  html.dark .badge.medium { background: rgba(245,158,11,.2); color: #fcd34d; }
+  html.dark .badge.hard   { background: rgba(239,68,68,.2); color: #fca5a5; }
+  html.dark .badge.expert { background: rgba(139,92,246,.2); color: #c4b5fd; }
+
+  /* ── 主内容区 ── */
+  .main { min-width: 0; }
+  .card {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px;
+  }
+  .card h1 { font-size: 24px; font-weight: 900; }
+  .card .subtitle { color: var(--text-soft); margin-top: 8px; font-size: 14px; line-height: 1.8; }
+
+  .section-title { font-size: 18px; font-weight: 800; margin-bottom: 14px; }
+
+  /* ── 题目列表 ── */
+  .problem-list { display: flex; flex-direction: column; gap: 10px; }
+  .problem-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-card);
+    cursor: pointer; transition: .15s;
+  }
+  .problem-row:hover { border-color: var(--accent); background: var(--bg-soft); }
+  .problem-row .id { font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px; color: var(--text-faint); min-width: 64px; }
+  .problem-row .title { font-weight: 700; font-size: 15px; flex: 1; }
+  .problem-row .source { font-size: 12px; color: var(--text-faint); }
+
+  /* ── 题目详情 ── */
+  .detail-head { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 24px; }
+  .detail-head .back {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 13px; color: var(--text-faint); cursor: pointer; margin-bottom: 12px;
+  }
+  .detail-head .back:hover { color: var(--accent); }
+  .detail-head h1 { font-size: 26px; font-weight: 900; }
+  .detail-meta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; align-items: center; }
+  .detail-meta a {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 12px; border-radius: 8px;
+    background: var(--bg-soft); color: var(--accent);
+    font-size: 13px; font-weight: 700; text-decoration: none;
+  }
+  .detail-meta a:hover { background: var(--border); }
+
+  .statement {
+    font-size: 14px; line-height: 2; color: var(--text-soft);
+  }
+  .statement h3 { font-size: 16px; font-weight: 800; margin: 24px 0 12px; color: var(--text); }
+  .statement p { margin-bottom: 14px; }
+  .statement pre {
+    background: var(--code-inline-bg); padding: 12px 16px; border-radius: 10px;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px;
+    line-height: 1.7; margin: 12px 0; overflow: auto;
+  }
+  .statement code {
+    background: var(--code-inline-bg); padding: 2px 5px; border-radius: 4px;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px;
+  }
+  .io-box {
+    background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 16px; margin: 10px 0; font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 13px; line-height: 1.7;
+  }
+
+  /* ── 提示区（可收起） ── */
+  .hints-box { margin-top: 28px; border: 1px dashed var(--border); border-radius: 12px; padding: 16px; background: var(--bg-soft); }
+  .hints-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .hint {
+    margin-bottom: 10px; border-radius: 8px;
+    background: var(--bg-card); border: 1px solid var(--border); overflow: hidden;
+  }
+  .hint-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; cursor: pointer; user-select: none;
+  }
+  .hint-header:hover { background: var(--bg-soft); }
+  .hint-title { font-weight: 700; font-size: 13px; color: var(--text); }
+  .hint-toggle { font-size: 12px; color: var(--text-faint); transition: transform .2s; }
+  .hint.expanded .hint-toggle { transform: rotate(180deg); }
+  .hint-body {
+    display: none; padding: 0 14px 14px; font-size: 13px; line-height: 1.9; color: var(--text-soft);
+  }
+  .hint.expanded .hint-body { display: block; }
+  .hint-body pre {
+    background: var(--code-inline-bg); padding: 10px 12px; border-radius: 8px;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 12.5px;
+    line-height: 1.7; white-space: pre-wrap; word-break: break-word; margin: 10px 0;
+  }
+  .hint-body code {
+    background: var(--code-inline-bg); padding: 2px 5px; border-radius: 4px;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 12.5px;
+  }
+  .hint-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--text-soft); font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .hint-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .hint-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  .empty-state {
+    text-align: center; padding: 48px 20px; color: var(--text-faint);
+  }
+  .empty-state p { margin-top: 8px; font-size: 14px; }
+
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding: 32px 16px; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     顶栏
+     ════════════════════════════════════════════════════════════ -->
+<header>
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="logo">&lt;/&gt;</span>
+      <span>野鸡动画编程课</span>
+    </a>
+    <div class="header-right">
+      <a class="icon-btn home-btn" href="index.html" title="返回课程主页">返回主页</a>
+      <button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════════
+     主体
+     ════════════════════════════════════════════════════════════ -->
+<div class="layout">
+  <aside class="sidebar">
+    <h2>题目难度</h2>
+    <div class="diff-list" id="diff-list"></div>
+  </aside>
+
+  <main class="main" id="main">
+    <!-- 内容由 JS 渲染 -->
+  </main>
+</div>
+
+<footer class="site">
+  <p>题目来自公开 OJ，点击题号可跳转原题页面。</p>
+</footer>
+
+<!-- ════════════════════════════════════════════════════════════
+     交互脚本
+     ════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { AppStore.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return AppStore.getItem(key); } catch (e) { return null; } }
+
+  /* ── 1. 主题切换 ── */
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* ── 2. 题目数据 ── */
+  var CATEGORIES = [
+    { key: "entry",  title: "入门", badgeClass: "entry" },
+    { key: "easy",   title: "简单", badgeClass: "easy" },
+    { key: "medium", title: "中等", badgeClass: "medium" },
+    { key: "hard",   title: "难",   badgeClass: "hard" },
+    { key: "expert", title: "巨难", badgeClass: "expert" }
+  ];
+
+  var PROBLEMS = [
+    {
+      id: "P1001",
+      title: "A+B Problem",
+      difficulty: "entry",
+      source: "洛谷",
+      url: "https://www.luogu.com.cn/problem/P1001",
+      statement: `
+        <h3>题目描述</h3>
+        <p>输入两个整数 <code>a</code>, <code>b</code>，输出它们的和。</p>
+        <h3>输入格式</h3>
+        <p>输入两个以空格分隔的整数 <code>a</code>, <code>b</code>。</p>
+        <h3>输出格式</h3>
+        <p>输出一个整数，表示 <code>a+b</code>。</p>
+        <h3>输入输出样例</h3>
+        <p><strong>输入 #1</strong></p>
+        <div class="io-box">20 30</div>
+        <p><strong>输出 #1</strong></p>
+        <div class="io-box">50</div>
+        <h3>数据范围</h3>
+        <p>对于所有测试数据，−10<sup>9</sup> ≤ a, b ≤ 10<sup>9</sup>。</p>
+      `,
+      hints: [
+        { title: "提示 1：读入两个数", body: `用两个变量分别保存输入的两个整数。<br><br><strong>Python：</strong><pre>a, b = map(int, input().split())</pre><strong>C++：</strong><pre>int a, b;
+cin &gt;&gt; a &gt;&gt; b;</pre>` },
+        { title: "提示 2：输出结果", body: `直接输出两个变量的和。<br><br><strong>Python：</strong><pre>print(a + b)</pre><strong>C++：</strong><pre>cout &lt;&lt; a + b &lt;&lt; endl;</pre>` },
+        { title: "提示 3：完整参考代码", body: `<strong>Python：</strong><pre>a, b = map(int, input().split())
+print(a + b)</pre><strong>C++：</strong><pre>#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    int a, b;
+    cin &gt;&gt; a &gt;&gt; b;
+    cout &lt;&lt; a + b &lt;&lt; endl;
+    return 0;
+}</pre>` }
+      ]
+    },
+    {
+      id: "P1035",
+      title: "[NOIP 2002 普及组] 级数求和",
+      difficulty: "entry",
+      source: "洛谷",
+      url: "https://www.luogu.com.cn/problem/P1035",
+      statement: `
+        <h3>题目描述</h3>
+        <p>已知：S<sub>n</sub> = 1 + 1/2 + 1/3 + … + 1/n。显然对于任意一个整数 k，当 n 足够大的时候，S<sub>n</sub> &gt; k。</p>
+        <p>现给出一个整数 k，要求计算出一个最小的 n，使得 S<sub>n</sub> &gt; k。</p>
+        <h3>输入格式</h3>
+        <p>一个正整数 k。</p>
+        <h3>输出格式</h3>
+        <p>一个正整数 n。</p>
+        <h3>输入输出样例</h3>
+        <p><strong>输入 #1</strong></p>
+        <div class="io-box">1</div>
+        <p><strong>输出 #1</strong></p>
+        <div class="io-box">2</div>
+        <h3>数据范围</h3>
+        <p>对于 100% 的数据，1 ≤ k ≤ 15。</p>
+      `,
+      hints: [
+        { title: "提示 1：从小到大累加", body: `从 n=1 开始，一项一项地往总和中加 1/n，直到总和超过 k。<br><br><strong>Python：</strong><pre>sum = 0
+n = 0
+while sum &lt;= k:
+    n = n + 1
+    sum = sum + 1 / n</pre><strong>C++：</strong><pre>double sum = 0;
+int n = 0;
+while (sum &lt;= k) {
+    n = n + 1;
+    sum = sum + 1.0 / n;
+}</pre>` },
+        { title: "提示 2：循环结束后的 n 就是答案", body: `当 <code>sum > k</code> 时，循环停止，此时的 <code>n</code> 就是最小的满足条件的数。` },
+        { title: "提示 3：完整参考代码", body: `<strong>Python：</strong><pre>k = int(input())
+s = 0.0
+n = 0
+while s &lt;= k:
+    n += 1
+    s += 1 / n
+print(n)</pre><strong>C++：</strong><pre>#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    int k, n = 0;
+    double s = 0;
+    cin &gt;&gt; k;
+    while (s &lt;= k) {
+        n++;
+        s += 1.0 / n;
+    }
+    cout &lt;&lt; n &lt;&lt; endl;
+    return 0;
+}</pre>` }
+      ]
+    },
+    {
+      id: "B2008",
+      title: "计算 (a+b)×c 的值",
+      difficulty: "entry",
+      source: "洛谷 · 一本通",
+      url: "https://www.luogu.com.cn/problem/B2008",
+      statement: `
+        <h3>题目描述</h3>
+        <p>给定 3 个整数 <code>a</code>, <code>b</code>, <code>c</code>，计算表达式 <code>(a+b)×c</code> 的值。</p>
+        <h3>输入格式</h3>
+        <p>输入仅一行，包括三个整数 <code>a</code>, <code>b</code>, <code>c</code>，数与数之间以一个空格分开。</p>
+        <h3>输出格式</h3>
+        <p>输出一行，即表达式的值。</p>
+        <h3>输入输出样例</h3>
+        <p><strong>输入 #1</strong></p>
+        <div class="io-box">2 3 5</div>
+        <p><strong>输出 #1</strong></p>
+        <div class="io-box">25</div>
+        <h3>数据范围</h3>
+        <p>对于 100% 的数据，−10<sup>4</sup> &lt; a, b, c &lt; 10<sup>4</sup>。</p>
+      `,
+      hints: [
+        { title: "提示 1：读入三个整数", body: `用三个变量保存输入。<br><br><strong>Python：</strong><pre>a, b, c = map(int, input().split())</pre><strong>C++：</strong><pre>int a, b, c;
+cin &gt;&gt; a &gt;&gt; b &gt;&gt; c;</pre>` },
+        { title: "提示 2：注意运算顺序", body: `题目要求先算 <code>a+b</code>，再乘以 <code>c</code>。加法优先级低于乘法，所以要加括号：<code>(a + b) * c</code>。` },
+        { title: "提示 3：完整参考代码", body: `<strong>Python：</strong><pre>a, b, c = map(int, input().split())
+print((a + b) * c)</pre><strong>C++：</strong><pre>#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    int a, b, c;
+    cin &gt;&gt; a &gt;&gt; b &gt;&gt; c;
+    cout &lt;&lt; (a + b) * c &lt;&lt; endl;
+    return 0;
+}</pre>` }
+      ]
+    },
+    {
+      id: "B2028",
+      title: "反向输出一个三位数",
+      difficulty: "entry",
+      source: "洛谷 · 一本通",
+      url: "https://www.luogu.com.cn/problem/B2028",
+      statement: `
+        <h3>题目描述</h3>
+        <p>将一个三位数反向输出，例如输入 358，反向输出 853。</p>
+        <h3>输入格式</h3>
+        <p>一个三位数 n。</p>
+        <h3>输出格式</h3>
+        <p>反向输出 n。如果末尾是 0，需要保留前导 0（例如 100 反向输出 001）。</p>
+        <h3>输入输出样例</h3>
+        <p><strong>输入 #1</strong></p>
+        <div class="io-box">100</div>
+        <p><strong>输出 #1</strong></p>
+        <div class="io-box">001</div>
+        <p><strong>输入 #2</strong></p>
+        <div class="io-box">678</div>
+        <p><strong>输出 #2</strong></p>
+        <div class="io-box">876</div>
+      `,
+      hints: [
+        { title: "提示 1：按字符处理最方便", body: `把输入当作字符串，直接反转输出即可保留前导 0。<br><br><strong>Python：</strong><pre>s = input().strip()
+print(s[::-1])</pre><strong>C++：</strong><pre>string s;
+cin &gt;&gt; s;
+for (int i = s.size() - 1; i &gt;= 0; i--)
+    cout &lt;&lt; s[i];</pre>` },
+        { title: "提示 2：也可以用数学方法", body: `分别取出个位、十位、百位，再按相反顺序输出。注意题目要求保留前导 0，数学方法要单独处理末尾为 0 的情况。` },
+        { title: "提示 3：完整参考代码", body: `<strong>Python（字符串法）：</strong><pre>s = input().strip()
+print(s[::-1])</pre><strong>C++（字符串法）：</strong><pre>#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+int main() {
+    string s;
+    cin &gt;&gt; s;
+    reverse(s.begin(), s.end());
+    cout &lt;&lt; s &lt;&lt; endl;
+    return 0;
+}</pre>` }
+      ]
+    },
+    {
+      id: "B2078",
+      title: "含 k 个 3 的数",
+      difficulty: "entry",
+      source: "洛谷 · 一本通",
+      url: "https://www.luogu.com.cn/problem/B2078",
+      statement: `
+        <h3>题目描述</h3>
+        <p>输入两个正整数 m 和 k，其中 1 &lt; m ≤ 10<sup>15</sup>，1 &lt; k ≤ 15，判断 m 是否恰好含有 k 个 3，如果满足条件，则输出 <code>YES</code>，否则，输出 <code>NO</code>。</p>
+        <h3>输入格式</h3>
+        <p>输入一行，为两个整数 m, k，中间用单个空格间隔。</p>
+        <h3>输出格式</h3>
+        <p>满足条件，则输出 <code>YES</code>，否则，输出 <code>NO</code>。</p>
+        <h3>输入输出样例</h3>
+        <p><strong>输入 #1</strong></p>
+        <div class="io-box">43833 3</div>
+        <p><strong>输出 #1</strong></p>
+        <div class="io-box">YES</div>
+      `,
+      hints: [
+        { title: "提示 1：逐位检查", body: `把 m 的每一位数字取出来，统计等于 3 的个数。<br><br><strong>Python：</strong><pre>count = 0
+while m &gt; 0:
+    if m % 10 == 3:
+        count += 1
+    m //= 10</pre><strong>C++：</strong><pre>int count = 0;
+while (m &gt; 0) {
+    if (m % 10 == 3)
+        count++;
+    m /= 10;
+}</pre>` },
+        { title: "提示 2：比较个数", body: `统计完成后，判断 <code>count == k</code> 是否成立。` },
+        { title: "提示 3：完整参考代码", body: `<strong>Python：</strong><pre>m, k = map(int, input().split())
+count = 0
+while m &gt; 0:
+    if m % 10 == 3:
+        count += 1
+    m //= 10
+print("YES" if count == k else "NO")</pre><strong>C++：</strong><pre>#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    long long m;
+    int k, count = 0;
+    cin &gt;&gt; m &gt;&gt; k;
+    while (m &gt; 0) {
+        if (m % 10 == 3) count++;
+        m /= 10;
+    }
+    cout &lt;&lt; (count == k ? "YES" : "NO") &lt;&lt; endl;
+    return 0;
+}</pre>` }
+      ]
+    },
+    {
+      id: "B2083",
+      title: "画矩形",
+      difficulty: "entry",
+      source: "洛谷 · 一本通",
+      url: "https://www.luogu.com.cn/problem/B2083",
+      statement: `
+        <h3>题目描述</h3>
+        <p>根据输入的四个参数 <code>a</code>, <code>b</code>, <code>c</code>, <code>f</code> 画出对应的矩形。</p>
+        <ul style="padding-left:22px;line-height:2;">
+          <li>前两个参数 a, b 为整数，依次代表矩形的高和宽；</li>
+          <li>第三个参数 c 是一个字符，表示用来填充的矩形符号；</li>
+          <li>第四个参数 f 为整数，0 代表空心，否则代表实心。</li>
+        </ul>
+        <h3>输入格式</h3>
+        <p>一行：a, b, c, f。</p>
+        <h3>输出格式</h3>
+        <p>一个矩形。</p>
+        <h3>输入输出样例</h3>
+        <p><strong>输入 #1</strong></p>
+        <div class="io-box">7 7 @ 0</div>
+        <p><strong>输出 #1</strong></p>
+        <pre style="margin:10px 0;">@@@@@@@
+@     @
+@     @
+@     @
+@     @
+@     @
+@@@@@@@</pre>
+        <h3>数据范围</h3>
+        <p>3 ≤ a ≤ 100，5 ≤ b ≤ 100，c 是可见字符，f ∈ {0, 1}。</p>
+      `,
+      hints: [
+        { title: "提示 1：用双重循环控制行列", body: `外层循环控制行（1 到 a），内层循环控制列（1 到 b）。<br><br><strong>Python：</strong><pre>for i in range(a):
+    for j in range(b):
+        # 判断当前位置是边框还是内部</pre><strong>C++：</strong><pre>for (int i = 0; i &lt; a; i++)
+    for (int j = 0; j &lt; b; j++)
+        // 判断当前位置是边框还是内部</pre>` },
+        { title: "提示 2：判断空心还是实心", body: `如果是实心（f 不为 0），所有位置都输出 c。<br>如果是空心，只有第一行、最后一行、第一列、最后一列输出 c，其余位置输出空格。` },
+        { title: "提示 3：完整参考代码", body: `<strong>Python：</strong><pre>a, b, c, f = input().split()
+a, b, f = int(a), int(b), int(f)
+for i in range(a):
+    line = ""
+    for j in range(b):
+        if f == 1 or i == 0 or i == a - 1 or j == 0 or j == b - 1:
+            line += c
+        else:
+            line += " "
+    print(line)</pre><strong>C++：</strong><pre>#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    int a, b, f;
+    char c;
+    cin &gt;&gt; a &gt;&gt; b &gt;&gt; c &gt;&gt; f;
+    for (int i = 0; i &lt; a; i++) {
+        for (int j = 0; j &lt; b; j++) {
+            if (f == 1 || i == 0 || i == a - 1 || j == 0 || j == b - 1)
+                cout &lt;&lt; c;
+            else
+                cout &lt;&lt; " ";
+        }
+        cout &lt;&lt; endl;
+    }
+    return 0;
+}</pre>` }
+      ]
+    },
+    {
+      id: "B2114",
+      title: "配对碱基链",
+      difficulty: "entry",
+      source: "洛谷 · 一本通",
+      url: "https://www.luogu.com.cn/problem/B2114",
+      statement: `
+        <h3>题目描述</h3>
+        <p>脱氧核糖核酸（DNA）由两条互补的碱基链以双螺旋的方式结合而成。构成 DNA 的碱基共有 4 种：</p>
+        <ul style="padding-left:22px;line-height:2;">
+          <li>腺嘌呤（A）</li>
+          <li>鸟嘌呤（G）</li>
+          <li>胸腺嘧啶（T）</li>
+          <li>胞嘧啶（C）</li>
+        </ul>
+        <p>在两条互补碱基链的对应位置上，腺嘌呤总是和胸腺嘧啶配对，鸟嘌呤总是和胞嘧啶配对。</p>
+        <p>你的任务就是根据一条单链上的碱基序列，给出对应的互补链上的碱基序列。</p>
+        <h3>输入格式</h3>
+        <p>一个字符串，表示一条碱基链。只含有大写字母 A、T、G、C。</p>
+        <h3>输出格式</h3>
+        <p>一个只含有大写字母 A、T、G、C 的字符串，为与输入互补的碱基链。</p>
+        <h3>输入输出样例</h3>
+        <p><strong>输入 #1</strong></p>
+        <div class="io-box">ATATGGATGGTGTTTGGCTCTG</div>
+        <p><strong>输出 #1</strong></p>
+        <div class="io-box">TATACCTACCACAAACCGAGAC</div>
+      `,
+      hints: [
+        { title: "提示 1：建立映射关系", body: `A 对应 T，T 对应 A；G 对应 C，C 对应 G。可以用条件判断，也可以用字典/映射表。<br><br><strong>Python：</strong><pre>pair = {"A": "T", "T": "A", "G": "C", "C": "G"}</pre><strong>C++（用一串 if-else 代替字典）：</strong><pre>if (ch == 'A') ch = 'T';
+else if (ch == 'T') ch = 'A';
+else if (ch == 'G') ch = 'C';
+else if (ch == 'C') ch = 'G';</pre>` },
+        { title: "提示 2：逐字符转换", body: `遍历输入字符串的每一个字符，查到对应的互补碱基，拼接成结果。` },
+        { title: "提示 3：完整参考代码", body: `<strong>Python：</strong><pre>s = input().strip()
+pair = {"A": "T", "T": "A", "G": "C", "C": "G"}
+res = ""
+for ch in s:
+    res += pair[ch]
+print(res)</pre><strong>C++：</strong><pre>#include &lt;iostream&gt;
+#include &lt;string&gt;
+using namespace std;
+
+int main() {
+    string s, r;
+    cin &gt;&gt; s;
+    for (char ch : s) {
+        if (ch == 'A') r += 'T';
+        else if (ch == 'T') r += 'A';
+        else if (ch == 'G') r += 'C';
+        else if (ch == 'C') r += 'G';
+    }
+    cout &lt;&lt; r &lt;&lt; endl;
+    return 0;
+}</pre>` }
+      ]
+    },
+    {
+      id: "P1085",
+      title: "[NOIP 2004 普及组] 不高兴的津津",
+      difficulty: "entry",
+      source: "洛谷",
+      url: "https://www.luogu.com.cn/problem/P1085",
+      statement: `
+        <h3>题目描述</h3>
+        <p>津津上初中了。妈妈认为津津应该更加用功学习，所以津津除了上学之外，还要参加妈妈为她报名的各科复习班。另外每周妈妈还会送她去学习朗诵、舞蹈和钢琴。但是津津如果一天上课超过八个小时就会不高兴，而且上得越久就会越不高兴。假设津津不会因为其它事不高兴，并且她的不高兴不会持续到第二天。请你帮忙检查一下津津下周的日程安排，看看下周她会不会不高兴；如果会的话，哪天最不高兴。</p>
+        <h3>输入格式</h3>
+        <p>输入包括 7 行数据，分别表示周一到周日的日程安排。每行包括两个小于 10 的非负整数，用空格隔开，分别表示津津在学校上课的时间和妈妈安排她上课的时间。</p>
+        <h3>输出格式</h3>
+        <p>一个数字。如果不会不高兴则输出 0，如果会则输出最不高兴的是周几（用 1,2,3,4,5,6,7 分别表示周一到周日）。如果有两天或两天以上不高兴的程度相当，则输出时间最靠前的一天。</p>
+        <h3>输入输出样例</h3>
+        <p><strong>输入 #1</strong></p>
+        <div class="io-box">5 3<br>6 2<br>7 2<br>5 3<br>5 4<br>0 4<br>0 6</div>
+        <p><strong>输出 #1</strong></p>
+        <div class="io-box">3</div>
+        <h3>数据范围</h3>
+        <p>NOIP 2004 普及组第 1 题。</p>
+      `,
+      hints: [
+        { title: "提示 1：把每天的上课时间加起来", body: `用两个变量分别读入学校时间和课外班时间，求出每天总时间。<br><br><strong>Python：</strong><pre>for i in range(1, 8):
+    a, b = map(int, input().split())
+    total = a + b</pre><strong>C++：</strong><pre>for (int i = 1; i &lt;= 7; i++) {
+    int a, b;
+    cin &gt;&gt; a &gt;&gt; b;
+    int total = a + b;
+}</pre>` },
+        { title: "提示 2：记录最早超过 8 小时的那一天", body: `只要总时间大于 8，就比较它是不是目前最大的。如果是，更新答案为当前天数。注意要保留「最早」的那一天，所以只有严格更大时才更新。<br><br><strong>Python：</strong><pre>ans = 0
+max_total = 8  # 超过 8 才不高兴
+for i in range(1, 8):
+    a, b = map(int, input().split())
+    if a + b &gt; max_total:
+        max_total = a + b
+        ans = i</pre><strong>C++：</strong><pre>int ans = 0;
+int max_total = 8;  // 超过 8 才不高兴
+for (int i = 1; i &lt;= 7; i++) {
+    int a, b;
+    cin &gt;&gt; a &gt;&gt; b;
+    if (a + b &gt; max_total) {
+        max_total = a + b;
+        ans = i;
+    }
+}</pre>` },
+        { title: "提示 3：完整参考代码", body: `<strong>Python：</strong><pre>ans = 0
+max_total = 8
+for i in range(1, 8):
+    a, b = map(int, input().split())
+    if a + b &gt; max_total:
+        max_total = a + b
+        ans = i
+print(ans)</pre><strong>C++：</strong><pre>#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    int ans = 0, max_total = 8;
+    for (int i = 1; i &lt;= 7; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+        if (a + b &gt; max_total) {
+            max_total = a + b;
+            ans = i;
+        }
+    }
+    cout &lt;&lt; ans &lt;&lt; endl;
+    return 0;
+}</pre>` }
+      ]
+    },
+    {
+      id: "P1046",
+      title: "[NOIP 2005 普及组] 陶陶摘苹果",
+      difficulty: "easy",
+      source: "洛谷",
+      url: "https://www.luogu.com.cn/problem/P1046",
+      statement: `
+        <h3>题目描述</h3>
+        <p>陶陶家的院子里有一棵苹果树，每到秋天树上就会结出 10 个苹果。苹果成熟的时候，陶陶就会跑去摘苹果。陶陶有个 30 厘米高的板凳，当她不能直接用手摘到苹果的时候，就会踩到板凳上再试试。</p>
+        <p>现在已知 10 个苹果到地面的高度，以及陶陶把手伸直的时候能够达到的最大高度，请帮陶陶算一下她能够摘到的苹果的数目。假设她碰到苹果，苹果就会掉下来。</p>
+        <h3>输入格式</h3>
+        <p>输入包括两行数据。第一行包含 10 个 100 到 200 之间（包括 100 和 200）的整数（以厘米为单位），分别表示 10 个苹果到地面的高度，两个相邻的整数之间用一个空格隔开。第二行只包括一个 100 到 120 之间（包含 100 和 120）的整数（以厘米为单位），表示陶陶把手伸直的时候能够达到的最大高度。</p>
+        <h3>输出格式</h3>
+        <p>输出包括一行，这一行只包含一个整数，表示陶陶能够摘到的苹果的数目。</p>
+        <h3>输入输出样例</h3>
+        <p><strong>输入 #1</strong></p>
+        <div class="io-box">100 200 150 140 129 134 167 198 200 111</div>
+        <div class="io-box">110</div>
+        <p><strong>输出 #1</strong></p>
+        <div class="io-box">5</div>
+        <h3>数据范围</h3>
+        <p>NOIP 2005 普及组第一题。</p>
+      `,
+      hints: [
+        { title: "提示 1：读入高度并加上板凳", body: `把 10 个苹果的高度存起来，再读入陶陶伸手能够达到的高度。别忘了她还可以踩 30 厘米的板凳。<br><br><strong>Python：</strong><pre>h = list(map(int, input().split()))
+height = int(input()) + 30</pre><strong>C++：</strong><pre>int h[10];
+for (int i = 0; i &lt; 10; i++) cin &gt;&gt; h[i];
+int height;
+cin &gt;&gt; height;
+height += 30;</pre>` },
+        { title: "提示 2：统计能够到的苹果", body: `遍历每个苹果，如果苹果高度小于等于「身高 + 30」，计数加 1。<br><br><strong>Python：</strong><pre>count = 0
+for x in h:
+    if x &lt;= height:
+        count += 1</pre><strong>C++：</strong><pre>int count = 0;
+for (int i = 0; i &lt; 10; i++)
+    if (h[i] &lt;= height) count++;</pre>` },
+        { title: "提示 3：完整参考代码", body: `<strong>Python：</strong><pre>h = list(map(int, input().split()))
+height = int(input()) + 30
+count = 0
+for x in h:
+    if x &lt;= height:
+        count += 1
+print(count)</pre><strong>C++：</strong><pre>#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    int h[10];
+    for (int i = 0; i &lt; 10; i++) cin &gt;&gt; h[i];
+    int height;
+    cin &gt;&gt; height;
+    height += 30;
+    int count = 0;
+    for (int i = 0; i &lt; 10; i++)
+        if (h[i] &lt;= height) count++;
+    cout &lt;&lt; count &lt;&lt; endl;
+    return 0;
+}</pre>` }
+      ]
+    },
+    {
+      id: "P1048",
+      title: "[NOIP 2005 普及组] 采药",
+      difficulty: "easy",
+      source: "洛谷",
+      url: "https://www.luogu.com.cn/problem/P1048",
+      statement: `
+        <h3>题目描述</h3>
+        <p>辰辰想拜附近最有威望的医师为师。医师把他带到一个到处都是草药的山洞里对他说：“这个山洞里有一些不同的草药，采每一株都需要一些时间，每一株也有它自身的价值。我会给你一段时间，在这段时间里，你可以采到一些草药。如果你是一个聪明的孩子，你应该可以让采到的草药的总价值最大。”</p>
+        <p>给定总时间 T 和 M 株草药，每株草药给出采摘时间和价值，求在规定时间内的最大总价值。</p>
+        <h3>输入格式</h3>
+        <p>第一行有 2 个整数 T（1≤T≤1000）和 M（1≤M≤100），用一个空格隔开，T 代表总共能够用来采药的时间，M 代表山洞里的草药的数目。</p>
+        <p>接下来的 M 行每行包括两个在 1 到 100 之间的整数，分别表示采摘某株草药的时间和这株草药的价值。</p>
+        <h3>输出格式</h3>
+        <p>输出在规定的时间内可以采到的草药的最大总价值。</p>
+        <h3>输入输出样例</h3>
+        <p><strong>输入 #1</strong></p>
+        <div class="io-box">70 3<br>71 100<br>69 1<br>1 2</div>
+        <p><strong>输出 #1</strong></p>
+        <div class="io-box">3</div>
+        <h3>数据范围</h3>
+        <p>对于 30% 的数据，M≤10；对于全部数据，M≤100。</p>
+      `,
+      hints: [
+        { title: "提示 1：枚举法——枚举每株草药选或不选", body: `当 M 比较小时，可以用枚举（二进制状态）判断每一种选择方案是否超出时间，并记录最大价值。<br><br><strong>Python：</strong><pre>max_val = 0
+for mask in range(1 &lt;&lt; M):
+    t = 0
+    v = 0
+    for i in range(M):
+        if mask &gt;&gt; i &amp; 1:
+            t += time[i]
+            v += value[i]
+    if t &lt;= T and v &gt; max_val:
+        max_val = v</pre><strong>C++：</strong><pre>int max_val = 0;
+for (int mask = 0; mask &lt; (1 &lt;&lt; M); mask++) {
+    int t = 0, v = 0;
+    for (int i = 0; i &lt; M; i++) {
+        if (mask &gt;&gt; i &amp; 1) {
+            t += time[i];
+            v += value[i];
+        }
+    }
+    if (t &lt;= T &amp;&amp; v &gt; max_val)
+        max_val = v;
+}</pre>` },
+        { title: "提示 2：优化——01 背包动态规划", body: `把「总时间」看作背包容量，每株草药看作一个物品，重量是采摘时间，价值是草药价值。定义 <code>dp[j]</code> 表示用 j 时间能采到的最大价值。每株草药只选一次，从后往前更新。<br><br><strong>Python 核心转移：</strong><pre>for i in range(M):
+    for j in range(T, time[i] - 1, -1):
+        dp[j] = max(dp[j], dp[j - time[i]] + value[i])</pre><strong>C++ 核心转移：</strong><pre>for (int i = 0; i &lt; M; i++)
+    for (int j = T; j &gt;= time[i]; j--)
+        dp[j] = max(dp[j], dp[j - time[i]] + value[i]);</pre>` },
+        { title: "提示 3：完整参考代码", body: `<strong>Python：</strong><pre>T, M = map(int, input().split())
+items = [tuple(map(int, input().split())) for _ in range(M)]
+dp = [0] * (T + 1)
+for t, v in items:
+    for j in range(T, t - 1, -1):
+        dp[j] = max(dp[j], dp[j - t] + v)
+print(dp[T])</pre><strong>C++：</strong><pre>#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+int main() {
+    int T, M;
+    cin &gt;&gt; T &gt;&gt; M;
+    int time[105], val[105];
+    for (int i = 0; i &lt; M; i++) cin &gt;&gt; time[i] &gt;&gt; val[i];
+    int dp[1005] = {0};
+    for (int i = 0; i &lt; M; i++)
+        for (int j = T; j &gt;= time[i]; j--)
+            dp[j] = max(dp[j], dp[j - time[i]] + val[i]);
+    cout &lt;&lt; dp[T] &lt;&lt; endl;
+    return 0;
+}</pre>` }
+      ]
+    },
+    {
+      id: "P1042",
+      title: "[NOIP 2003 普及组] 乒乓球",
+      difficulty: "easy",
+      source: "洛谷",
+      url: "https://www.luogu.com.cn/problem/P1042",
+      statement: `
+        <h3>题目背景</h3>
+        <p>国际乒联推行 11 分制改革，华华退役后研究乒乓球。他需要分析多年比赛记录，分别计算在 11 分制和 21 分制下双方的比赛结果（截至记录末尾）。</p>
+        <h3>题目描述</h3>
+        <p>输入一系列由 <code>W</code>、<code>L</code>、<code>E</code> 组成的字符。其中 <code>W</code> 表示华华得一分，<code>L</code> 表示对手得一分，<code>E</code> 表示比赛信息结束，忽略 E 之后的所有内容。</p>
+        <p>分别输出 11 分制和 21 分制下每一局的比分。一局结束的条件：有一方达到 11（或 21）分且双方分差至少为 2。每打完一局立刻开始下一局。</p>
+        <h3>输入格式</h3>
+        <p>若干行字符串，由大写 <code>W</code>、<code>L</code>、<code>E</code> 组成。</p>
+        <h3>输出格式</h3>
+        <p>第一部分输出 11 分制下每局比分，第二部分输出 21 分制下每局比分，两部分之间空一行。</p>
+        <h3>输入输出样例</h3>
+        <p><strong>输入 #1</strong></p>
+        <div class="io-box">WWWWWWWWWWWWWWWWWWWW<br>WWLWE</div>
+        <p><strong>输出 #1</strong></p>
+        <div class="io-box">11:0<br>11:0<br>1:1<br><br>21:0<br>2:1</div>
+        <h3>数据范围</h3>
+        <p>每行至多 25 个字母，最多 2500 行。</p>
+      `,
+      hints: [
+        { title: "提示 1：把输入拼接成一条长字符串", body: `用循环读入每一行，直到某一行包含 <code>E</code>，然后截取 <code>E</code> 之前的所有字符。<br><br><strong>Python：</strong><pre>s = ''
+while True:
+    line = input()
+    if 'E' in line:
+        s += line[:line.index('E')]
+        break
+    s += line</pre><strong>C++：</strong><pre>string s, line;
+while (cin &gt;&gt; line) {
+    int pos = line.find('E');
+    if (pos != string::npos) {
+        s += line.substr(0, pos);
+        break;
+    }
+    s += line;
+}</pre>` },
+        { title: "提示 2：模拟一局比赛", body: `对每条记录分别按 11 分制和 21 分制计分。当一方分数达到目标且分差 ≥2 时，输出当前比分并清零开始下一局。注意最后一段未结束的比赛也要输出。<br><br><strong>Python 判断一局结束：</strong><pre>if (a &gt;= target and a - b &gt;= 2) or (b &gt;= target and b - a &gt;= 2):
+    print(f'{a}:{b}')
+    a = b = 0</pre><strong>C++ 判断一局结束：</strong><pre>if ((a &gt;= target &amp;&amp; a - b &gt;= 2) || (b &gt;= target &amp;&amp; b - a &gt;= 2)) {
+    cout &lt;&lt; a &lt;&lt; ":" &lt;&lt; b &lt;&lt; endl;
+    a = b = 0;
+}</pre>` },
+        { title: "提示 3：完整参考代码", body: `<strong>Python：</strong><pre>s = ''
+while True:
+    line = input()
+    if 'E' in line:
+        s += line[:line.index('E')]
+        break
+    s += line
+
+def print_games(s, target):
+    a = b = 0
+    for ch in s:
+        if ch == 'W': a += 1
+        else: b += 1
+        if (a &gt;= target and a - b &gt;= 2) or (b &gt;= target and b - a &gt;= 2):
+            print(f'{a}:{b}')
+            a = b = 0
+    print(f'{a}:{b}')
+
+print_games(s, 11)
+print()
+print_games(s, 21)</pre><strong>C++：</strong><pre>#include &lt;iostream&gt;
+#include &lt;string&gt;
+using namespace std;
+
+void printGames(const string&amp; s, int target) {
+    int a = 0, b = 0;
+    for (char ch : s) {
+        if (ch == 'W') a++;
+        else if (ch == 'L') b++;
+        if ((a &gt;= target &amp;&amp; a - b &gt;= 2) || (b &gt;= target &amp;&amp; b - a &gt;= 2)) {
+            cout &lt;&lt; a &lt;&lt; ":" &lt;&lt; b &lt;&lt; endl;
+            a = b = 0;
+        }
+    }
+    cout &lt;&lt; a &lt;&lt; ":" &lt;&lt; b &lt;&lt; endl;
+}
+
+int main() {
+    string s, line;
+    while (cin &gt;&gt; line) {
+        size_t pos = line.find('E');
+        if (pos != string::npos) {
+            s += line.substr(0, pos);
+            break;
+        }
+        s += line;
+    }
+    printGames(s, 11);
+    cout &lt;&lt; endl;
+    printGames(s, 21);
+    return 0;
+}</pre>` }
+      ]
+    },
+    {
+      id: "P1049",
+      title: "[NOIP 2001 普及组] 装箱问题",
+      difficulty: "easy",
+      source: "洛谷",
+      url: "https://www.luogu.com.cn/problem/P1049",
+      statement: `
+        <h3>题目描述</h3>
+        <p>有一个箱子容量为 V，同时有 n 个物品，每个物品有一个体积。现在从 n 个物品中任取若干个装入箱内（也可以不取），使箱子的剩余空间最小。输出这个最小值。</p>
+        <h3>输入格式</h3>
+        <p>第一行一个整数 V，表示箱子容量。第二行一个整数 n，表示物品总数。接下来 n 行，每行一个正整数，表示第 i 个物品的体积。</p>
+        <h3>输出格式</h3>
+        <p>输出一行一个整数，表示箱子最小剩余空间。</p>
+        <h3>输入输出样例</h3>
+        <p><strong>输入 #1</strong></p>
+        <div class="io-box">24<br>6<br>8<br>3<br>12<br>7<br>9<br>7</div>
+        <p><strong>输出 #1</strong></p>
+        <div class="io-box">0</div>
+        <h3>数据范围</h3>
+        <p>0 &lt; n ≤ 30，1 ≤ V ≤ 20000。</p>
+      `,
+      hints: [
+        { title: "提示 1：枚举法——枚举每个物品放或不放", body: `因为 n 不大，可以用递归或二进制枚举所有子集。对每个子集计算总体积，找出不超过 V 的最大体积。<br><br><strong>Python 二进制枚举：</strong><pre>best = 0
+for mask in range(1 &lt;&lt; n):
+    total = 0
+    for i in range(n):
+        if mask &gt;&gt; i &amp; 1:
+            total += v[i]
+    if total &lt;= V and total &gt; best:
+        best = total</pre><strong>C++ 二进制枚举：</strong><pre>int best = 0;
+for (int mask = 0; mask &lt; (1 &lt;&lt; n); mask++) {
+    int total = 0;
+    for (int i = 0; i &lt; n; i++)
+        if (mask &gt;&gt; i &amp; 1)
+            total += v[i];
+    if (total &lt;= V &amp;&amp; total &gt; best)
+        best = total;
+}</pre>` },
+        { title: "提示 2：优化——01 背包 DP", body: `把问题转化为：在容量为 V 的背包里装物品，使总体积最大。用 <code>dp[j]</code> 表示能否恰好装满 j 的体积，或记录最大可达体积。<br><br><strong>Python 核心转移：</strong><pre>dp = [0] * (V + 1)
+for vol in items:
+    for j in range(V, vol - 1, -1):
+        dp[j] = max(dp[j], dp[j - vol] + vol)</pre><strong>C++ 核心转移：</strong><pre>int dp[20005] = {0};
+for (int i = 0; i &lt; n; i++)
+    for (int j = V; j &gt;= items[i]; j--)
+        dp[j] = max(dp[j], dp[j - items[i]] + items[i]);</pre>` },
+        { title: "提示 3：完整参考代码", body: `<strong>Python：</strong><pre>V = int(input())
+n = int(input())
+items = [int(input()) for _ in range(n)]
+dp = [0] * (V + 1)
+for vol in items:
+    for j in range(V, vol - 1, -1):
+        dp[j] = max(dp[j], dp[j - vol] + vol)
+print(V - dp[V])</pre><strong>C++：</strong><pre>#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+int main() {
+    int V, n;
+    cin &gt;&gt; V &gt;&gt; n;
+    int items[35];
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; items[i];
+    int dp[20005] = {0};
+    for (int i = 0; i &lt; n; i++)
+        for (int j = V; j &gt;= items[i]; j--)
+            dp[j] = max(dp[j], dp[j - items[i]] + items[i]);
+    cout &lt;&lt; V - dp[V] &lt;&lt; endl;
+    return 0;
+}</pre>` }
+      ]
+    },
+    {
+      id: "P1010",
+      title: "[NOIP 1998 普及组] 幂次方",
+      difficulty: "easy",
+      source: "洛谷",
+      url: "https://www.luogu.com.cn/problem/P1010",
+      statement: `
+        <h3>题目描述</h3>
+        <p>任何一个正整数都可以用 2 的幂次方表示。例如 137 = 2<sup>7</sup> + 2<sup>3</sup> + 2<sup>0</sup>。</p>
+        <p>同时约定次方用括号来表示，即 a<sup>b</sup> 可表示为 a(b)。由此可知，137 可表示为 2(7) + 2(3) + 2(0)。进一步地，7 = 2<sup>2</sup> + 2 + 2<sup>0</sup>（其中 2<sup>1</sup> 用 2 表示），3 = 2 + 2<sup>0</sup>。所以 137 最后可表示为 2(2(2) + 2 + 2(0)) + 2(2 + 2(0)) + 2(0)。</p>
+        <p>输入一个正整数 n，输出符合约定的 n 的 0,2 表示（表示中不能有空格）。</p>
+        <h3>输入格式</h3>
+        <p>一行一个正整数 n。</p>
+        <h3>输出格式</h3>
+        <p>符合约定的 n 的 0,2 表示。</p>
+        <h3>输入输出样例</h3>
+        <p><strong>输入 #1</strong></p>
+        <div class="io-box">1315</div>
+        <p><strong>输出 #1</strong></p>
+        <div class="io-box">2(2(2+2(0))+2)+2(2(2+2(0)))+2(2(2)+2(0))+2+2(0)</div>
+        <h3>数据范围</h3>
+        <p>1 ≤ n ≤ 2 × 10<sup>4</sup>。</p>
+      `,
+      hints: [
+        { title: "提示 1：把 n 拆成 2 的幂次方之和", body: `从大到小枚举 2 的幂次。如果某个幂次 ≤ n，就说明这一项要保留，然后 n 减去它，继续枚举更小的幂次。<br><br><strong>Python 思路：</strong><pre>def split(n):
+    parts = []
+    p = 0
+    while (1 &lt;&lt; p) &lt;= n:
+        p += 1
+    # p-1 是最大幂次
+    for k in range(p - 1, -1, -1):
+        if n &gt;= (1 &lt;&lt; k):
+            parts.append(k)
+            n -= (1 &lt;&lt; k)
+    return parts</pre><strong>C++ 思路：</strong><pre>vector&lt;int&gt; split(int n) {
+    vector&lt;int&gt; parts;
+    int p = 0;
+    while ((1 &lt;&lt; p) &lt;= n)
+        p++;
+    // p-1 是最大幂次
+    for (int k = p - 1; k &gt;= 0; k--) {
+        if (n &gt;= (1 &lt;&lt; k)) {
+            parts.push_back(k);
+            n -= (1 &lt;&lt; k);
+        }
+    }
+    return parts;
+}</pre>` },
+        { title: "提示 2：递归处理指数", body: `如果指数 k 是 0，写成 <code>2(0)</code>；如果 k 是 1，写成 <code>2</code>；如果 k 大于 1，写成 <code>2(表达式)</code>，其中表达式继续对 k 做同样的拆分。<br><br><strong>Python 递归函数：</strong><pre>def f(n):
+    if n == 0: return '0'
+    parts = split(n)
+    terms = []
+    for k in parts:
+        if k == 0:
+            terms.append('2(0)')
+        elif k == 1:
+            terms.append('2')
+        else:
+            terms.append('2(' + f(k) + ')')
+    return '+'.join(terms)</pre><strong>C++ 递归函数：</strong><pre>string f(int n) {
+    if (n == 0) return "0";
+    vector&lt;int&gt; parts = split(n);
+    string res;
+    for (int k : parts) {
+        if (!res.empty()) res += "+";
+        if (k == 0) res += "2(0)";
+        else if (k == 1) res += "2";
+        else res += "2(" + f(k) + ")";
+    }
+    return res;
+}</pre>` },
+        { title: "提示 3：完整参考代码", body: `<strong>Python：</strong><pre>def f(n):
+    if n == 0:
+        return '0'
+    parts = []
+    p = 0
+    while (1 &lt;&lt; p) &lt;= n:
+        p += 1
+    for k in range(p - 1, -1, -1):
+        if n &gt;= (1 &lt;&lt; k):
+            parts.append(k)
+            n -= (1 &lt;&lt; k)
+    terms = []
+    for k in parts:
+        if k == 0:
+            terms.append('2(0)')
+        elif k == 1:
+            terms.append('2')
+        else:
+            terms.append('2(' + f(k) + ')')
+    return '+'.join(terms)
+
+n = int(input())
+print(f(n))</pre><strong>C++：</strong><pre>#include &lt;iostream&gt;
+#include &lt;string&gt;
+using namespace std;
+
+string f(int n) {
+    if (n == 0) return "0";
+    string res;
+    int p = 0;
+    while ((1 &lt;&lt; p) &lt;= n) p++;
+    for (int k = p - 1; k &gt;= 0; k--) {
+        if (n &gt;= (1 &lt;&lt; k)) {
+            if (!res.empty()) res += "+";
+            if (k == 0) res += "2(0)";
+            else if (k == 1) res += "2";
+            else res += "2(" + f(k) + ")";
+            n -= (1 &lt;&lt; k);
+        }
+    }
+    return res;
+}
+
+int main() {
+    int n;
+    cin &gt;&gt; n;
+    cout &lt;&lt; f(n) &lt;&lt; endl;
+    return 0;
+}</pre>` }
+      ]
+    }
+  ];
+
+  var currentDiff = read("coding-101-current-diff") || "entry";
+  // 每次进入页面默认回到题目列表，不直接打开上次浏览的题目
+  var currentProblemId = null;
+
+  /* ── 3. 渲染侧边栏 ── */
+  var diffListEl = $("#diff-list");
+  CATEGORIES.forEach(function (cat) {
+    var count = PROBLEMS.filter(function (p) { return p.difficulty === cat.key; }).length;
+    var btn = document.createElement("button");
+    btn.className = "diff-item" + (cat.key === currentDiff ? " active" : "");
+    btn.innerHTML = '<span class="title"><span class="badge ' + cat.badgeClass + '">' + cat.title + '</span></span>' +
+                    '<span class="count">' + count + ' 题</span>';
+    btn.addEventListener("click", function () {
+      currentDiff = cat.key;
+      currentProblemId = null;
+      store("coding-101-current-diff", currentDiff);
+      store("coding-101-current-problem", "");
+      render();
+    });
+    diffListEl.appendChild(btn);
+  });
+
+  function getCategory(key) {
+    return CATEGORIES.find(function (c) { return c.key === key; });
+  }
+
+  /* ── 4. 渲染主内容 ── */
+  function render() {
+    updateActiveSidebar();
+    if (currentProblemId) {
+      renderProblemDetail();
+    } else {
+      renderProblemList();
+    }
+  }
+
+  function updateActiveSidebar() {
+    $$('.diff-item').forEach(function (btn, i) {
+      btn.classList.toggle("active", CATEGORIES[i].key === currentDiff);
+    });
+  }
+
+  function renderProblemList() {
+    var cat = getCategory(currentDiff);
+    var list = PROBLEMS.filter(function (p) { return p.difficulty === currentDiff; });
+    var html =
+      '<div class="card">' +
+        '<h1>' + cat.title + ' 题目</h1>' +
+        '<p class="subtitle">点击题目查看题面、渐进式提示和原题链接。目前该难度共有 ' + list.length + ' 道题。</p>' +
+      '</div>';
+
+    if (list.length === 0) {
+      html +=
+        '<div class="card" style="margin-top:20px;">' +
+          '<div class="empty-state">' +
+            '<div style="font-size:40px;">📝</div>' +
+            '<p>该难度暂时没有题目，敬请期待。</p>' +
+          '</div>' +
+        '</div>';
+    } else {
+      html += '<div class="card" style="margin-top:20px;"><div class="problem-list">';
+      list.forEach(function (p) {
+        html +=
+          '<div class="problem-row" role="button" tabindex="0" data-id="' + p.id + '" aria-label="查看题目 ' + p.id + ' ' + p.title + '">' +
+            '<span class="id">' + p.id + '</span>' +
+            '<span class="title">' + p.title + '</span>' +
+            '<span class="source">' + p.source + '</span>' +
+          '</div>';
+      });
+      html += '</div></div>';
+    }
+
+    $("#main").innerHTML = html;
+
+    $$('.problem-row').forEach(function (row) {
+      function enterProblem() {
+        currentProblemId = row.dataset.id;
+        store("coding-101-current-problem", currentProblemId);
+        render();
+      }
+      row.addEventListener("click", enterProblem);
+      row.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          enterProblem();
+        }
+      });
+    });
+  }
+
+  function renderProblemDetail() {
+    var p = PROBLEMS.find(function (x) { return x.id === currentProblemId; });
+    if (!p) {
+      currentProblemId = null;
+      render();
+      return;
+    }
+
+    var cat = getCategory(p.difficulty);
+    // 每次进入题目详情时提示默认全部收起
+    var revealed = 0;
+
+    var html =
+      '<div class="card">' +
+        '<div class="detail-head">' +
+          '<div class="back" id="back-to-list">← 返回题目列表</div>' +
+          '<h1>' + p.title + '</h1>' +
+          '<div class="detail-meta">' +
+            '<span class="badge ' + cat.badgeClass + '">' + cat.title + '</span>' +
+            '<span style="color:var(--text-faint);font-size:13px;">' + p.id + ' · ' + p.source + '</span>' +
+            '<a href="' + p.url + '" target="_blank" rel="noopener noreferrer">在 ' + p.source + ' 查看原题 →</a>' +
+          '</div>' +
+        '</div>' +
+        '<div class="statement">' + p.statement + '</div>' +
+
+        '<div class="hints-box" id="hints-box">' +
+          hintsHeaderHtml(p, revealed) +
+          renderHintsHtml(p, revealed) +
+        '</div>' +
+      '</div>';
+
+    $("#main").innerHTML = html;
+
+    $("#back-to-list").addEventListener("click", function () {
+      currentProblemId = null;
+      store("coding-101-current-problem", "");
+      render();
+    });
+
+    bindHintEvents(p, revealed);
+  }
+
+  function hintsHeaderHtml(p, revealed) {
+    var left = Math.max(0, p.hints.length - revealed);
+    return '<div class="hints-head">' +
+        '<div class="section-title" style="margin-bottom:0;">渐进式提示</div>' +
+        '<button class="hint-btn" id="next-hint" ' + (left === 0 ? "disabled" : "") + '>' +
+          (left === 0 ? "所有提示已显示" : "显示下一个提示（还剩 " + left + " 个）") +
+        '</button>' +
+      '</div>';
+  }
+
+  function renderHintsHtml(p, revealed) {
+    var html = "";
+    p.hints.forEach(function (h, i) {
+      var expanded = i < revealed ? "expanded" : "";
+      html +=
+        '<div class="hint ' + expanded + '" data-index="' + i + '">' +
+          '<div class="hint-header">' +
+            '<span class="hint-title">' + h.title + '</span>' +
+            '<span class="hint-toggle">▼</span>' +
+          '</div>' +
+          '<div class="hint-body">' + h.body + '</div>' +
+        '</div>';
+    });
+    return html;
+  }
+
+  function bindHintEvents(p, revealed) {
+    $$('.hint-header').forEach(function (header) {
+      header.addEventListener("click", function () {
+        var hint = this.parentElement;
+        var idx = parseInt(hint.dataset.index, 10);
+        if (idx < revealed) {
+          hint.classList.toggle("expanded");
+        }
+      });
+    });
+
+    var btn = $("#next-hint");
+    if (btn && !btn.disabled) {
+      btn.addEventListener("click", function () {
+        revealed = Math.min(p.hints.length, revealed + 1);
+        $("#hints-box").innerHTML =
+          hintsHeaderHtml(p, revealed) +
+          renderHintsHtml(p, revealed);
+        bindHintEvents(p, revealed);
+      });
+    }
+  }
+
+  /* ── 5. 初始化 ── */
+  render();
+})();
+</script>
+</body>
+</html>
