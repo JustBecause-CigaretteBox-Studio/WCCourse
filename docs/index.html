@@ -43,26 +43,47 @@
   /* Main */
   main { max-width: 720px; margin: 0 auto; padding: 0 24px 80px; }
 
-  /* Download cards */
-  .downloads { display: flex; flex-direction: column; gap: 16px; margin: 40px 0; }
+  /* Preview section - highlighted at top */
+  .preview-section {
+    text-align: center; margin: 32px 0 48px;
+    padding: 36px 32px; border: 1px solid var(--accent);
+    border-radius: 16px; background: rgba(59,130,246,0.06);
+  }
+  .preview-section h3 { font-size: 18px; margin-bottom: 10px; color: var(--text); }
+  .preview-section p { font-size: 14px; color: var(--text-soft); margin-bottom: 20px; }
+  .preview-btn {
+    display: inline-block; padding: 14px 36px; border-radius: 12px;
+    font-size: 16px; font-weight: 700; background: var(--accent);
+    color: #fff; border: none; cursor: pointer;
+    transition: background .15s, transform .15s;
+  }
+  .preview-btn:hover { background: var(--accent-hover); transform: translateY(-2px); text-decoration: none; }
+  .preview-hint { margin-top: 14px; font-size: 12px; color: var(--text-faint); }
+
+  /* Download cards - disabled */
+  .downloads { display: flex; flex-direction: column; gap: 16px; margin: 24px 0; }
   .dl-card {
     display: flex; align-items: center; gap: 20px;
-    background: var(--bg-card); border: 1px solid var(--border);
+    background: var(--bg-soft); border: 1px solid var(--border);
     border-radius: 16px; padding: 24px 28px;
-    transition: transform .15s, box-shadow .15s, border-color .15s;
+    opacity: 0.6; pointer-events: none;
   }
-  .dl-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.25); border-color: var(--accent); }
   .dl-icon { font-size: 36px; flex-shrink: 0; width: 48px; text-align: center; }
   .dl-info { flex: 1; }
-  .dl-info h3 { font-size: 17px; margin-bottom: 4px; }
+  .dl-info h3 { font-size: 17px; margin-bottom: 4px; color: var(--text-faint); }
   .dl-info p { font-size: 13px; color: var(--text-faint); }
   .dl-btn {
     flex-shrink: 0; display: inline-flex; align-items: center; gap: 8px;
     padding: 10px 24px; border-radius: 10px; font-size: 14px; font-weight: 700;
-    background: var(--accent); color: #fff; border: none; cursor: pointer;
-    transition: background .15s;
+    background: var(--border); color: var(--text-faint); border: none;
   }
-  .dl-btn:hover { background: var(--accent-hover); text-decoration: none; }
+
+  /* Closed notice */
+  .closed-notice {
+    text-align: center; padding: 16px 20px; margin: 16px 0 32px;
+    background: rgba(245,158,11,0.08); border: 1px dashed var(--warning);
+    border-radius: 12px; font-size: 14px; color: var(--warning);
+  }
 
   /* Notes */
   .note {
@@ -103,7 +124,7 @@
   @media (max-width: 600px) {
     header h1 { font-size: 28px; }
     .dl-card { flex-direction: column; text-align: center; gap: 16px; }
-    .dl-btn { width: 100%; justify-content: center; }
+    .preview-btn { width: 100%; }
   }
 </style>
 </head>
@@ -117,56 +138,61 @@
 
 <main>
 
+  <!-- 在线预览：置顶 -->
+  <div class="preview-section">
+    <h3>🌐 在线预览课程（免下载）</h3>
+    <p>所有课程页面均为单文件 HTML，无需安装任何软件，浏览器直接打开即可学习。</p>
+    <a class="preview-btn" href="./preview/index.html">立即在线预览 →</a>
+    <p class="preview-hint">提示：在线版学习进度保存在浏览器 localStorage 中，跨页面可能无法同步。</p>
+  </div>
+
+  <!-- 桌面版下载：已关闭 -->
   <div class="downloads">
-    <a class="dl-card" href="https://github.com/JustBecause-CigaretteBox-Studio/WCCourse/releases/latest/download/%E9%87%8E%E9%B8%A1%E5%8A%A8%E7%94%BB%E7%BC%96%E7%A8%8B%E8%AF%BE.exe" download>
+    <div class="dl-card">
       <div class="dl-icon">🪟</div>
       <div class="dl-info">
         <h3>Windows 便携版</h3>
         <p>双击即可运行，无需安装。适用于 Windows 10 / 11。</p>
       </div>
-      <div class="dl-btn">下载 .exe</div>
-    </a>
+      <div class="dl-btn">暂未开放</div>
+    </div>
 
-    <a class="dl-card" href="https://github.com/JustBecause-CigaretteBox-Studio/WCCourse/releases/latest/download/%E9%87%8E%E9%B8%A1%E5%8A%A8%E7%94%BB%E7%BC%96%E7%A8%8B%E8%AF%BE-macOS-arm64.tar.gz" download>
+    <div class="dl-card">
       <div class="dl-icon">🍎</div>
       <div class="dl-info">
         <h3>macOS Apple Silicon</h3>
         <p>适用于 M1 / M2 / M3 / M4 芯片的 Mac。下载后解压即可使用。</p>
       </div>
-      <div class="dl-btn">下载 arm64</div>
-    </a>
+      <div class="dl-btn">暂未开放</div>
+    </div>
 
-    <a class="dl-card" href="https://github.com/JustBecause-CigaretteBox-Studio/WCCourse/releases/latest/download/%E9%87%8E%E9%B8%A1%E5%8A%A8%E7%94%BB%E7%BC%96%E7%A8%8B%E8%AF%BE-macOS-x64.tar.gz" download>
+    <div class="dl-card">
       <div class="dl-icon">🖥️</div>
       <div class="dl-info">
         <h3>macOS Intel</h3>
         <p>适用于 Intel 芯片的 Mac。下载后解压即可使用。</p>
       </div>
-      <div class="dl-btn">下载 x64</div>
-    </a>
+      <div class="dl-btn">暂未开放</div>
+    </div>
+  </div>
+
+  <div class="closed-notice">
+    由于一些问题，暂时没有开放桌面版下载，可以点击上方的预览进行学习
   </div>
 
   <div class="note">
     <h3>📦 使用说明</h3>
     <ul>
-      <li><strong>Windows：</strong>下载 .exe 文件后双击直接运行，无需安装，学习进度自动保存在本地。</li>
-      <li><strong>macOS：</strong>下载 .tar.gz 后解压，将应用拖入「应用程序」文件夹即可使用。</li>
+      <li><strong>在线学习：</strong>点击上方「立即在线预览」按钮，浏览器直接打开课程页面即可开始学习。</li>
       <li>课程支持深色模式、C++ / Python 双语切换、章节打卡与进度保存。</li>
       <li>如果遇到问题，请前往 <a href="https://github.com/JustBecause-CigaretteBox-Studio/WCCourse/issues">GitHub Issues</a> 反馈。</li>
     </ul>
   </div>
 
   <div class="browser-section">
-    <h3>🌐 在线预览课程（免下载）</h3>
-    <p>所有课程页面均为单文件 HTML，无需安装任何软件，浏览器直接打开即可学习。</p>
-    <a class="browser-btn" href="./preview/index.html">立即在线预览 →</a>
-    <p style="margin-top:12px;font-size:12px;color:var(--text-faint);">提示：在线版学习进度保存在浏览器 localStorage 中，跨页面可能无法同步。</p>
-  </div>
-
-  <div class="browser-section">
-    <h3>📁 查看所有发布版本</h3>
-    <p>历史版本、更新日志与源码请访问 GitHub Releases 页面。</p>
-    <a class="browser-btn" href="https://github.com/JustBecause-CigaretteBox-Studio/WCCourse/releases" target="_blank">前往 Releases →</a>
+    <h3>📁 查看源码与历史版本</h3>
+    <p>课程源码、更新日志与历史版本请访问 GitHub 仓库。</p>
+    <a class="browser-btn" href="https://github.com/JustBecause-CigaretteBox-Studio/WCCourse" target="_blank">前往 GitHub 仓库 →</a>
   </div>
 
 </main>
