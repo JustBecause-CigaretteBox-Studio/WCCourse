@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    开始之前 · 常见问题与准备说明
+    ─────────────────────────────────────────────────────────────
+    完全本地运行的单文件网页。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="编程入门课开始之前的常见问题：为什么要学编程、如何安装编程环境等。">
+  <title>野鸡动画编程课 · 开始之前</title>
+  <style>
+  /* ══════════════════════════════════════════════════════════
+     1. 主题变量（与主页/章节文件一致）
+     ══════════════════════════════════════════════════════════ */
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+    --accent:       #0ea5e9;
+    --accent-hover: #0284c7;
+    --warn:         #f59e0b;
+    --ok:           #10b981;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+    --accent:       #38bdf8;
+    --accent-hover: #0ea5e9;
+    --warn:         #fbbf24;
+    --ok:           #34d399;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     2. 基础与布局
+     ══════════════════════════════════════════════════════════ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+    min-height: 100vh;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+  /* ── 顶栏 ── */
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  .icon-btn.home-btn {
+    background: #38bdf8; color: #fff; border-color: #38bdf8;
+    font-weight: 700; font-size: 15px; padding: 0 22px;
+    border-radius: 9999px;
+  }
+  .icon-btn.home-btn:hover { background: #0ea5e9; border-color: #0ea5e9; }
+
+  /* ── 主体 ── */
+  main { padding: 32px 0 96px; }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 32px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; }
+  .hero h1 { font-size: 36px; font-weight: 900; }
+  @media (max-width: 640px) { .hero h1 { font-size: 26px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .hero strong { color: #fff; }
+
+  /* ── 卡片通用 ── */
+  .card {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 20px; font-weight: 800; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .card h2::before {
+    content: ""; display: inline-block; width: 4px; height: 20px;
+    border-radius: 99px; background: var(--accent);
+  }
+  .card p, .card li {
+    font-size: 14px; line-height: 2; color: var(--text-soft);
+  }
+  .card ul { padding-left: 0; list-style: none; }
+
+  /* ── 人群列表（圆圈标记） ── */
+  .audience-list { display: flex; flex-direction: column; gap: 10px; }
+  .audience-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 14px; border-radius: 12px;
+    background: var(--bg-soft); border: 1px solid var(--border);
+  }
+  .audience-dot {
+    flex-shrink: 0; width: 10px; height: 10px; margin-top: 9px;
+    border-radius: 50%; background: var(--accent);
+  }
+  .audience-item span { font-size: 14px; line-height: 1.8; color: var(--text-soft); }
+
+  /* ── 强调框 ── */
+  .highlight-box {
+    padding: 20px 24px; border-radius: 14px;
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: #fff; text-align: center;
+    font-size: 18px; font-weight: 800; line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .highlight-box p { color: #fff; }
+
+  .notice {
+    padding: 16px 20px; border-radius: 12px;
+    border-left: 4px solid var(--warn);
+    background: var(--bg-soft); color: var(--text-soft);
+    font-size: 14px; line-height: 1.9; margin-bottom: 20px;
+  }
+  .notice strong { color: var(--text); }
+
+  /* ── 标签页 ── */
+  .tabs {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+    border-bottom: 1px solid var(--border); padding-bottom: 12px;
+  }
+  .tab {
+    padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg-soft); color: var(--text-soft);
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: .15s;
+  }
+  .tab:hover { border-color: var(--accent); color: var(--accent); }
+  .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── 语言选择卡片 ── */
+  .lang-grid { display: grid; gap: 16px; margin-bottom: 24px; }
+  @media (min-width: 640px) { .lang-grid { grid-template-columns: 1fr 1fr; } }
+  .lang-card {
+    border: 2px solid var(--border); border-radius: 16px;
+    padding: 24px; text-align: center; cursor: pointer;
+    background: var(--bg-card); transition: .15s;
+  }
+  .lang-card:hover { border-color: var(--accent); }
+  .lang-card.active { border-color: var(--accent); background: var(--bg-soft); }
+  .lang-icon {
+    width: 56px; height: 56px; margin: 0 auto 12px;
+    border-radius: 14px; display: flex; align-items: center; justify-content: center;
+    background: var(--bg-soft); color: var(--accent);
+    font-size: 22px; font-weight: 900;
+  }
+  .lang-card h3 { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+  .lang-card p { font-size: 13px; line-height: 1.7; color: var(--text-soft); }
+
+  /* ── 语言选择问卷 ── */
+  .lang-quiz {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); margin-bottom: 24px;
+    box-shadow: 0 4px 16px rgba(15,23,42,.05);
+  }
+  .lang-quiz-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 18px 22px; cursor: pointer;
+  }
+  .lang-quiz-header h3 { font-size: 16px; font-weight: 800; }
+  .lang-quiz-header .quiz-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 18px; border-radius: 10px; border: 0;
+    background: linear-gradient(135deg, #0ea5e9, #8b5cf6); color: #fff;
+    font-size: 14px; font-weight: 800;
+    box-shadow: 0 4px 12px rgba(14,165,233,.35);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .lang-quiz-header .quiz-toggle:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(14,165,233,.5); }
+  .lang-quiz-header .quiz-toggle::after { content: "开始填写"; }
+  .lang-quiz.open .lang-quiz-header .quiz-toggle::after { content: "收起问卷"; }
+  .lang-quiz-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height .35s ease, padding .35s ease;
+    padding: 0 22px;
+  }
+  .lang-quiz.open .lang-quiz-body {
+    max-height: 900px; padding: 0 22px 22px;
+  }
+  .lang-quiz-hint { font-size: 13px; color: var(--text-soft); margin-bottom: 18px; line-height: 1.7; }
+  .lang-quiz-q { margin-bottom: 18px; }
+  .lang-quiz-q-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .lang-quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: border-color .15s, background .15s;
+  }
+  .lang-quiz-opt:hover { border-color: var(--accent); }
+  .lang-quiz-opt input { margin-right: 8px; }
+  .lang-quiz-opt.checked { border-color: var(--accent); background: var(--bg-soft); }
+  .lang-quiz-result {
+    margin-top: 18px; padding: 16px 18px; border-radius: 12px;
+    background: var(--bg-soft); border: 1px solid var(--border);
+  }
+  .lang-quiz-result h4 { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
+  .lang-quiz-result p { font-size: 13px; line-height: 1.8; color: var(--text-soft); }
+
+  /* ── 下载选项 ── */
+  .download-option {
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; margin-bottom: 16px; background: var(--bg-soft);
+  }
+  .download-option h4 { font-size: 16px; font-weight: 800; margin-bottom: 10px; }
+  .download-option p { font-size: 13px; line-height: 1.9; margin-bottom: 12px; }
+  .download-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 8px;
+    background: var(--accent); color: #fff;
+    font-size: 13px; font-weight: 700; text-decoration: none;
+  }
+  .download-link:hover { background: var(--accent-hover); }
+
+  /* ── 步骤列表 ── */
+  .steps { counter-reset: step; padding-left: 0; list-style: none; }
+  .steps li {
+    position: relative; padding-left: 36px; margin-bottom: 16px;
+    font-size: 14px; line-height: 1.9; color: var(--text-soft);
+  }
+  .steps li::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute; left: 0; top: 2px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-size: 12px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding: 32px 16px; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     顶栏
+     ════════════════════════════════════════════════════════════ -->
+<header>
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="logo">&lt;/&gt;</span>
+      <span>野鸡动画编程课</span>
+    </a>
+    <div class="header-right">
+      <a class="icon-btn home-btn" href="index.html" title="返回课程主页">返回主页</a>
+      <button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════════
+     主体内容
+     ════════════════════════════════════════════════════════════ -->
+<main class="container">
+
+  <section class="hero" id="why-ai">
+    <h1>有 AI 还学编程干嘛</h1>
+    <p>
+      在这个 AI 普及的时代，作者整出了“成人编程”。<br>
+      于是很多人问：“都有 AI 写代码了为什么还学编程？”<br><br>
+      答案很简单：<strong>学编程是为了更好地用 AI，不只是用来写代码。</strong>
+    </p>
+  </section>
+
+  <article class="card">
+    <h2>本教程适合这些人</h2>
+    <ul class="audience-list">
+      <li class="audience-item"><span class="audience-dot"></span><span>会用 AI 的</span></li>
+      <li class="audience-item"><span class="audience-dot"></span><span>不会用 AI 的</span></li>
+      <li class="audience-item"><span class="audience-dot"></span><span>大学 C++ / Python 课听不懂的</span></li>
+      <li class="audience-item"><span class="audience-dot"></span><span>总觉得 AI 不好用，听不懂话、老是说假话的</span></li>
+      <li class="audience-item"><span class="audience-dot"></span><span>想让 AI 帮自己干活，却不知道具体做法的</span></li>
+      <li class="audience-item"><span class="audience-dot"></span><span>养龙虾不会装软件的</span></li>
+      <li class="audience-item"><span class="audience-dot"></span><span>认为编程很重要，但不知道哪里重要的</span></li>
+      <li class="audience-item"><span class="audience-dot"></span><span>学过少儿编程，想重拾儿时回忆的</span></li>
+      <li class="audience-item"><span class="audience-dot"></span><span>想利用电教系统展示自己的</span></li>
+      <li class="audience-item"><span class="audience-dot"></span><span>单纯觉得编程好玩的</span></li>
+      <li class="audience-item"><span class="audience-dot"></span><span>网上找的教程听不懂的</span></li>
+      <li class="audience-item"><span class="audience-dot"></span><span>没找到自己是以上哪些人的</span></li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h2>本教程会怎么教</h2>
+    <p>
+      本教程并不会一味地教你手搓代码浪费时间，也不会用名校封面加包浆清朝老 PPT 忽悠你。
+    </p>
+    <p style="margin-top:12px;">
+      而是会教你入门、读懂代码后，迅速学会与 AI 工作的方式，让你真正爽用 AI，把 AI 变成你最牛的牛马。
+    </p>
+  </article>
+
+  <div class="highlight-box">
+    <p>只要会识字，就能会编程！</p>
+  </div>
+
+  <article class="card">
+    <h2>学编程的好处</h2>
+    <p>
+      本教程带来的好处是多方面的。作者举一个简单的例子：你在学会编程的过程中，会自然学会各种专业工具的用法。
+    </p>
+  </article>
+
+  <article class="card" id="setup">
+    <h2>编程 APP 怎么装</h2>
+    <p>
+      那么让我们先来下载这些专业工具！<br>
+      其实，下载 Python / C++ 并不只是把“一个软件”装到电脑里，而是可能涉及到各种工具。我们把这种下载的过程叫做“<strong>配环境</strong>”。
+    </p>
+    <p>
+      对，不是寄来一台装好的整机，而是<strong>“搞半天还要自己拼”</strong>。不过别怕，下面会手把手带你拼完。
+    </p>
+
+    <div class="notice">
+      <strong>注意</strong><br>
+      以下是下载教程，下载与否不会影响教程学习。你现在已经可以点击上方“返回主页”，然后开始课程了！<br>
+      如果你想让电脑看起来更专业，或者想要自己探索这些工具，作者更推荐下载。
+    </div>
+
+    <div class="tabs" id="os-tabs">
+      <button class="tab active" data-target="windows-panel">Windows</button>
+      <button class="tab" data-target="macos-panel">MacOS</button>
+      <button class="tab" data-target="linux-panel">Linux</button>
+    </div>
+
+    <!-- Windows -->
+    <div class="tab-panel active" id="windows-panel">
+      <p><strong>第一步：选择语言</strong></p>
+      <p>本教程支持 Python / C++，页面上方可以随时切换语言。</p>
+      <p><strong>对于大多数人,Python更加适合，你可以通过这个问卷来帮助你选择语言</strong></p>
+
+      <div class="lang-quiz" id="lang-quiz">
+        <div class="lang-quiz-header" id="lang-quiz-header">
+          <h3>🧩 我适合学 C++ 还是 Python？</h3>
+          <span class="quiz-toggle"></span>
+        </div>
+        <div class="lang-quiz-body" id="lang-quiz-body-wrap">
+          <p class="lang-quiz-hint">3 道题，根据你的目标推荐更合适的入门语言。</p>
+          <div id="lang-quiz-body"></div>
+          <button class="btn" id="lang-quiz-submit" style="margin-top:6px" type="button">查看推荐语言 →</button>
+          <div id="lang-quiz-result"></div>
+        </div>
+      </div>
+
+      <div class="lang-grid" id="lang-choice">
+        <div class="lang-card" data-lang="cpp">
+          <div class="lang-icon">C++</div>
+          <h3>我选 C++</h3>
+          <p>C++适合大型数学研究/竞赛/学习C++课程的学生</p>
+        </div>
+        <div class="lang-card" data-lang="python">
+          <div class="lang-icon">Py</div>
+          <h3>我选 Python</h3>
+          <p>Python适合绝大多数使用本教程的人。</p>
+        </div>
+      </div>
+
+      <div id="lang-detail">
+        <div class="lang-detail-panel" id="cpp-detail">
+          <h3 style="font-size:16px;font-weight:800;margin-bottom:12px;">如何下载 C++（Windows 手把手版）</h3>
+          <p style="margin-bottom:16px;">
+            C++ 有两条路：<strong>Dev-C++</strong> 更像一个普通「APP」，装完打开就能写代码，几乎不用配环境；
+            <strong>VSCode</strong> 更专业，但配置更复杂。新手建议先用方案一跑起来，以后想深入再回来装方案二。
+          </p>
+
+          <div class="download-option">
+            <h4>方案一：Dev-C++（推荐给新手 ⭐）</h4>
+            <p>它就像你手机上的 APP：下载 → 安装 → 打开 → 写代码 → 一键运行，全程不用配环境。竞赛常用，体积也小。</p>
+            <ol class="steps">
+              <li>点击下方按钮进入下载页，找到绿色「Download」按钮，点击后稍等几秒会开始下载。</li>
+              <li>双击下载好的安装包，安装界面可以先选 English（装完能改成中文），然后一路「I Agree / Next」。</li>
+              <li>装完打开 Dev-C++，第一次启动会让你选语言，选择「简体中文 / Chinese」。</li>
+              <li>按 Ctrl + N 新建文件，随便写两行代码，按 F11 编译运行——能看到黑窗口里输出内容，环境就搭好了。</li>
+            </ol>
+            <a class="download-link" href="https://sourceforge.net/projects/orwelldevcpp/" target="_blank" rel="noopener noreferrer">下载 Dev-C++</a>
+          </div>
+
+          <div class="download-option">
+            <h4>方案二：VSCode（更专业，配置较复杂）</h4>
+            <p>
+              先说清楚一个概念：<strong>VSCode 只是一个「编辑器」，本身不会编译 C++</strong>。
+              就像 Word 只是打字的，不代表你学会了外语。所以除了 VSCode，还要单独装一个「编译器」（这里用 MinGW-w64）。
+            </p>
+            <ol class="steps">
+              <li>点击下方按钮下载 VSCode 并安装。安装时「添加到 PATH」默认是勾上的，保持勾选；建议额外勾选「创建桌面快捷方式」，其余一路下一步。</li>
+              <li>下载 MinGW-w64 编译器：进入下载页后，找名字里带 <strong>Win64、UCRT</strong> 的 ZIP 压缩包（不需要安装程序的那种），下载后<strong>解压到一个路径简单的位置</strong>，例如直接解压成 C:\mingw64。</li>
+              <li>把编译器的位置告诉 Windows：在任务栏搜索框搜「编辑系统环境变量」→ 点「环境变量」→ 在下方的「系统变量」里找到 <strong>Path</strong> → 点「编辑」→「新建」→ 填入 <strong>C:\mingw64\bin</strong>（注意末尾有个 \bin）→ 一路点「确定」。</li>
+              <li>验证编译器：按 Win + R，输入 cmd 回车打开黑窗口，输入 <strong>g++ --version</strong> 回车。看到一串版本号就成功了；如果显示「不是内部或外部命令」，说明上一步的路径没填对，回去检查。</li>
+              <li>打开 VSCode，点左边的「扩展」图标（像四块积木），搜索并安装 <strong>C/C++</strong>（Microsoft 出品，通常排第一）和 <strong>Code Runner</strong> 两个插件。</li>
+              <li>在桌面新建一个文件夹（比如叫 code），用 VSCode 的「文件 → 打开文件夹」打开它，在里面新建 hello.cpp 写上代码，点右上角 ▶ 按钮运行。看到下方输出，环境就搭好了。</li>
+            </ol>
+            <a class="download-link" href="https://code.visualstudio.com/" target="_blank" rel="noopener noreferrer">下载 VSCode</a>
+            <a class="download-link" href="https://winlibs.com/" target="_blank" rel="noopener noreferrer" style="margin-left:8px;">下载 MinGW-w64（winlibs）</a>
+          </div>
+        </div>
+
+        <div class="lang-detail-panel" id="python-detail" style="display:none;">
+          <h3 style="font-size:16px;font-weight:800;margin-bottom:12px;">如何下载 Python（Windows 手把手版）</h3>
+          <p style="margin-bottom:16px;">
+            Python 的推荐组合是「Python 本体 + VSCode」：前者是真正干活的解释器，后者是你写代码的编辑器。
+            跟着下面三步走，大约 10 分钟就能跑通第一段代码。
+          </p>
+
+          <div class="download-option">
+            <h4>第 1 步：安装 Python 本体</h4>
+            <ol class="steps">
+              <li>点击下方按钮打开 Python 官网，点首页黄色「Download Python 3.x.x」按钮，下载安装包。</li>
+              <li>双击安装包。<strong>最关键的一步：先勾选窗口最下方的「Add python.exe to PATH」（有的版本写作 Add Python to PATH），再点「Install Now」。</strong>忘记勾选的话，电脑以后会「找不到 Python」。</li>
+              <li>验证：按 Win + R，输入 cmd 回车打开黑窗口，输入 <strong>python --version</strong> 回车。看到 Python 3.x.x 的字样就成功了。</li>
+            </ol>
+            <a class="download-link" href="https://www.python.org/downloads/" target="_blank" rel="noopener noreferrer">下载 Python</a>
+          </div>
+
+          <div class="download-option">
+            <h4>第 2 步：安装 VSCode 和 Python 扩展</h4>
+            <ol class="steps">
+              <li>点击下方按钮下载 VSCode 并安装。「添加到 PATH」默认是勾上的，保持勾选；建议额外勾选「创建桌面快捷方式」，其余一路下一步。</li>
+              <li>打开 VSCode，点左边的「扩展」图标（像四块积木），搜索 <strong>Python</strong>，安装 Microsoft 出品、通常排第一的那个插件。</li>
+            </ol>
+            <a class="download-link" href="https://code.visualstudio.com/" target="_blank" rel="noopener noreferrer">下载 VSCode</a>
+          </div>
+
+          <div class="download-option">
+            <h4>第 3 步：跑通第一段代码</h4>
+            <ol class="steps">
+              <li>在桌面新建一个文件夹（比如叫 code），用 VSCode 的「文件 → 打开文件夹」打开它。</li>
+              <li>在里面新建一个文件，命名为 hello.py，写上 <strong>print("你好，世界！")</strong> 并保存。</li>
+              <li>点右上角 ▶ 按钮运行。第一次运行 VSCode 可能会让你选择解释器，选带有「推荐 / Recommended」标记的那个。看到下方输出「你好，世界！」，环境就搭好了。</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MacOS -->
+    <div class="tab-panel" id="macos-panel">
+      <p>实践出真知。为了锻炼你的 AI 使用技巧，先阅读 Windows 里面的内容，然后问问 AI 在 MacOS 里怎么操作。</p>
+    </div>
+
+    <!-- Linux -->
+    <div class="tab-panel" id="linux-panel">
+      <p>某位名人曾说：使用 Linux 系统的人不需要教程。</p>
+    </div>
+  </article>
+
+  <article class="card" id="more">
+    <h2>更多问题</h2>
+    <p>后续会在这里补充更多常见问题。如果你还有别的疑问，欢迎在学习过程中随时向 AI 提问。</p>
+  </article>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 开始之前</p>
+</footer>
+
+<!-- ════════════════════════════════════════════════════════════
+     交互脚本：主题切换 + 标签页 + 语言选择
+     ════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  /* ── 主题切换（与主页/章节文件共用同一个 key） ── */
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* ── 操作系统标签页 ── */
+  $$('#os-tabs .tab').forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      var target = this.dataset.target;
+      $$('#os-tabs .tab').forEach(function (t) { t.classList.toggle("active", t.dataset.target === target); });
+      $$('.tab-panel').forEach(function (p) { p.classList.toggle("active", p.id === target); });
+    });
+  });
+
+  /* ── Windows 下语言选择 ── */
+  var langCards = $$('.lang-card');
+  var cppDetail = $('#cpp-detail');
+  var pythonDetail = $('#python-detail');
+
+  function showLangDetail(lang) {
+    if (lang === 'cpp') {
+      cppDetail.style.display = 'block';
+      pythonDetail.style.display = 'none';
+    } else {
+      cppDetail.style.display = 'none';
+      pythonDetail.style.display = 'block';
+    }
+    langCards.forEach(function (c) { c.classList.toggle("active", c.dataset.lang === lang); });
+    store("coding-101-preface-lang", lang);
+  }
+
+  langCards.forEach(function (card) {
+    card.addEventListener("click", function () {
+      showLangDetail(this.dataset.lang);
+    });
+  });
+
+  var savedLang = read("coding-101-preface-lang") || "cpp";
+  showLangDetail(savedLang);
+
+  /* ── 语言选择问卷 ── */
+  var LANG_QUIZ = [
+    { q: "你学编程最主要是为了什么？", opts: ["参加竞赛、深入理解计算机原理", "做项目、自动化、数据分析或 AI 创作"] },
+    { q: "你更喜欢的学习方式是？", opts: ["先把基础打扎实，不怕一开始难", "先跑起来看到成果，再慢慢补基础"] },
+    { q: "你当前的学习阶段是？", opts: ["中学生 / 学校有 C++ 课程或竞赛要求", "大学生 / 成人，想用代码解决实际问题"] }
+  ];
+
+  var langQuizEl = $("#lang-quiz");
+  var langQuizHeader = $("#lang-quiz-header");
+
+  var langQuizHtml = "";
+  LANG_QUIZ.forEach(function (item, qi) {
+    var opts = item.opts.map(function (o, oi) {
+      return '<label class="lang-quiz-opt"><input type="radio" name="lq' + qi + '" value="' + oi + '">' +
+        '<span>' + String.fromCharCode(65 + oi) + ". " + o + '</span></label>';
+    }).join("");
+    langQuizHtml += '<div class="lang-quiz-q"><div class="lang-quiz-q-title">Q' + (qi + 1) + ". " + item.q + '</div>' + opts + '</div>';
+  });
+  $("#lang-quiz-body").innerHTML = langQuizHtml;
+
+  $$('#lang-quiz-body input[type=radio]').forEach(function (inp) {
+    inp.addEventListener("change", function () {
+      $$('#lang-quiz-body .lang-quiz-opt').forEach(function (l) { l.classList.remove("checked"); });
+      if (inp.checked) inp.closest(".lang-quiz-opt").classList.add("checked");
+    });
+  });
+
+  langQuizHeader.addEventListener("click", function (e) {
+    if (e.target.closest('.lang-quiz-opt') || e.target.closest('#lang-quiz-submit')) return;
+    langQuizEl.classList.toggle("open");
+  });
+
+  $("#lang-quiz-submit").addEventListener("click", function () {
+    var cpp = 0, python = 0;
+    for (var i = 0; i < LANG_QUIZ.length; i++) {
+      var sel = document.querySelector('input[name="lq' + i + '"]:checked');
+      if (!sel) { alert("请先回答第 " + (i + 1) + " 题"); return; }
+      if (parseInt(sel.value, 10) === 0) cpp++; else python++;
+    }
+    var rec = cpp >= python ? "cpp" : "python";
+    var resultHtml = rec === "cpp"
+      ? '<h4>推荐你选择：C++</h4><p>C++ 适合竞赛、深入理解计算机原理，以及学校课程要求。入门曲线更陡，但后期能力上限更高。</p>'
+      : '<h4>推荐你选择：Python</h4><p>Python 语法更贴近自然语言，适合绝大多数初学者快速做项目、自动化和数据分析。</p>';
+    $("#lang-quiz-result").innerHTML = resultHtml;
+    showLangDetail(rec);
+    $("#lang-quiz-result").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+})();
+</script>
+
+</body>
+</html>

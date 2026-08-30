@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>恭喜你完成第一阶段！ · 野鸡动画编程课</title>
+<style>
+  :root {
+    --bg: #f1f5f9; --bg-card: #ffffff; --text: #0f172a;
+    --text-soft: #475569; --text-faint: #94a3b8; --border: #e2e8f0;
+  }
+  html.dark {
+    --bg: #0f172a; --bg-card: #1e293b; --text: #e2e8f0;
+    --text-soft: #cbd5e1; --text-faint: #64748b; --border: #334155;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    position: relative; z-index: 1;
+    max-width: 560px; width: 100%; text-align: center;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 48px 36px;
+    box-shadow: 0 12px 40px rgba(15,23,42,.10);
+  }
+  .emoji { font-size: 56px; }
+  h1 { font-size: 28px; margin: 16px 0 20px; }
+  p { color: var(--text-soft); font-size: 15px; line-height: 2; }
+  .free { color: var(--text-faint); font-size: 13.5px; margin-top: 4px; }
+  .donate-line { margin-top: 20px; font-size: 14.5px; }
+  .btns { display: flex; gap: 14px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
+  .btn {
+    display: inline-block; padding: 12px 30px; border-radius: 12px;
+    font-size: 15px; font-weight: 700; text-decoration: none; cursor: pointer;
+    border: 1px solid var(--border); transition: transform .15s, box-shadow .15s;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(15,23,42,.15); }
+  .btn-donate { background: linear-gradient(135deg, #f59e0b, #f97316); color: #fff; border: none; }
+  .btn-update { background: #0ea5e9; color: #fff; border: none; }
+  .btn-home { background: var(--bg); color: var(--text-soft); }
+  .btn-next { background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; }
+  #confetti { position: fixed; inset: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<canvas id="confetti"></canvas>
+
+<div class="card">
+  <div class="emoji">🎉</div>
+  <h1>核心课程完成！</h1>
+  <p>前五章全部通关——你已经能和电脑交朋友、写函数、摆数据、用 AI 做项目，还会自己排错。</p>
+  <p class="free">第六章「语法补完课」已解锁，补齐后面会用到的常用语法</p>
+  <p class="donate-line">如果你喜欢这个教程，可以对野鸡动画进行捐赠</p>
+  <div class="btns">
+    <a class="btn btn-next" href="编程入门教程第六章.html">开始第六章 →</a>
+    <a class="btn btn-update" href="https://github.com/JustBecause-CigaretteBox-Studio/Tutorials" target="_blank" rel="noopener">🔔 获取更新信息</a>
+    <a class="btn btn-donate" href="捐赠.html">❤️ 捐赠</a>
+    <a class="btn btn-home" href="index.html">🏠 返回主页</a>
+  </div>
+</div>
+
+<script>
+/* 主题：与教程其他页面保持一致 */
+(function () {
+  try {
+    if (localStorage.getItem("coding-101-theme") === "dark" ||
+        (!localStorage.getItem("coding-101-theme") && matchMedia("(prefers-color-scheme: dark)").matches)) {
+      document.documentElement.classList.add("dark");
+    }
+  } catch (e) {}
+})();
+
+/* 走到这一页意味着前五章已全部完成 → 解锁第六章 */
+(function () {
+  try { localStorage.setItem("coding-101-ch6-unlocked", "1"); } catch (e) {}
+})();
+
+/* 礼花动画：纯 Canvas，零依赖 */
+(function () {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var canvas = document.getElementById("confetti");
+  var ctx = canvas.getContext("2d");
+  var W, H;
+  function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+  resize(); addEventListener("resize", resize);
+
+  var COLORS = ["#f43f5e", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899", "#facc15"];
+  var pieces = [];
+  function burst(x, y, n) {
+    for (var i = 0; i < n; i++) {
+      pieces.push({
+        x: x, y: y,
+        vx: (Math.random() - 0.5) * 14,
+        vy: -Math.random() * 13 - 4,
+        w: 6 + Math.random() * 6, h: 4 + Math.random() * 5,
+        color: COLORS[(Math.random() * COLORS.length) | 0],
+        rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3,
+        life: 1
+      });
+    }
+  }
+  /* 开场三连发 */
+  burst(W * 0.5, H * 0.75, 120);
+  setTimeout(function () { burst(W * 0.25, H * 0.8, 70); }, 350);
+  setTimeout(function () { burst(W * 0.75, H * 0.8, 70); }, 700);
+  /* 之后每隔一阵零星补一发，持续约 8 秒 */
+  var extra = 0;
+  var timer = setInterval(function () {
+    burst(Math.random() * W, H * 0.85, 30);
+    if (++extra >= 5) clearInterval(timer);
+  }, 1300);
+
+  (function frame() {
+    ctx.clearRect(0, 0, W, H);
+    pieces = pieces.filter(function (p) { return p.life > 0 && p.y < H + 30; });
+    pieces.forEach(function (p) {
+      p.vy += 0.25; p.x += p.vx; p.y += p.vy;
+      p.vx *= 0.99; p.rot += p.vr;
+      if (p.vy > 2) p.life -= 0.008;
+      ctx.save();
+      ctx.globalAlpha = Math.max(p.life, 0);
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    requestAnimationFrame(frame);
+  })();
+})();
+</script>
+</body>
+</html>
