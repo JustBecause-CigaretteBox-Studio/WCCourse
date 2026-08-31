@@ -1,4 +1,4 @@
-const CACHE_NAME = 'yeji-course-v1';
+const CACHE_NAME = 'yeji-course-v2';
 const CACHE_URLS = [
   './index.html',
   './开始之前.html',
@@ -30,6 +30,15 @@ const CACHE_URLS = [
 self.addEventListener('install', function(e) {
   e.waitUntil(caches.open(CACHE_NAME).then(function(cache) {
     return cache.addAll(CACHE_URLS);
+  }));
+});
+
+self.addEventListener('activate', function(e) {
+  e.waitUntil(caches.keys().then(function(names) {
+    return Promise.all(
+      names.filter(function(n) { return n !== CACHE_NAME; })
+           .map(function(n) { return caches.delete(n); })
+    );
   }));
 });
 
