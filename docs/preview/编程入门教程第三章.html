@@ -1824,5 +1824,16 @@ print("公园站的相邻站：", metro["公园"])</pre></div>
   });
 })();
 </script>
-<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js");}</script></body>
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
 </html>

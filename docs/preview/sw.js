@@ -28,12 +28,14 @@ const CACHE_URLS = [
 ];
 
 self.addEventListener('install', function(e) {
+  self.skipWaiting();
   e.waitUntil(caches.open(CACHE_NAME).then(function(cache) {
     return cache.addAll(CACHE_URLS);
   }));
 });
 
 self.addEventListener('activate', function(e) {
+  self.clients.claim();
   e.waitUntil(caches.keys().then(function(names) {
     return Promise.all(
       names.filter(function(n) { return n !== CACHE_NAME; })
