@@ -1,1 +1,1169 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="写给完全新手的编程入门课主页。支持离线打开、深色模式，可跳转到各章节并查看学习进度。"><title>野鸡动画编程课</title><style> /* ══════════════════════════════════════════════════════════ 1. 主题变量（与章节文件保持一致） ══════════════════════════════════════════════════════════ */ :root { --bg: #f6f4ee; --bg-section: #fdfcf9; --bg-card: #ffffff; --bg-soft: #f8fafc; --text: #1e293b; --text-soft: #475569; --text-faint: #94a3b8; --border: #e2e8f0; --code-inline-bg: #f1f5f9; } html.dark { --bg: #0e1120; --bg-section: #161a2c; --bg-card: #1e2336; --bg-soft: #232842; --text: #e2e8f0; --text-soft: #cbd5e1; --text-faint: #64748b; --border: #2a3049; --code-inline-bg: #2a3049; } /* ══════════════════════════════════════════════════════════ 2. 基础与布局 ══════════════════════════════════════════════════════════ */ * { margin: 0; padding: 0; box-sizing: border-box; } html { scroll-behavior: smooth; } body { background: var(--bg); color: var(--text); font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif; transition: background .2s, color .2s; } .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; } /* ── 顶栏 ── */ header { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); } .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; } .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; } .brand .logo { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: #1c1f2e; color: #38bdf8; font-size: 15px; } .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; } .icon-btn { display: flex; align-items: center; justify-content: center; gap: 4px; height: 32px; min-width: 32px; padding: 0 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-soft); font-size: 13px; font-weight: 600; cursor: pointer; } .icon-btn:hover { background: var(--bg-soft); } /* 顶栏常驻按钮 */ .donate-top { padding: 7px 16px; border-radius: 10px; font-size: 13.5px; font-weight: 700; background: linear-gradient(135deg, #f59e0b, #f97316); color: #fff; text-decoration: none; box-shadow: 0 2px 10px rgba(249,115,22,.35); transition: transform .15s, box-shadow .15s; } .donate-top:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(249,115,22,.5); } .update-top { padding: 7px 16px; border-radius: 10px; font-size: 13.5px; font-weight: 700; background: linear-gradient(135deg, #0ea5e9, #8b5cf6); color: #fff; text-decoration: none; box-shadow: 0 2px 10px rgba(14,165,233,.35); transition: transform .15s, box-shadow .15s; } .update-top:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(14,165,233,.5); } main { padding: 32px 0 96px; } /* ══════════════════════════════════════════════════════════ 3. 阶段切换器（红框）—— 左右滑动 ══════════════════════════════════════════════════════════ */ .stage-hero { position: relative; overflow: hidden; border-radius: 20px; margin-bottom: 40px; background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440); color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25); } .stage-hero::before, .stage-hero::after { content: ""; position: absolute; width: 256px; height: 256px; border-radius: 99px; filter: blur(60px); opacity: .25; } .stage-hero::before { right: -64px; top: -64px; background: #0ea5e9; } .stage-hero::after { left: -40px; bottom: -80px; background: #8b5cf6; } .stage-hero-track { display: flex; width: 200%; transform: translateX(0); transition: transform .5s cubic-bezier(.25, .8, .25, 1); } body.stage-2 .stage-hero-track { transform: translateX(-50%); } .stage-hero-panel { flex: 0 0 50%; padding: 48px 32px; position: relative; z-index: 1; } @media (max-width: 640px) { .stage-hero-panel { padding: 32px 22px; } } .stage-hero .tag { display: inline-block; padding: 4px 12px; border-radius: 99px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); font-size: 12px; color: #7dd3fc; } .stage-hero h1 { font-size: 44px; font-weight: 900; margin-top: 16px; } @media (max-width: 640px) { .stage-hero h1 { font-size: 30px; } } .stage-hero p { max-width: 560px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; } /* 阶段切换器内的进度/操作条（两阶段同布局同按钮色） */ .overall-progress { margin-top: 28px; padding: 20px; border-radius: 16px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); max-width: 720px; display: flex; align-items: center; gap: 20px; } .overall-progress .prog-main { flex: 1; min-width: 0; } .overall-progress .label { display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px; } .overall-progress .label strong { color: #fff; } .bar { width: 100%; height: 10px; border-radius: 99px; background: rgba(255,255,255,.15); overflow: hidden; } .bar > i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #0ea5e9, #10b981); width: 0; transition: width .5s ease; } .stage-cta { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 13px 22px; border-radius: 12px; border: 0; cursor: pointer; font-size: 14px; font-weight: 800; color: #fff; white-space: nowrap; text-decoration: none; background: linear-gradient(135deg, #10b981, #0ea5e9); box-shadow: 0 6px 18px rgba(16,185,129,.4); transition: transform .15s, box-shadow .15s; } .stage-cta:hover { transform: translateY(-1px); } #stage2-cta { animation: cta-pulse 1.8s ease-in-out infinite; } @keyframes cta-pulse { 0%, 100% { box-shadow: 0 6px 18px rgba(16,185,129,.35); } 50% { box-shadow: 0 6px 28px rgba(16,185,129,.7); } } @media (max-width: 560px) { .overall-progress { flex-direction: column; align-items: stretch; } .stage-cta { justify-content: center; } } /* ══════════════════════════════════════════════════════════ 4. 课程内容区（蓝框）—— 淡入淡出 ══════════════════════════════════════════════════════════ */ .stage-content { position: relative; min-height: 200px; /* 占位，防止初始渲染跳动 */ } .stage-content-panel { position: absolute; top: 0; left: 0; width: 100%; opacity: 0; visibility: hidden; transition: opacity .4s ease, visibility .4s ease; } .stage-content-panel.active { position: relative; opacity: 1; visibility: visible; z-index: 1; } /* ── 开始之前 ── */ .preface-section { position: relative; display: block; border-radius: 16px; overflow: hidden; background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440); padding: 28px; margin-bottom: 40px; text-decoration: none; color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25); transition: transform .15s, box-shadow .15s; } .preface-section:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(15,23,42,.35); } .preface-section::before, .preface-section::after { content: ""; position: absolute; width: 220px; height: 220px; border-radius: 99px; filter: blur(60px); opacity: .22; } .preface-section::before { right: -48px; top: -48px; background: #0ea5e9; } .preface-section::after { left: -32px; bottom: -64px; background: #8b5cf6; } .preface-inner { position: relative; z-index: 1; } .preface-section h2 { font-size: 22px; font-weight: 900; margin-bottom: 10px; } .preface-section > .preface-inner > p { font-size: 14px; line-height: 1.8; color: #cbd5e1; margin-bottom: 18px; max-width: 520px; } .preface-tags { display: flex; flex-wrap: wrap; gap: 10px; } .preface-tag { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 99px; background: rgba(255,255,255,.1); color: #e2e8f0; font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,.15); } .preface-arrow { position: absolute; right: 28px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; z-index: 1; display: flex; align-items: center; justify-content: center; } .preface-arrow svg { width: 100%; height: 100%; } @media (max-width: 640px) { .preface-arrow { right: 16px; width: 28px; height: 28px; } .preface-section { padding: 22px 50px 22px 22px; } } /* ── 章节网格（第一阶段） ── */ .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; } .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; } .chapter-grid { display: grid; gap: 16px; } @media (min-width: 640px) { .chapter-grid { grid-template-columns: repeat(2, 1fr); } } @media (min-width: 1024px) { .chapter-grid { grid-template-columns: repeat(3, 1fr); } } .chapter-card { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 16px; background: var(--bg-card); padding: 24px; transition: transform .15s, box-shadow .15s, border-color .15s; } .chapter-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(15,23,42,.12); } html.dark .chapter-card:hover { border-color: #3b4260; } .chapter-card.coming { opacity: .7; } .chapter-card.coming:hover { transform: none; box-shadow: none; border-color: var(--border); } .chapter-no { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #0284c7; } html.dark .chapter-no { color: #38bdf8; } .chapter-card h3 { font-size: 18px; font-weight: 800; margin-top: 8px; } .chapter-card p { font-size: 14px; line-height: 1.8; color: var(--text-soft); margin-top: 8px; flex: 1; } .lessons-preview { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; } .lessons-preview span { font-size: 12px; color: var(--text-faint); background: var(--bg-soft); padding: 3px 8px; border-radius: 99px; } /* 单章进度 */ .card-progress { margin-top: 16px; } .card-progress .meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-faint); margin-bottom: 6px; } .card-progress .bar { background: var(--bg-soft); } .card-progress .bar > i { background: #10b981; } .chapter-actions { margin-top: 16px; } .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px 16px; border-radius: 10px; background: #0ea5e9; color: #fff; font-size: 14px; font-weight: 700; text-decoration: none; border: 0; cursor: pointer; } .btn:hover { background: #0284c7; } .btn:disabled, .btn[aria-disabled="true"] { background: var(--bg-soft); color: var(--text-faint); cursor: not-allowed; } .btn.done { background: #10b981; } .btn.done:hover { background: #059669; } /* ── 练习项目卡片 ── */ .project-card { display: flex; gap: 20px; align-items: center; border: 1px solid var(--border); border-radius: 16px; background: var(--bg-card); padding: 24px; transition: transform .15s, box-shadow .15s, border-color .15s; } .project-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(15,23,42,.12); border-color: var(--border); } html.dark .project-card:hover { border-color: #3b4260; } .project-icon { font-size: 44px; line-height: 1; } .project-info { flex: 1; min-width: 0; } .project-info h3 { font-size: 18px; font-weight: 800; } .project-info p { font-size: 14px; line-height: 1.8; color: var(--text-soft); margin-top: 6px; } .project-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; } .project-meta span { font-size: 12px; color: var(--text-faint); background: var(--bg-soft); padding: 3px 10px; border-radius: 99px; } .project-actions { min-width: 140px; } @media (max-width: 640px) { .project-card { flex-direction: column; align-items: flex-start; } .project-actions { width: 100%; } } .soon-badge { display: inline-block; padding: 3px 8px; border-radius: 99px; background: var(--bg-soft); color: var(--text-faint); font-size: 12px; font-weight: 700; } /* ── 第二阶段：方向问卷（默认收起） ── */ .dir-quiz { border: 1px solid var(--border); border-radius: 16px; background: var(--bg-card); box-shadow: 0 4px 16px rgba(15,23,42,.05); margin-bottom: 24px; } .dir-quiz-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; cursor: pointer; } .dir-quiz-header h3 { font-size: 18px; font-weight: 800; } .dir-quiz-header .quiz-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 12px; border: 0; background: linear-gradient(135deg, #0ea5e9, #8b5cf6); color: #fff; font-size: 15px; font-weight: 800; box-shadow: 0 4px 14px rgba(14,165,233,.35); transition: transform .15s, box-shadow .15s; } .dir-quiz-header .quiz-toggle:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(14,165,233,.5); } .dir-quiz-header .quiz-toggle::after { content: "开始填写"; } .dir-quiz.open .dir-quiz-header .quiz-toggle::after { content: "收起问卷"; } .dir-quiz-body { max-height: 0; overflow: hidden; transition: max-height .35s ease, padding .35s ease; padding: 0 24px; } .dir-quiz.open .dir-quiz-body { max-height: 1200px; padding: 0 24px 24px; } .quiz-hint { font-size: 13px; color: var(--text-faint); margin-bottom: 18px; } .quiz-q { margin-bottom: 18px; } .quiz-q-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; } .quiz-opt { display: block; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; cursor: pointer; font-size: 13.5px; transition: border-color .15s, background .15s; } .quiz-opt:hover { border-color: #38bdf8; } .quiz-opt input { margin-right: 8px; vertical-align: middle; } .quiz-opt.checked { border-color: #0ea5e9; background: color-mix(in srgb, var(--bg-soft) 70%, #0ea5e9 8%); } /* ── 第二阶段：按语言学习筛选 ── */ .lang-filter { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; padding: 14px 18px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg-card); } .lang-filter > span { font-size: 14px; font-weight: 700; color: var(--text); } .lang-filter button { padding: 7px 14px; border: 1px solid var(--border); border-radius: 99px; background: var(--bg-soft); color: var(--text-soft); font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; } .lang-filter button:hover { border-color: #38bdf8; } .lang-filter button.active { background: linear-gradient(135deg, #0ea5e9, #8b5cf6); color: #fff; border-color: transparent; } .lang-badge { display: inline-block; margin-left: 6px; padding: 2px 6px; border-radius: 4px; background: var(--bg-soft); color: var(--text-faint); font-size: 11px; font-weight: 700; } .dir-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; } .dir-tab { padding: 9px 18px; border: 1px solid var(--border); border-radius: 99px; background: var(--bg-card); color: var(--text-soft); font-size: 13.5px; font-weight: 700; cursor: pointer; transition: all .15s; } .dir-tab:hover { border-color: #38bdf8; } .dir-tab.active { background: linear-gradient(135deg, #0ea5e9, #8b5cf6); color: #fff; border-color: transparent; } .rec-head { margin-bottom: 22px; } .rec-dir { font-size: 18px; font-weight: 900; } .rec-head p { font-size: 13.5px; color: var(--text-faint); margin-top: 6px; line-height: 1.7; } .rec-group { margin-bottom: 34px; } .rec-title { font-size: 16px; font-weight: 800; margin-bottom: 14px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; } .rec-title span { font-size: 12.5px; color: var(--text-faint); font-weight: 500; } .pkg-grid { display: grid; gap: 14px; align-items: stretch; } @media (min-width: 640px) { .pkg-grid { grid-template-columns: repeat(2, 1fr); } } @media (min-width: 1024px) { .pkg-grid { grid-template-columns: repeat(3, 1fr); } } .pkg-card { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 14px; background: var(--bg-card); padding: 18px; min-height: 260px; height: 100%; transition: transform .15s, box-shadow .15s, border-color .15s; } .pkg-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15,23,42,.12); } .pkg-card.dim { opacity: .72; } .pkg-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; } .pkg-code { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; background: #1c1f2e; color: #38bdf8; font-size: 13px; font-weight: 800; } .pkg-tag { font-size: 12px; color: var(--text-faint); background: var(--bg-soft); padding: 3px 10px; border-radius: 99px; } .pkg-card h4 { font-size: 15px; font-weight: 800; line-height: 1.5; } .pkg-intro { font-size: 13px; line-height: 1.7; color: var(--text-soft); margin-top: 8px; flex: 1; } .pkg-note { font-size: 12px; color: #0ea5e9; margin-top: 8px; line-height: 1.6; } .pkg-progress { margin-top: auto; padding-top: 10px; font-size: 12px; color: var(--text-faint); } .pkg-progress .bar { height: 7px; margin-top: 5px; background: var(--bg-soft); } .pkg-progress .bar > i { background: #10b981; } .pkg-actions { margin-top: 14px; } /* ── 提示 ── */ .note { margin-top: 32px; padding: 16px 20px; border-radius: 12px; border: 1px dashed var(--border); background: var(--bg-section); color: var(--text-soft); font-size: 13px; line-height: 1.9; } .note strong { color: var(--text); } footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; } </style></head><body><header><div class="container header-inner"><a class="brand" href="index.html"><span class="logo">&lt;/&gt;</span><span>野鸡动画编程课</span></a><div class="header-right"><a class="update-top" id="update-top" href="https://github.com/JustBecause-CigaretteBox-Studio/Tutorials" target="_blank" rel="noopener">🔔 获取更新信息</a><a class="donate-top" id="donate-top" href="捐赠.html" style="display:none">❤️ 捐赠</a><button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button></div></div></header><main class="container"><div class="stage-hero" id="stage-hero"><div class="stage-hero-track"><div class="stage-hero-panel"><span class="tag">✨ 零基础 · 新手编程入门课</span><h1>野鸡动画编程课·入门</h1><p> 写给完全新手的编程入门课。不需要任何基础——你只需要会认字， 外加一点点好奇心。完成第一阶段核心课程后，即可前往进阶阶段。 </p><div class="overall-progress"><div class="prog-main"><div class="label"><span>第一阶段进度（核心课程）</span><strong id="overall-text">0/0 小节</strong></div><div class="bar"><i id="overall-bar"></i></div></div><button class="stage-cta" id="stage2-cta" style="display:none" type="button">🚀 前往第二阶段 →</button></div></div><div class="stage-hero-panel"><span class="tag">🚀 进阶 · 选修课程包</span><h1>野鸡动画编程课·进阶</h1><p> 恭喜你完成第一阶段。接下来没有固定路线：先完成方向问卷， 或在下方选择一个方向，按「必学榜 / 探索榜 / 其他课程」自由选修。 </p><div class="overall-progress"><div class="prog-main"><div class="label"><span>第二阶段进度（全部选修课程包）</span><strong id="stage2-progress-text">0/0 小节</strong></div><div class="bar"><i id="stage2-progress-bar"></i></div></div><button class="stage-cta" id="back-to-stage1" type="button">← 返回第一阶段</button></div></div></div></div><div class="stage-content" id="stage-content"><div class="stage-content-panel active" id="stage-content-1"><a class="preface-section" href="开始之前.html"><div class="preface-inner"><h2>开始之前</h2><p>如果你还没想好要不要开始，或者不知道从哪里准备，先点击这里。</p><div class="preface-tags"><span class="preface-tag">有 AI 还学编程干嘛</span><span class="preface-tag">编程 APP 怎么装</span><span class="preface-tag">更多问题</span></div></div><div class="preface-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></div></a><h2 class="section-title">第一阶段 · 核心课程</h2><p class="section-sub">点击卡片进入对应章节，进度会自动从浏览器本地存储中读取。完成全部小节后，即可前往第二阶段。</p><div class="chapter-grid" id="chapters"></div></div><div class="stage-content-panel" id="stage-content-2"><p class="section-sub" style="margin-top:0">第一阶段完成后，根据自己的兴趣方向自由选修。先完成方向问卷，或直接在下方选择方向，查看为你推荐的「必学榜 / 探索榜 / 其他课程」。</p><div class="dir-quiz" id="dir-quiz"><div class="dir-quiz-header" id="dir-quiz-header"><h3>🧭 方向选择问卷</h3><span class="quiz-toggle"></span></div><div class="dir-quiz-body" id="dir-quiz-body"><p class="quiz-hint">共 4 道题，帮你找到最合适的学习方向。</p><div id="quiz-body"></div><button class="btn" id="quiz-submit" style="margin-top:6px" type="button">查看我的推荐方向 →</button></div></div><div class="lang-filter" id="lang-filter"><span>按语言学习：</span><button data-lang="all" class="active">我都要学</button><button data-lang="cpp">C++</button><button data-lang="python">Python</button></div><div class="dir-tabs" id="dir-tabs"></div><div id="rec-area"></div><div class="note"><strong>💡 关于本地进度</strong><br> 本课程所有文件均为单文件离线网页。学习进度保存在浏览器的 localStorage 中， 不会上传到网络。如果浏览器对 <code>file://</code> 地址限制较严，进度可能无法跨文件同步； 此时只需回到正在学习的章节文件，进度仍然保留在该文件内。 </div></div></div><h2 class="section-title" style="margin-top:48px">练习题目</h2><p class="section-sub">学完每章后，用精选 OJ 题目练练手。题目提供渐进式提示，可随时收起。</p><div class="project-card"><div class="project-icon">📝</div><div class="project-info"><h3>精选练习题目</h3><p>覆盖入门到巨难五个难度，目前先收录洛谷入门题。可查看题面、展开渐进式提示，并一键跳转到原题网站。</p><div class="project-meta"><span>题目练习</span><span>渐进式提示</span><span>跳转原题</span></div></div><div class="project-actions"><a class="btn" href="题目系统.html">进入题目系统 →</a></div></div><h2 class="section-title" style="margin-top:48px">练习项目</h2><p class="section-sub">学完后动手做项目，把知识变成本领。</p><p class="section-sub"><strong style = "color:rgb(182, 0, 0)">项目的难度通常较大（即使是初级项目），适用于已经非常熟练的学习者。</strong></p><div class="project-card"><div class="project-icon">🛠️</div><div class="project-info"><h3>出题自动机</h3><p>用代码批量生成小学口算题和程序流程题，内置 C++ / Python IDE，可直接在浏览器中运行。</p><div class="project-meta"><span>2 个项目</span><span>内置 IDE</span><span>离线可用</span></div></div><div class="project-actions"><a class="btn" href="项目系统.html">进入项目系统 →</a></div></div></main><footer class="site"><p>写给新手的编程课 · 课程主页</p><p>学会了和电脑说话，接下来——让它替你干活。</p><p>本教程网页通过vibe coding制作，教学文案通过手写制作</p></footer><script> (function () { "use strict"; var $ = function (sel) { return document.querySelector(sel); }; var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }; function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} } function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } } /* ── 主题切换（与章节文件共用同一个 key） ── */ var THEME_KEY = "coding-101-theme"; var themeBtn = $("#theme-btn"); function applyTheme(dark) { document.documentElement.classList.toggle("dark", dark); themeBtn.textContent = dark ? "☀️" : "🌙"; } var savedTheme = read(THEME_KEY); var startDark = savedTheme !== null ? savedTheme === "dark" : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches); applyTheme(startDark); themeBtn.addEventListener("click", function () { var dark = !document.documentElement.classList.contains("dark"); applyTheme(dark); store(THEME_KEY, dark ? "dark" : "light"); }); /* ── 阶段切换：红框滑动 + 蓝框淡入淡出 ── */ var panel1 = $("#stage-content-1"); var panel2 = $("#stage-content-2"); function goStage2() { document.body.classList.add("stage-2"); panel1.classList.remove("active"); panel2.classList.add("active"); try { localStorage.setItem("coding-101-stage", "2"); } catch (e) {} setTimeout(function () { window.scrollTo({ top: 0, behavior: "smooth" }); }, 60); } function goStage1() { document.body.classList.remove("stage-2"); panel2.classList.remove("active"); panel1.classList.add("active"); try { localStorage.setItem("coding-101-stage", "1"); } catch (e) {} setTimeout(function () { window.scrollTo({ top: 0, behavior: "smooth" }); }, 60); } /* 第二阶段尚未开放：入口改为跳转到预告页（不再切到本页的第二阶段面板） */ $("#stage2-cta").addEventListener("click", function () { location.href = "第二阶段预告.html"; }); $("#back-to-stage1").addEventListener("click", goStage1); /* 刷新后恢复阶段位置：第二阶段尚未开放，一律强制留在第一阶段 */ if (read("coding-101-stage") === "2") { try { localStorage.setItem("coding-101-stage", "1"); } catch (e) {} } /* ── 问卷展开/收起 ── */ var quizEl = $("#dir-quiz"); var quizHeader = $("#dir-quiz-header"); quizHeader.addEventListener("click", function () { quizEl.classList.toggle("open"); }); /* ── 1. 章节配置：第一阶段 = 第 1~5 章 ── */ var CHAPTERS = [ { num: 1, title: "和电脑交朋友", desc: "认识编程是什么；学会变量、输入输出、if 判断和 for 循环。", file: "编程入门教程.html", lessons: ["lesson-1", "lesson-2", "lesson-3", "lesson-4", "lesson-5", "lesson-6"], tags: ["变量", "输入输出", "判断", "循环"] }, { num: 2, title: "把功能打包", desc: "把重复使用的功能封装成函数，理解参数与返回值，认识数组，并学习注释与伪代码。", file: "编程入门教程第二章.html", lessons: ["lesson-1", "lesson-2", "lesson-3", "lesson-4", "lesson-5", "lesson-6", "lesson-7", "lesson-8"], tags: ["函数", "参数与返回值", "数组", "注释与伪代码"] }, { num: 3, title: "摆放数据的规矩", desc: "认识数据结构：栈、队列、链表、哈希表、树、图，每种结构都配代码实例与示意图。", file: "编程入门教程第三章.html", lessons: ["lesson-1", "lesson-2", "lesson-3", "lesson-4", "lesson-5", "lesson-6", "lesson-7"], tags: ["数据结构", "栈与队列", "链表", "哈希表", "树与图"] }, { num: 4, title: "Vibe coding", desc: "你负责描述想法，AI 负责写代码。用 vibe coding 从零做出一个口算题生成器项目，全程不用手写一行代码。", file: "编程入门教程第四章.html", lessons: ["lesson-1", "lesson-2", "lesson-3", "lesson-4", "lesson-5", "lesson-6", "lesson-7"], tags: ["Vibe coding", "AI", "提示词", "项目实战"] }, { num: 5, title: "调试与排错", desc: "把报错信息变成线索，学会用 print 逐行追踪变量，区分语法、逻辑、运行时错误，并学会向 AI 描述问题。", file: "编程入门教程第五章.html", lessons: ["lesson-1", "lesson-2", "lesson-3", "lesson-4", "lesson-5"], tags: ["调试", "报错", "print 调试", "向 AI 提问"] }, { num: 6, title: "语法补完课", desc: "补齐第二阶段必备的常用语法：逻辑运算符、三元表达式、位运算、列表切片、字符串格式化、文件读写。", file: "编程入门教程第六章.html", lessons: ["lesson-1", "lesson-2", "lesson-3", "lesson-4", "lesson-5", "lesson-6", "lesson-7"], tags: ["逻辑运算符", "位运算", "格式化", "文件读写"] } ]; var STAGE1_NUMS = CHAPTERS.map(function (c) { return c.num; }); var CHAPTERS_BY_NUM = {}; CHAPTERS.forEach(function (c) { CHAPTERS_BY_NUM[c.num] = c; }); /* 第六章：语法补完课，为第一阶段的收尾章节 */ var CH6 = { num: 6, file: "编程入门教程第六章.html", key: "coding-101-ch6-progress", total: 7 }; /* ── 2. 读取进度 ── */ function progressFor(key, total) { var data = {}; try { data = JSON.parse(read(key) || "{}"); } catch (e) {} var done = Object.keys(data).filter(function (k) { return data[k]; }).length; return { done: done, total: total, pct: total ? Math.round(done / total * 100) : 0 }; } function chapterProgress(ch) { var key = ch.num === 1 ? "coding-101-progress" : "coding-101-ch" + ch.num + "-progress"; return progressFor(key, ch.lessons.length); } /* ── 3. 渲染第一阶段章节卡片 ── */ var grid = $("#chapters"); var overallDone = 0, overallTotal = 0; /* 第六章默认锁住：前五章全部完成、看过恭喜页之后才解锁。 兼容老用户——若 ch6-progress 里已有数据（旧版本第六章可直接学）， 说明已经学过，自动解锁。 */ var ch6Progress = {}; try { ch6Progress = JSON.parse(read("coding-101-ch6-progress") || "{}"); } catch (e) {} var hasCh6Progress = false; for (var _k in ch6Progress) { if (ch6Progress[_k]) { hasCh6Progress = true; break; } } var ch6Unlocked = read("coding-101-ch6-unlocked") === "1" || hasCh6Progress; CHAPTERS.forEach(function (ch) { var locked = (ch.num === 6 && !ch6Unlocked); var p = chapterProgress(ch); /* 锁住的章节不计入总进度，否则前五章学完也走不到 100% */ if (!locked) { overallDone += p.done; overallTotal += p.total; } var card = document.createElement("article"); card.className = "chapter-card" + (locked ? " coming" : ""); var tagsHtml = ch.tags.map(function (t) { return "<span>" + t + "</span>"; }).join(""); var progressHtml = (p.total && !locked) ? '<div class="card-progress">' + '<div class="meta"><span>学习进度</span><span>' + p.done + "/" + p.total + ' 小节</span></div>' + '<div class="bar"><i style="width:' + p.pct + '%"></i></div>' + '</div>' : ''; var actionHtml; if (locked) { actionHtml = '<span class="btn" aria-disabled="true">🔒 完成前五章后解锁</span>'; } else if (p.pct === 100) { actionHtml = '<a class="btn done" href="' + ch.file + '">✓ 已完成 · 复习</a>'; } else if (p.pct > 0) { actionHtml = '<a class="btn" href="' + ch.file + '">继续学习 →</a>'; } else { actionHtml = '<a class="btn" href="' + ch.file + '">开始学习 →</a>'; } card.innerHTML = '<div class="chapter-no">第 ' + ch.num + ' 章</div>' + '<h3>' + ch.title + '</h3>' + '<p>' + ch.desc + '</p>' + '<div class="lessons-preview">' + tagsHtml + '</div>' + progressHtml + '<div class="chapter-actions">' + actionHtml + '</div>'; grid.appendChild(card); }); /* ── 4. 第一阶段进度条 + 「前往第二阶段」按钮 ── */ var overallPct = overallTotal ? Math.round(overallDone / overallTotal * 100) : 0; $("#overall-text").textContent = overallDone + "/" + overallTotal + " 小节"; $("#overall-bar").style.width = overallPct + "%"; /* 「前往第二阶段」：第六章解锁后、且整个第一阶段全部学完才出现 */ var stage1Done = ch6Unlocked && overallTotal > 0 && overallDone >= overallTotal; if (stage1Done) { $("#stage2-cta").style.display = ""; } /* ============================================================ 第二阶段：课程包数据 + 方向问卷 + 推荐榜 ============================================================ */ var PACKAGES = [ { code: "A", langs: ["python"], name: "类与对象", intro: "代码的进化论", tag: "编程基础", file: "第二阶段_课程包A_类与对象.html", keys: ["coding-101-pkgA-m1-progress", "coding-101-pkgA-m2-progress", "coding-101-pkgA-m3-progress", "coding-101-pkgA-m4-progress", "coding-101-pkgA-m5-progress"], total: 20, built: true, note: "全部 5 个模块已上线，点击进入学习。" }, { code: "B", langs: ["python"], name: "异常处理", intro: "程序也会生病", tag: "编程基础", file: "第二阶段_课程包B_异常处理.html", keys: ["coding-101-pkgB-m1-progress", "coding-101-pkgB-m2-progress", "coding-101-pkgB-m3-progress", "coding-101-pkgB-m4-progress", "coding-101-pkgB-m5-progress", "coding-101-pkgB-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "C", langs: ["python"], name: "标准库", intro: "Python 的百宝箱（其实C++也行）", tag: "编程基础", file: "第二阶段_课程包C_标准库.html", keys: ["coding-101-pkgC-m1-progress", "coding-101-pkgC-m2-progress", "coding-101-pkgC-m3-progress", "coding-101-pkgC-m4-progress", "coding-101-pkgC-m5-progress"], total: 22, built: true, note: "全部 5 个模块已上线，点击进入学习。" }, { code: "D", langs: ["cpp", "python"], name: "算法入门", intro: "让代码跑得更聪明", tag: "算法竞赛", file: "第二阶段_课程包D_算法入门.html", keys: ["coding-101-pkgD-m1-progress", "coding-101-pkgD-m2-progress", "coding-101-pkgD-m3-progress", "coding-101-pkgD-m4-progress", "coding-101-pkgD-m5-progress", "coding-101-pkgD-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "E", langs: ["cpp", "python"], name: "数据结构进阶", intro: "从链表到图", tag: "算法竞赛", file: "第二阶段_课程包E_数据结构进阶.html", keys: ["coding-101-pkgE-m1-progress", "coding-101-pkgE-m2-progress", "coding-101-pkgE-m3-progress", "coding-101-pkgE-m4-progress", "coding-101-pkgE-m5-progress", "coding-101-pkgE-m6-progress"], total: 26, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "F", langs: ["cpp", "python"], name: "动态规划", intro: "竞赛必杀技", tag: "算法竞赛", file: "第二阶段_课程包F_动态规划.html", keys: ["coding-101-pkgF-m1-progress", "coding-101-pkgF-m2-progress", "coding-101-pkgF-m3-progress", "coding-101-pkgF-m4-progress", "coding-101-pkgF-m5-progress", "coding-101-pkgF-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "G", langs: ["cpp", "python"], name: "计算机解剖", intro: "学完手搓CPU", tag: "计算机原理", file: "第二阶段_课程包G_计算机解剖.html", keys: ["coding-101-pkgG-m1-progress", "coding-101-pkgG-m2-progress", "coding-101-pkgG-m3-progress", "coding-101-pkgG-m4-progress", "coding-101-pkgG-m5-progress", "coding-101-pkgG-m6-progress", "coding-101-pkgG-m7-progress"], total: 28, built: true, note: "全部 7 个模块已上线，点击进入学习。" }, { code: "H", langs: ["cpp", "python"], name: "操作系统", intro: "电脑里的管家", tag: "计算机原理", file: "第二阶段_课程包H_操作系统.html", keys: ["coding-101-pkgH-m1-progress", "coding-101-pkgH-m2-progress", "coding-101-pkgH-m3-progress", "coding-101-pkgH-m4-progress", "coding-101-pkgH-m5-progress", "coding-101-pkgH-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "I", langs: ["python"], name: "网络漫游", intro: "数据包的环球旅行", tag: "计算机原理", file: "第二阶段_课程包I_网络漫游.html", keys: ["coding-101-pkgI-m1-progress", "coding-101-pkgI-m2-progress", "coding-101-pkgI-m3-progress", "coding-101-pkgI-m4-progress", "coding-101-pkgI-m5-progress", "coding-101-pkgI-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "J", langs: ["cpp", "python"], name: "编程语言家谱", intro: "各门各派的武功", tag: "计算机原理", file: "第二阶段_课程包J_编程语言家谱.html", keys: ["coding-101-pkgJ-m1-progress", "coding-101-pkgJ-m2-progress", "coding-101-pkgJ-m3-progress", "coding-101-pkgJ-m4-progress", "coding-101-pkgJ-m5-progress", "coding-101-pkgJ-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "K", langs: ["cpp", "python"], name: "项目管理", intro: "从想法到蓝图", tag: "项目创作", file: "第二阶段_课程包K_项目管理.html", keys: ["coding-101-pkgK-m1-progress", "coding-101-pkgK-m2-progress", "coding-101-pkgK-m3-progress", "coding-101-pkgK-m4-progress", "coding-101-pkgK-m5-progress", "coding-101-pkgK-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "L", langs: ["python"], name: "Git 时光机", intro: "删错了能反悔", tag: "项目创作", file: "第二阶段_课程包L_Git_时光机.html", keys: ["coding-101-pkgL-m1-progress", "coding-101-pkgL-m2-progress", "coding-101-pkgL-m3-progress", "coding-101-pkgL-m4-progress", "coding-101-pkgL-m5-progress", "coding-101-pkgL-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "M", langs: ["python"], name: "API 与库", intro: "站在巨人肩膀", tag: "项目创作", file: "第二阶段_课程包M_API_与库.html", keys: ["coding-101-pkgM-m1-progress", "coding-101-pkgM-m2-progress", "coding-101-pkgM-m3-progress", "coding-101-pkgM-m4-progress", "coding-101-pkgM-m5-progress", "coding-101-pkgM-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "N", langs: ["cpp", "python"], name: "Vibe Coding 高阶", intro: "当 AI 的导演", tag: "项目创作", file: "第二阶段_课程包N_Vibe_Coding_高阶.html", keys: ["coding-101-pkgN-m1-progress", "coding-101-pkgN-m2-progress", "coding-101-pkgN-m3-progress", "coding-101-pkgN-m4-progress", "coding-101-pkgN-m5-progress", "coding-101-pkgN-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "O", langs: ["python"], name: "网页开发", intro: "我的第一个网站", tag: "项目创作", file: "第二阶段_课程包O_网页开发.html", keys: ["coding-101-pkgO-m1-progress", "coding-101-pkgO-m2-progress", "coding-101-pkgO-m3-progress", "coding-101-pkgO-m4-progress", "coding-101-pkgO-m5-progress", "coding-101-pkgO-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "P", langs: ["python"], name: "游戏开发", intro: "做个小游戏", tag: "项目创作", file: "第二阶段_课程包P_游戏开发.html", keys: ["coding-101-pkgP-m1-progress", "coding-101-pkgP-m2-progress", "coding-101-pkgP-m3-progress", "coding-101-pkgP-m4-progress", "coding-101-pkgP-m5-progress", "coding-101-pkgP-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "Q", langs: ["python"], name: "数据分析", intro: "Excel 的终结者", tag: "办公效率", file: "第二阶段_课程包Q_数据分析.html", keys: ["coding-101-pkgQ-m1-progress", "coding-101-pkgQ-m2-progress", "coding-101-pkgQ-m3-progress", "coding-101-pkgQ-m4-progress", "coding-101-pkgQ-m5-progress"], total: 20, built: true, note: "全部 5 个模块已上线，点击进入学习。" }, { code: "R", langs: ["python"], name: "自动化办公", intro: "让电脑替我搬砖", tag: "办公效率", file: "第二阶段_课程包R_自动化办公.html", keys: ["coding-101-pkgR-m1-progress", "coding-101-pkgR-m2-progress", "coding-101-pkgR-m3-progress", "coding-101-pkgR-m4-progress", "coding-101-pkgR-m5-progress", "coding-101-pkgR-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "S", langs: ["python"], name: "爬虫入门", intro: "网上抓点数据", tag: "办公效率", file: "第二阶段_课程包S_爬虫入门.html", keys: ["coding-101-pkgS-m1-progress", "coding-101-pkgS-m2-progress", "coding-101-pkgS-m3-progress", "coding-101-pkgS-m4-progress", "coding-101-pkgS-m5-progress", "coding-101-pkgS-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, { code: "T", langs: ["python"], name: "数据库", intro: "数据的仓库管理员", tag: "办公效率", file: "第二阶段_课程包T_数据库.html", keys: ["coding-101-pkgT-m1-progress", "coding-101-pkgT-m2-progress", "coding-101-pkgT-m3-progress", "coding-101-pkgT-m4-progress", "coding-101-pkgT-m5-progress", "coding-101-pkgT-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" }, ]; var BY_CODE = {}; PACKAGES.forEach(function (p) { BY_CODE[p.code] = p; }); var DIRECTIONS = { deep: { key: "deep", label: "深入编程", desc: "辅助学校课程 / 准备竞赛 / 想深入理解代码。以 C++ 为主语言。", must: ["A","B","C","D","E","F","T"], explore: ["G","H","I","L","N","S"] }, fun: { key: "fun", label: "趣味编程", desc: "学着玩 / 拓展知识 / 科普向。以 Python 为主语言。", must: ["G","H","I","J","O","P"], explore: ["D","Q","R","S","L","M"] }, create: { key: "create", label: "AI 编程 · 创作", desc: "有创意 / 想零代码或低代码实现 / 希望作品变现。Python 专属。", must: ["K","L","M","N","O","T","A"], explore: ["P","Q","S","R","B","C"] }, office: { key: "office", label: "AI 编程 · 办公", desc: "自动办公 / 上班摸鱼 / 效率工具党。Python 专属。", must: ["C","M","N","Q","R","S","T"], explore: ["K","L","B","O","I","H"] } }; var QUIZ = [ { q: "你学编程，最想要的是？", opts: ["考试拿高分，或者参加编程竞赛", "搞懂电脑到底怎么工作的，满足好奇心", "做出一个能用的东西，给别人看", "让电脑帮我做重复工作，提高效率"] }, { q: "以下哪种情况，最能让你觉得「学编程真没白学」？", opts: ["一道难题，我写出了比同学更简洁更快的解法", "终于搞懂了以前觉得神秘的电脑原理，能跟朋友讲清楚", "做出了一个能点开、能玩的小作品，别人问我「这是你做的？」", "原本要手动搞一上午的重复工作，现在一键就搞定了"] }, { q: "接到一个新任务时，你更习惯怎么开始？", opts: ["先把任务拆成小步骤，画个流程图，确保逻辑通顺", "先搜资料，搞懂这个任务背后涉及什么技术原理", "先在脑子里想象最终效果长什么样，再倒推怎么做", "先搜搜有没有现成的工具、模板或脚本能直接拿来用"] }, { q: "遇到看不懂的代码时，你更希望？", opts: ["一行一行啃，搞懂每一行为什么这样写", "先搞懂这段代码在电脑里是怎么被执行的", "直接问 AI「这段代码是干什么的」，先知道功能再慢慢理解", "先跑起来看看效果，能跑就行，细节以后再说"] } ]; /* 选项下标：0→深入编程 1→趣味编程 2→AI创作 3→AI办公 */ var OPT_DIR = ["deep", "fun", "create", "office"]; var DIR_KEY = "coding-101-direction"; var activeDir = read(DIR_KEY) || null; /* 问卷计分：最高分方向；同分按 Q1→Q2→Q3→Q4 优先级 */ function scoreQuiz(answers) { var score = { deep: 0, fun: 0, create: 0, office: 0 }; var firstIdx = { deep: 99, fun: 99, create: 99, office: 99 }; answers.forEach(function (a, i) { var d = OPT_DIR[a]; score[d]++; if (i < firstIdx[d]) firstIdx[d] = i; }); var best = null, bestScore = -1, bestFirst = 99; Object.keys(score).forEach(function (d) { if (score[d] > bestScore || (score[d] === bestScore && firstIdx[d] < bestFirst)) { bestScore = score[d]; bestFirst = firstIdx[d]; best = d; } }); return best; } /* 汇总一个课程包所有模块的学习进度 */ function packageProgress(p) { if (!p.keys || p.keys.length === 0) return progressFor(p.key, p.total); var done = 0; p.keys.forEach(function (key) { var data = {}; try { data = JSON.parse(read(key) || "{}"); } catch (e) {} done += Object.keys(data).filter(function (k) { return data[k]; }).length; }); return { done: done, total: p.total, pct: p.total ? Math.round(done / p.total * 100) : 0 }; } /* 渲染单个课程包卡片 */ function pkgCard(p, dim) { var action, extra = ""; if (p.built && p.keys) { var pp = packageProgress(p); extra = '<div class="pkg-progress">学习进度 ' + pp.done + "/" + pp.total + ' 小节' + '<div class="bar"><i style="width:' + pp.pct + '%"></i></div></div>'; action = '<a class="btn" href="' + p.file + '">' + (pp.pct === 100 ? "✓ 已完成 · 复习" : "开始学习 →") + '</a>'; } else if (p.built) { action = '<a class="btn" href="' + p.file + '">查看模块 →</a>'; } else { action = '<span class="soon-badge" aria-disabled="true">敬请期待</span>'; } var note = p.note ? '<p class="pkg-note">' + p.note + '</p>' : ''; return '<article class="pkg-card' + (dim ? ' dim' : '') + '">' + '<div class="pkg-head"><span class="pkg-code">' + p.code + '</span><span class="pkg-tag">' + p.tag + '</span></div>' + '<h4>' + p.name + '</h4>' + '<p class="pkg-intro">' + p.intro + '</p>' + note + extra + '<div class="pkg-actions">' + action + '</div>' + '</article>'; } function recGroup(title, sub, codes, dim) { var cards = codes.map(function (c) { return pkgCard(BY_CODE[c], dim); }).join(""); return '<div class="rec-group"><div class="rec-title">' + title + '<span>' + sub + '</span></div>' + '<div class="pkg-grid">' + cards + '</div></div>'; } function renderDirection(dirKey) { activeDir = dirKey; store(DIR_KEY, dirKey); var dir = DIRECTIONS[dirKey]; var other = PACKAGES.map(function (p) { return p.code; }) .filter(function (c) { return dir.must.indexOf(c) < 0 && dir.explore.indexOf(c) < 0; }); var html = ''; html += '<div class="rec-head"><span class="rec-dir">🎯 你的推荐方向：' + dir.label + '</span>' + '<p>' + dir.desc + '</p></div>'; html += recGroup("🔥 必学榜", "与你方向极度契合，优先安排", dir.must, false); html += recGroup("🌈 探索榜", "兴趣拓展，学有余力再碰", dir.explore, false); html += recGroup("📚 其他课程", "暂非重点，未来可回看", other, true); if (activeLangFilter !== "all") { var lang = activeLangFilter; var mustSup = dir.must.filter(function (c) { return BY_CODE[c].langs.indexOf(lang) >= 0; }); var mustOth = dir.must.filter(function (c) { return BY_CODE[c].langs.indexOf(lang) < 0; }); var expSup = dir.explore.filter(function (c) { return BY_CODE[c].langs.indexOf(lang) >= 0; }); var expOth = dir.explore.filter(function (c) { return BY_CODE[c].langs.indexOf(lang) < 0; }); var other = PACKAGES.map(function (p) { return p.code; }) .filter(function (c) { return dir.must.indexOf(c) < 0 && dir.explore.indexOf(c) < 0; }); var otherSup = other.filter(function (c) { return BY_CODE[c].langs.indexOf(lang) >= 0; }); var otherOth = other.filter(function (c) { return BY_CODE[c].langs.indexOf(lang) < 0; }); html = '<div class="rec-head"><span class="rec-dir">🎯 ' + dir.label + ' · 同时筛选 ' + (lang === "cpp" ? "C++" : "Python") + '</span>' + '<p>' + dir.desc + '</p></div>'; if (mustSup.length) html += recGroup("🔥 必学榜 · 支持 " + (lang === "cpp" ? "C++" : "Python"), "方向契合且提供该语言示例", mustSup, false); if (mustOth.length) html += recGroup("🔥 必学榜 · 其他", "方向契合但主要用 Python", mustOth, false); if (expSup.length) html += recGroup("🌈 探索榜 · 支持 " + (lang === "cpp" ? "C++" : "Python"), "兴趣拓展且提供该语言示例", expSup, false); if (expOth.length) html += recGroup("🌈 探索榜 · 其他", "兴趣拓展但主要用 Python", expOth, false); if (otherSup.length) html += recGroup("📚 其他课程 · 支持 " + (lang === "cpp" ? "C++" : "Python"), "暂非重点且提供该语言示例", otherSup, true); if (otherOth.length) html += recGroup("📚 其他课程", "暂非重点，未来可回看", otherOth, true); } $("#rec-area").innerHTML = html; $$(".dir-tab").forEach(function (t) { t.classList.toggle("active", t.getAttribute("data-dir") === dirKey); }); $$(".lang-filter button").forEach(function (b) { b.classList.toggle("active", b.dataset.lang === activeLangFilter); }); } function renderCatalog() { var cards = PACKAGES.map(function (p) { return pkgCard(p, false); }).join(""); $("#rec-area").innerHTML = '<div class="rec-group"><div class="rec-title">全部课程包' + '<span>完成上方问卷或选择一个方向，查看为你推荐的必学榜 / 探索榜</span></div>' + '<div class="pkg-grid">' + cards + '</div></div>'; $$(".dir-tab").forEach(function (t) { t.classList.remove("active"); }); } var LANG_FILTER_KEY = "coding-101-stage2-lang-filter"; var activeLangFilter = read(LANG_FILTER_KEY) || "all"; function renderByLang(lang) { activeLangFilter = lang; store(LANG_FILTER_KEY, lang); var supported = [], unsupported = []; PACKAGES.forEach(function (p) { if (p.langs && p.langs.indexOf(lang) >= 0) supported.push(p.code); else unsupported.push(p.code); }); var html = ''; html += '<div class="rec-head"><span class="rec-dir">🌐 按语言筛选：' + (lang === "cpp" ? "C++" : "Python") + '</span>' + '<p>下方是支持该语言的课程包，其余课程包主要使用 Python 讲解。</p></div>'; html += recGroup("✅ 支持 " + (lang === "cpp" ? "C++" : "Python") + " 的课程包", "代码示例提供该语言版本", supported, false); html += recGroup("📚 其他课程包", "主要以 Python 讲解，概念仍可迁移", unsupported, true); $("#rec-area").innerHTML = html; $$(".lang-filter button").forEach(function (b) { b.classList.toggle("active", b.dataset.lang === lang); }); $$(".dir-tab").forEach(function (t) { t.classList.remove("active"); }); } /* 渲染问卷 */ (function buildQuiz() { var html = ""; QUIZ.forEach(function (item, qi) { var opts = item.opts.map(function (o, oi) { return '<label class="quiz-opt"><input type="radio" name="q' + qi + '" value="' + oi + '">' + '<span>' + String.fromCharCode(65 + oi) + ". " + o + '</span></label>'; }).join(""); html += '<div class="quiz-q"><div class="quiz-q-title">Q' + (qi + 1) + ". " + item.q + '</div>' + opts + '</div>'; }); $("#quiz-body").innerHTML = html; /* 选中态高亮（兼容不支持 :has 的浏览器） */ $$("#quiz-body input[type=radio]").forEach(function (inp) { inp.addEventListener("change", function () { $$("#quiz-body .quiz-opt").forEach(function (l) { l.classList.remove("checked"); }); if (inp.checked) inp.closest(".quiz-opt").classList.add("checked"); }); }); })(); $("#quiz-submit").addEventListener("click", function () { var answers = []; for (var i = 0; i < QUIZ.length; i++) { var sel = document.querySelector('input[name="q' + i + '"]:checked'); if (!sel) { alert("请先回答第 " + (i + 1) + " 题"); return; } answers.push(parseInt(sel.value, 10)); } var dir = scoreQuiz(answers); renderDirection(dir); $("#rec-area").scrollIntoView({ behavior: "smooth", block: "start" }); }); /* 方向切换标签 */ (function buildTabs() { var html = Object.keys(DIRECTIONS).map(function (k) { return '<button class="dir-tab" data-dir="' + k + '">' + DIRECTIONS[k].label + '</button>'; }).join(""); $("#dir-tabs").innerHTML = html; $$(".dir-tab").forEach(function (t) { t.addEventListener("click", function () { renderDirection(t.getAttribute("data-dir")); }); }); })(); /* 语言筛选事件 */ (function buildLangFilter() { $$(".lang-filter button").forEach(function (b) { b.addEventListener("click", function () { var lang = b.dataset.lang; if (lang === "all") { activeLangFilter = "all"; store(LANG_FILTER_KEY, "all"); if (activeDir && DIRECTIONS[activeDir]) renderDirection(activeDir); else renderCatalog(); } else { renderByLang(lang); } }); }); })(); /* 计算并渲染第二阶段总进度 */ function refreshStage2Progress() { var done = 0, total = 0; PACKAGES.forEach(function (p) { var pp = packageProgress(p); done += pp.done; total += pp.total; }); var pct = total ? Math.round(done / total * 100) : 0; $("#stage2-progress-text").textContent = done + "/" + total + " 小节"; $("#stage2-progress-bar").style.width = pct + "%"; } /* 初始：优先应用已保存的语言筛选，再应用方向推荐 */ if (activeLangFilter !== "all") { renderByLang(activeLangFilter); } else if (activeDir && DIRECTIONS[activeDir]) { renderDirection(activeDir); } else { renderCatalog(); } refreshStage2Progress(); })(); </script><script> (function () { /* 庆祝节点只看前五章：第六章是解锁后的加餐，不参与判定 */ var STAGE1_KEYS = [ "coding-101-progress", "coding-101-ch2-progress", "coding-101-ch3-progress", "coding-101-ch4-progress", "coding-101-ch5-progress" ]; var STAGE1_TOTALS = [6, 8, 7, 7, 5]; function allDone() { try { for (var i = 0; i < STAGE1_KEYS.length; i++) { var d = JSON.parse(localStorage.getItem(STAGE1_KEYS[i]) || "{}"); var n = 0; for (var k in d) { if (d[k]) n++; } if (n < STAGE1_TOTALS[i]) return false; } return true; } catch (e) { return false; } } function maybeCelebrate() { try { if (localStorage.getItem("coding-101-congrats-shown")) return; } catch (e) {} if (allDone()) { try { localStorage.setItem("coding-101-congrats-shown", "1"); } catch (e) {} location.href = "完成恭喜.html"; } } window.__maybeCelebrate = maybeCelebrate; maybeCelebrate(); document.addEventListener("click", function (ev) { if (ev.target.closest && ev.target.closest(".done-btn")) setTimeout(maybeCelebrate, 120); }); })(); </script><script> (function () { /* 捐赠按钮在前五章全部完成后常驻显示 */ var STAGE1_KEYS = [ "coding-101-progress", "coding-101-ch2-progress", "coding-101-ch3-progress", "coding-101-ch4-progress", "coding-101-ch5-progress" ]; var STAGE1_TOTALS = [6, 8, 7, 7, 5]; function allDone() { try { for (var i = 0; i < STAGE1_KEYS.length; i++) { var d = JSON.parse(localStorage.getItem(STAGE1_KEYS[i]) || "{}"); var n = 0; for (var k in d) { if (d[k]) n++; } if (n < STAGE1_TOTALS[i]) return false; } return true; } catch (e) { return false; } } function refreshDonate() { var btn = document.getElementById("donate-top"); if (!btn) return; btn.style.display = allDone() ? "inline-block" : "none"; } refreshDonate(); document.addEventListener("click", function (ev) { if (ev.target.closest && ev.target.closest(".done-btn")) setTimeout(refreshDonate, 120); }); })(); </script><script>if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js");}</script></body></html>
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    和电脑交朋友 · 新手编程入门课（课程主页）
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    顶部阶段切换器左右滑动，下方课程内容淡入淡出切换。
+    进度保存在浏览器 localStorage，不会上传网络。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="写给完全新手的编程入门课主页。支持离线打开、深色模式，可跳转到各章节并查看学习进度。">
+  <title>野鸡动画编程课</title>
+  <style>
+  /* ══════════════════════════════════════════════════════════
+     1. 主题变量（与章节文件保持一致）
+     ══════════════════════════════════════════════════════════ */
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     2. 基础与布局
+     ══════════════════════════════════════════════════════════ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+  /* ── 顶栏 ── */
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+
+  /* 顶栏常驻按钮 */
+  .donate-top {
+    padding: 7px 16px; border-radius: 10px; font-size: 13.5px; font-weight: 700;
+    background: linear-gradient(135deg, #f59e0b, #f97316); color: #fff; text-decoration: none;
+    box-shadow: 0 2px 10px rgba(249,115,22,.35); transition: transform .15s, box-shadow .15s;
+  }
+  .donate-top:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(249,115,22,.5); }
+  .update-top {
+    padding: 7px 16px; border-radius: 10px; font-size: 13.5px; font-weight: 700;
+    background: linear-gradient(135deg, #0ea5e9, #8b5cf6); color: #fff; text-decoration: none;
+    box-shadow: 0 2px 10px rgba(14,165,233,.35); transition: transform .15s, box-shadow .15s;
+  }
+  .update-top:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(14,165,233,.5); }
+
+  main { padding: 32px 0 96px; }
+
+  /* ══════════════════════════════════════════════════════════
+     3. 阶段切换器（红框）—— 左右滑动
+     ══════════════════════════════════════════════════════════ */
+  .stage-hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .stage-hero::before, .stage-hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .stage-hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .stage-hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+
+  .stage-hero-track {
+    display: flex; width: 200%;
+    transform: translateX(0);
+    transition: transform .5s cubic-bezier(.25, .8, .25, 1);
+  }
+  body.stage-2 .stage-hero-track { transform: translateX(-50%); }
+
+  .stage-hero-panel {
+    flex: 0 0 50%; padding: 48px 32px; position: relative; z-index: 1;
+  }
+  @media (max-width: 640px) { .stage-hero-panel { padding: 32px 22px; } }
+
+  .stage-hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .stage-hero h1 { font-size: 44px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .stage-hero h1 { font-size: 30px; } }
+  .stage-hero p { max-width: 560px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+
+  /* 阶段切换器内的进度/操作条（两阶段同布局同按钮色） */
+  .overall-progress {
+    margin-top: 28px; padding: 20px; border-radius: 16px;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+    max-width: 720px;
+    display: flex; align-items: center; gap: 20px;
+  }
+  .overall-progress .prog-main { flex: 1; min-width: 0; }
+  .overall-progress .label { display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px; }
+  .overall-progress .label strong { color: #fff; }
+  .bar { width: 100%; height: 10px; border-radius: 99px; background: rgba(255,255,255,.15); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #0ea5e9, #10b981); width: 0; transition: width .5s ease; }
+
+  .stage-cta {
+    flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 13px 22px; border-radius: 12px; border: 0; cursor: pointer;
+    font-size: 14px; font-weight: 800; color: #fff; white-space: nowrap;
+    text-decoration: none;
+    background: linear-gradient(135deg, #10b981, #0ea5e9);
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .stage-cta:hover { transform: translateY(-1px); }
+  #stage2-cta { animation: cta-pulse 1.8s ease-in-out infinite; }
+  @keyframes cta-pulse {
+    0%, 100% { box-shadow: 0 6px 18px rgba(16,185,129,.35); }
+    50%      { box-shadow: 0 6px 28px rgba(16,185,129,.7); }
+  }
+  @media (max-width: 560px) {
+    .overall-progress { flex-direction: column; align-items: stretch; }
+    .stage-cta { justify-content: center; }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     4. 课程内容区（蓝框）—— 淡入淡出
+     ══════════════════════════════════════════════════════════ */
+  .stage-content {
+    position: relative;
+    min-height: 200px; /* 占位，防止初始渲染跳动 */
+  }
+  .stage-content-panel {
+    position: absolute; top: 0; left: 0; width: 100%;
+    opacity: 0; visibility: hidden;
+    transition: opacity .4s ease, visibility .4s ease;
+  }
+  .stage-content-panel.active {
+    position: relative;
+    opacity: 1; visibility: visible;
+    z-index: 1;
+  }
+
+  /* ── 开始之前 ── */
+  .preface-section {
+    position: relative; display: block;
+    border-radius: 16px; overflow: hidden;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    padding: 28px; margin-bottom: 40px;
+    text-decoration: none; color: #fff;
+    box-shadow: 0 12px 32px rgba(15,23,42,.25);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .preface-section:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(15,23,42,.35); }
+  .preface-section::before, .preface-section::after {
+    content: ""; position: absolute; width: 220px; height: 220px;
+    border-radius: 99px; filter: blur(60px); opacity: .22;
+  }
+  .preface-section::before { right: -48px; top: -48px; background: #0ea5e9; }
+  .preface-section::after  { left: -32px; bottom: -64px; background: #8b5cf6; }
+  .preface-inner { position: relative; z-index: 1; }
+  .preface-section h2 { font-size: 22px; font-weight: 900; margin-bottom: 10px; }
+  .preface-section > .preface-inner > p { font-size: 14px; line-height: 1.8; color: #cbd5e1; margin-bottom: 18px; max-width: 520px; }
+  .preface-tags { display: flex; flex-wrap: wrap; gap: 10px; }
+  .preface-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 99px;
+    background: rgba(255,255,255,.1); color: #e2e8f0;
+    font-size: 13px; font-weight: 600;
+    border: 1px solid rgba(255,255,255,.15);
+  }
+  .preface-arrow {
+    position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
+    width: 40px; height: 40px; z-index: 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .preface-arrow svg { width: 100%; height: 100%; }
+  @media (max-width: 640px) {
+    .preface-arrow { right: 16px; width: 28px; height: 28px; }
+    .preface-section { padding: 22px 50px 22px 22px; }
+  }
+
+  /* ── 章节网格（第一阶段） ── */
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+
+  .chapter-grid { display: grid; gap: 16px; }
+  @media (min-width: 640px) { .chapter-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .chapter-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .chapter-card {
+    display: flex; flex-direction: column;
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 24px;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+  }
+  .chapter-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(15,23,42,.12); }
+  html.dark .chapter-card:hover { border-color: #3b4260; }
+  .chapter-card.coming { opacity: .7; }
+  .chapter-card.coming:hover { transform: none; box-shadow: none; border-color: var(--border); }
+
+  .chapter-no {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #0284c7;
+  }
+  html.dark .chapter-no { color: #38bdf8; }
+  .chapter-card h3 { font-size: 18px; font-weight: 800; margin-top: 8px; }
+  .chapter-card p { font-size: 14px; line-height: 1.8; color: var(--text-soft); margin-top: 8px; flex: 1; }
+
+  .lessons-preview { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .lessons-preview span {
+    font-size: 12px; color: var(--text-faint);
+    background: var(--bg-soft); padding: 3px 8px; border-radius: 99px;
+  }
+
+  /* 单章进度 */
+  .card-progress { margin-top: 16px; }
+  .card-progress .meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-faint); margin-bottom: 6px; }
+  .card-progress .bar { background: var(--bg-soft); }
+  .card-progress .bar > i { background: #10b981; }
+
+  .chapter-actions { margin-top: 16px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; padding: 10px 16px; border-radius: 10px;
+    background: #0ea5e9; color: #fff; font-size: 14px; font-weight: 700;
+    text-decoration: none; border: 0; cursor: pointer;
+  }
+  .btn:hover { background: #0284c7; }
+  .btn:disabled, .btn[aria-disabled="true"] {
+    background: var(--bg-soft); color: var(--text-faint); cursor: not-allowed;
+  }
+  .btn.done { background: #10b981; }
+  .btn.done:hover { background: #059669; }
+
+  /* ── 练习项目卡片 ── */
+  .project-card {
+    display: flex; gap: 20px; align-items: center;
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 24px;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+  }
+  .project-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(15,23,42,.12); border-color: var(--border); }
+  html.dark .project-card:hover { border-color: #3b4260; }
+  .project-icon { font-size: 44px; line-height: 1; }
+  .project-info { flex: 1; min-width: 0; }
+  .project-info h3 { font-size: 18px; font-weight: 800; }
+  .project-info p { font-size: 14px; line-height: 1.8; color: var(--text-soft); margin-top: 6px; }
+  .project-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .project-meta span { font-size: 12px; color: var(--text-faint); background: var(--bg-soft); padding: 3px 10px; border-radius: 99px; }
+  .project-actions { min-width: 140px; }
+  @media (max-width: 640px) {
+    .project-card { flex-direction: column; align-items: flex-start; }
+    .project-actions { width: 100%; }
+  }
+
+  .soon-badge {
+    display: inline-block; padding: 3px 8px; border-radius: 99px;
+    background: var(--bg-soft); color: var(--text-faint); font-size: 12px; font-weight: 700;
+  }
+
+  /* ── 第二阶段：方向问卷（默认收起） ── */
+  .dir-quiz {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card);
+    box-shadow: 0 4px 16px rgba(15,23,42,.05);
+    margin-bottom: 24px;
+  }
+  .dir-quiz-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 20px 24px; cursor: pointer;
+  }
+  .dir-quiz-header h3 { font-size: 18px; font-weight: 800; }
+  .dir-quiz-header .quiz-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 20px; border-radius: 12px; border: 0;
+    background: linear-gradient(135deg, #0ea5e9, #8b5cf6); color: #fff;
+    font-size: 15px; font-weight: 800;
+    box-shadow: 0 4px 14px rgba(14,165,233,.35);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .dir-quiz-header .quiz-toggle:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(14,165,233,.5); }
+  .dir-quiz-header .quiz-toggle::after { content: "开始填写"; }
+  .dir-quiz.open .dir-quiz-header .quiz-toggle::after { content: "收起问卷"; }
+
+  .dir-quiz-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height .35s ease, padding .35s ease;
+    padding: 0 24px;
+  }
+  .dir-quiz.open .dir-quiz-body {
+    max-height: 1200px; padding: 0 24px 24px;
+  }
+  .quiz-hint { font-size: 13px; color: var(--text-faint); margin-bottom: 18px; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: border-color .15s, background .15s;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt input { margin-right: 8px; vertical-align: middle; }
+  .quiz-opt.checked { border-color: #0ea5e9; background: color-mix(in srgb, var(--bg-soft) 70%, #0ea5e9 8%); }
+
+  /* ── 第二阶段：按语言学习筛选 ── */
+  .lang-filter {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 24px; padding: 14px 18px;
+    border: 1px solid var(--border); border-radius: 14px;
+    background: var(--bg-card);
+  }
+  .lang-filter > span { font-size: 14px; font-weight: 700; color: var(--text); }
+  .lang-filter button {
+    padding: 7px 14px; border: 1px solid var(--border); border-radius: 99px;
+    background: var(--bg-soft); color: var(--text-soft);
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s;
+  }
+  .lang-filter button:hover { border-color: #38bdf8; }
+  .lang-filter button.active {
+    background: linear-gradient(135deg, #0ea5e9, #8b5cf6); color: #fff; border-color: transparent;
+  }
+  .lang-badge {
+    display: inline-block; margin-left: 6px; padding: 2px 6px; border-radius: 4px;
+    background: var(--bg-soft); color: var(--text-faint); font-size: 11px; font-weight: 700;
+  }
+
+  .dir-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+  .dir-tab {
+    padding: 9px 18px; border: 1px solid var(--border); border-radius: 99px;
+    background: var(--bg-card); color: var(--text-soft); font-size: 13.5px; font-weight: 700;
+    cursor: pointer; transition: all .15s;
+  }
+  .dir-tab:hover { border-color: #38bdf8; }
+  .dir-tab.active { background: linear-gradient(135deg, #0ea5e9, #8b5cf6); color: #fff; border-color: transparent; }
+
+  .rec-head { margin-bottom: 22px; }
+  .rec-dir { font-size: 18px; font-weight: 900; }
+  .rec-head p { font-size: 13.5px; color: var(--text-faint); margin-top: 6px; line-height: 1.7; }
+  .rec-group { margin-bottom: 34px; }
+  .rec-title { font-size: 16px; font-weight: 800; margin-bottom: 14px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .rec-title span { font-size: 12.5px; color: var(--text-faint); font-weight: 500; }
+
+  .pkg-grid { display: grid; gap: 14px; align-items: stretch; }
+  @media (min-width: 640px) { .pkg-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .pkg-grid { grid-template-columns: repeat(3, 1fr); } }
+  .pkg-card {
+    display: flex; flex-direction: column;
+    border: 1px solid var(--border); border-radius: 14px;
+    background: var(--bg-card); padding: 18px;
+    min-height: 260px; height: 100%;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+  }
+  .pkg-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15,23,42,.12); }
+  .pkg-card.dim { opacity: .72; }
+  .pkg-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .pkg-code {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 13px; font-weight: 800;
+  }
+  .pkg-tag { font-size: 12px; color: var(--text-faint); background: var(--bg-soft); padding: 3px 10px; border-radius: 99px; }
+  .pkg-card h4 { font-size: 15px; font-weight: 800; line-height: 1.5; }
+  .pkg-intro { font-size: 13px; line-height: 1.7; color: var(--text-soft); margin-top: 8px; flex: 1; }
+  .pkg-note { font-size: 12px; color: #0ea5e9; margin-top: 8px; line-height: 1.6; }
+  .pkg-progress { margin-top: auto; padding-top: 10px; font-size: 12px; color: var(--text-faint); }
+  .pkg-progress .bar { height: 7px; margin-top: 5px; background: var(--bg-soft); }
+  .pkg-progress .bar > i { background: #10b981; }
+  .pkg-actions { margin-top: 14px; }
+
+  /* ── 提示 ── */
+  .note {
+    margin-top: 32px; padding: 16px 20px; border-radius: 12px;
+    border: 1px dashed var(--border); background: var(--bg-section);
+    color: var(--text-soft); font-size: 13px; line-height: 1.9;
+  }
+  .note strong { color: var(--text); }
+
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     顶栏
+     ════════════════════════════════════════════════════════════ -->
+<header>
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="logo">&lt;/&gt;</span>
+      <span>野鸡动画编程课</span>
+    </a>
+    <div class="header-right">
+      <a class="update-top" id="update-top" href="https://github.com/JustBecause-CigaretteBox-Studio/Tutorials" target="_blank" rel="noopener">🔔 获取更新信息</a>
+      <a class="donate-top" id="donate-top" href="捐赠.html" style="display:none">❤️ 捐赠</a>
+      <button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════════
+     主页内容
+     ════════════════════════════════════════════════════════════ -->
+<main class="container">
+
+  <!-- ══ 阶段切换器（红框） ══ -->
+  <div class="stage-hero" id="stage-hero">
+    <div class="stage-hero-track">
+
+      <!-- 第一阶段：入门 -->
+      <div class="stage-hero-panel">
+        <span class="tag">✨ 零基础 · 新手编程入门课</span>
+        <h1>野鸡动画编程课·入门</h1>
+        <p>
+          写给完全新手的编程入门课。不需要任何基础——你只需要会认字，
+          外加一点点好奇心。完成第一阶段核心课程后，即可前往进阶阶段。
+        </p>
+        <div class="overall-progress">
+          <div class="prog-main">
+            <div class="label">
+              <span>第一阶段进度（核心课程）</span>
+              <strong id="overall-text">0/0 小节</strong>
+            </div>
+            <div class="bar"><i id="overall-bar"></i></div>
+          </div>
+          <button class="stage-cta" id="stage2-cta" style="display:none" type="button">🚀 前往第二阶段 →</button>
+        </div>
+      </div>
+
+      <!-- 第二阶段：进阶 -->
+      <div class="stage-hero-panel">
+        <span class="tag">🚀 进阶 · 选修课程包</span>
+        <h1>野鸡动画编程课·进阶</h1>
+        <p>
+          恭喜你完成第一阶段。接下来没有固定路线：先完成方向问卷，
+          或在下方选择一个方向，按「必学榜 / 探索榜 / 其他课程」自由选修。
+        </p>
+        <div class="overall-progress">
+          <div class="prog-main">
+            <div class="label">
+              <span>第二阶段进度（全部选修课程包）</span>
+              <strong id="stage2-progress-text">0/0 小节</strong>
+            </div>
+            <div class="bar"><i id="stage2-progress-bar"></i></div>
+          </div>
+          <button class="stage-cta" id="back-to-stage1" type="button">← 返回第一阶段</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ 课程内容区（蓝框）—— 淡入淡出 ══ -->
+  <div class="stage-content" id="stage-content">
+
+    <!-- 第一阶段课程内容 -->
+    <div class="stage-content-panel active" id="stage-content-1">
+
+      <a class="preface-section" href="开始之前.html">
+        <div class="preface-inner">
+          <h2>开始之前</h2>
+          <p>如果你还没想好要不要开始，或者不知道从哪里准备，先点击这里。</p>
+          <div class="preface-tags">
+            <span class="preface-tag">有 AI 还学编程干嘛</span>
+            <span class="preface-tag">编程 APP 怎么装</span>
+            <span class="preface-tag">更多问题</span>
+          </div>
+        </div>
+        <div class="preface-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </div>
+      </a>
+
+      <h2 class="section-title">第一阶段 · 核心课程</h2>
+      <p class="section-sub">点击卡片进入对应章节，进度会自动从浏览器本地存储中读取。完成全部小节后，即可前往第二阶段。</p>
+
+      <div class="chapter-grid" id="chapters">
+        <!-- 章节卡片由 JS 生成 -->
+      </div>
+
+    </div>
+
+    <!-- 第二阶段课程内容 -->
+    <div class="stage-content-panel" id="stage-content-2">
+
+      <p class="section-sub" style="margin-top:0">第一阶段完成后，根据自己的兴趣方向自由选修。先完成方向问卷，或直接在下方选择方向，查看为你推荐的「必学榜 / 探索榜 / 其他课程」。</p>
+
+      <div class="dir-quiz" id="dir-quiz">
+        <div class="dir-quiz-header" id="dir-quiz-header">
+          <h3>🧭 方向选择问卷</h3>
+          <span class="quiz-toggle"></span>
+        </div>
+        <div class="dir-quiz-body" id="dir-quiz-body">
+          <p class="quiz-hint">共 4 道题，帮你找到最合适的学习方向。</p>
+          <div id="quiz-body"></div>
+          <button class="btn" id="quiz-submit" style="margin-top:6px" type="button">查看我的推荐方向 →</button>
+        </div>
+      </div>
+
+      <div class="lang-filter" id="lang-filter">
+        <span>按语言学习：</span>
+        <button data-lang="all" class="active">我都要学</button>
+        <button data-lang="cpp">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+
+      <div class="dir-tabs" id="dir-tabs"></div>
+
+      <div id="rec-area"></div>
+
+      <div class="note">
+        <strong>💡 关于本地进度</strong><br>
+        本课程所有文件均为单文件离线网页。学习进度保存在浏览器的 localStorage 中，
+        不会上传到网络。如果浏览器对 <code>file://</code> 地址限制较严，进度可能无法跨文件同步；
+        此时只需回到正在学习的章节文件，进度仍然保留在该文件内。
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ══ 题目与项目：不在阶段划分之内，始终保留 ══ -->
+  <h2 class="section-title" style="margin-top:48px">练习题目</h2>
+  <p class="section-sub">学完每章后，用精选 OJ 题目练练手。题目提供渐进式提示，可随时收起。</p>
+  <div class="project-card">
+    <div class="project-icon">📝</div>
+    <div class="project-info">
+      <h3>精选练习题目</h3>
+      <p>覆盖入门到巨难五个难度，目前先收录洛谷入门题。可查看题面、展开渐进式提示，并一键跳转到原题网站。</p>
+      <div class="project-meta">
+        <span>题目练习</span>
+        <span>渐进式提示</span>
+        <span>跳转原题</span>
+      </div>
+    </div>
+    <div class="project-actions">
+      <a class="btn" href="题目系统.html">进入题目系统 →</a>
+    </div>
+  </div>
+
+  <h2 class="section-title" style="margin-top:48px">练习项目</h2>
+  <p class="section-sub">学完后动手做项目，把知识变成本领。</p>
+  <p class="section-sub"><strong style = "color:rgb(182, 0, 0)">项目的难度通常较大（即使是初级项目），适用于已经非常熟练的学习者。</strong></p>
+  <div class="project-card">
+    <div class="project-icon">🛠️</div>
+    <div class="project-info">
+      <h3>出题自动机</h3>
+      <p>用代码批量生成小学口算题和程序流程题，内置 C++ / Python IDE，可直接在浏览器中运行。</p>
+      <div class="project-meta">
+        <span>2 个项目</span>
+        <span>内置 IDE</span>
+        <span>离线可用</span>
+      </div>
+    </div>
+    <div class="project-actions">
+      <a class="btn" href="项目系统.html">进入项目系统 →</a>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 课程主页</p>
+  <p>学会了和电脑说话，接下来——让它替你干活。</p>
+  <p>本教程网页通过vibe coding制作，教学文案通过手写制作</p>
+</footer>
+
+<!-- ════════════════════════════════════════════════════════════
+     交互脚本
+     ════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  /* ── 主题切换（与章节文件共用同一个 key） ── */
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* ── 阶段切换：红框滑动 + 蓝框淡入淡出 ── */
+  var panel1 = $("#stage-content-1");
+  var panel2 = $("#stage-content-2");
+
+  function goStage2() {
+    document.body.classList.add("stage-2");
+    panel1.classList.remove("active");
+    panel2.classList.add("active");
+    try { localStorage.setItem("coding-101-stage", "2"); } catch (e) {}
+    setTimeout(function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 60);
+  }
+  function goStage1() {
+    document.body.classList.remove("stage-2");
+    panel2.classList.remove("active");
+    panel1.classList.add("active");
+    try { localStorage.setItem("coding-101-stage", "1"); } catch (e) {}
+    setTimeout(function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 60);
+  }
+
+  /* 第二阶段尚未开放：入口改为跳转到预告页（不再切到本页的第二阶段面板） */
+  $("#stage2-cta").addEventListener("click", function () {
+    location.href = "第二阶段预告.html";
+  });
+  $("#back-to-stage1").addEventListener("click", goStage1);
+
+  /* 刷新后恢复阶段位置：第二阶段尚未开放，一律强制留在第一阶段 */
+  if (read("coding-101-stage") === "2") {
+    try { localStorage.setItem("coding-101-stage", "1"); } catch (e) {}
+  }
+
+  /* ── 问卷展开/收起 ── */
+  var quizEl = $("#dir-quiz");
+  var quizHeader = $("#dir-quiz-header");
+  quizHeader.addEventListener("click", function () {
+    quizEl.classList.toggle("open");
+  });
+
+  /* ── 1. 章节配置：第一阶段 = 第 1~5 章 ── */
+  var CHAPTERS = [
+    {
+      num: 1,
+      title: "和电脑交朋友",
+      desc: "认识编程是什么；学会变量、输入输出、if 判断和 for 循环。",
+      file: "编程入门教程.html",
+      lessons: ["lesson-1", "lesson-2", "lesson-3", "lesson-4", "lesson-5", "lesson-6"],
+      tags: ["变量", "输入输出", "判断", "循环"]
+    },
+    {
+      num: 2,
+      title: "把功能打包",
+      desc: "把重复使用的功能封装成函数，理解参数与返回值，认识数组，并学习注释与伪代码。",
+      file: "编程入门教程第二章.html",
+      lessons: ["lesson-1", "lesson-2", "lesson-3", "lesson-4", "lesson-5", "lesson-6", "lesson-7", "lesson-8"],
+      tags: ["函数", "参数与返回值", "数组", "注释与伪代码"]
+    },
+    {
+      num: 3,
+      title: "摆放数据的规矩",
+      desc: "认识数据结构：栈、队列、链表、哈希表、树、图，每种结构都配代码实例与示意图。",
+      file: "编程入门教程第三章.html",
+      lessons: ["lesson-1", "lesson-2", "lesson-3", "lesson-4", "lesson-5", "lesson-6", "lesson-7"],
+      tags: ["数据结构", "栈与队列", "链表", "哈希表", "树与图"]
+    },
+    {
+      num: 4,
+      title: "Vibe coding",
+      desc: "你负责描述想法，AI 负责写代码。用 vibe coding 从零做出一个口算题生成器项目，全程不用手写一行代码。",
+      file: "编程入门教程第四章.html",
+      lessons: ["lesson-1", "lesson-2", "lesson-3", "lesson-4", "lesson-5", "lesson-6", "lesson-7"],
+      tags: ["Vibe coding", "AI", "提示词", "项目实战"]
+    },
+    {
+      num: 5,
+      title: "调试与排错",
+      desc: "把报错信息变成线索，学会用 print 逐行追踪变量，区分语法、逻辑、运行时错误，并学会向 AI 描述问题。",
+      file: "编程入门教程第五章.html",
+      lessons: ["lesson-1", "lesson-2", "lesson-3", "lesson-4", "lesson-5"],
+      tags: ["调试", "报错", "print 调试", "向 AI 提问"]
+    },
+    {
+      num: 6,
+      title: "语法补完课",
+      desc: "补齐第二阶段必备的常用语法：逻辑运算符、三元表达式、位运算、列表切片、字符串格式化、文件读写。",
+      file: "编程入门教程第六章.html",
+      lessons: ["lesson-1", "lesson-2", "lesson-3", "lesson-4", "lesson-5", "lesson-6", "lesson-7"],
+      tags: ["逻辑运算符", "位运算", "格式化", "文件读写"]
+    }
+  ];
+  var STAGE1_NUMS = CHAPTERS.map(function (c) { return c.num; });
+  var CHAPTERS_BY_NUM = {};
+  CHAPTERS.forEach(function (c) { CHAPTERS_BY_NUM[c.num] = c; });
+
+          /* 第六章：语法补完课，为第一阶段的收尾章节 */
+  var CH6 = { num: 6, file: "编程入门教程第六章.html", key: "coding-101-ch6-progress", total: 7 };
+
+  /* ── 2. 读取进度 ── */
+  function progressFor(key, total) {
+    var data = {};
+    try { data = JSON.parse(read(key) || "{}"); } catch (e) {}
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    return { done: done, total: total, pct: total ? Math.round(done / total * 100) : 0 };
+  }
+  function chapterProgress(ch) {
+    var key = ch.num === 1 ? "coding-101-progress" : "coding-101-ch" + ch.num + "-progress";
+    return progressFor(key, ch.lessons.length);
+  }
+
+  /* ── 3. 渲染第一阶段章节卡片 ── */
+  var grid = $("#chapters");
+  var overallDone = 0, overallTotal = 0;
+
+  /* 第六章默认锁住：前五章全部完成、看过恭喜页之后才解锁。
+     兼容老用户——若 ch6-progress 里已有数据（旧版本第六章可直接学），
+     说明已经学过，自动解锁。 */
+  var ch6Progress = {};
+  try { ch6Progress = JSON.parse(read("coding-101-ch6-progress") || "{}"); } catch (e) {}
+  var hasCh6Progress = false;
+  for (var _k in ch6Progress) { if (ch6Progress[_k]) { hasCh6Progress = true; break; } }
+  var ch6Unlocked = read("coding-101-ch6-unlocked") === "1" || hasCh6Progress;
+
+  CHAPTERS.forEach(function (ch) {
+    var locked = (ch.num === 6 && !ch6Unlocked);
+    var p = chapterProgress(ch);
+
+    /* 锁住的章节不计入总进度，否则前五章学完也走不到 100% */
+    if (!locked) {
+      overallDone += p.done;
+      overallTotal += p.total;
+    }
+
+    var card = document.createElement("article");
+    card.className = "chapter-card" + (locked ? " coming" : "");
+
+    var tagsHtml = ch.tags.map(function (t) { return "<span>" + t + "</span>"; }).join("");
+    var progressHtml = (p.total && !locked)
+      ? '<div class="card-progress">' +
+          '<div class="meta"><span>学习进度</span><span>' + p.done + "/" + p.total + ' 小节</span></div>' +
+          '<div class="bar"><i style="width:' + p.pct + '%"></i></div>' +
+        '</div>'
+      : '';
+
+    var actionHtml;
+    if (locked) {
+      actionHtml = '<span class="btn" aria-disabled="true">🔒 完成前五章后解锁</span>';
+    } else if (p.pct === 100) {
+      actionHtml = '<a class="btn done" href="' + ch.file + '">✓ 已完成 · 复习</a>';
+    } else if (p.pct > 0) {
+      actionHtml = '<a class="btn" href="' + ch.file + '">继续学习 →</a>';
+    } else {
+      actionHtml = '<a class="btn" href="' + ch.file + '">开始学习 →</a>';
+    }
+
+    card.innerHTML =
+      '<div class="chapter-no">第 ' + ch.num + ' 章</div>' +
+      '<h3>' + ch.title + '</h3>' +
+      '<p>' + ch.desc + '</p>' +
+      '<div class="lessons-preview">' + tagsHtml + '</div>' +
+      progressHtml +
+      '<div class="chapter-actions">' + actionHtml + '</div>';
+
+    grid.appendChild(card);
+  });
+
+  /* ── 4. 第一阶段进度条 + 「前往第二阶段」按钮 ── */
+  var overallPct = overallTotal ? Math.round(overallDone / overallTotal * 100) : 0;
+  $("#overall-text").textContent = overallDone + "/" + overallTotal + " 小节";
+  $("#overall-bar").style.width = overallPct + "%";
+
+  /* 「前往第二阶段」：第六章解锁后、且整个第一阶段全部学完才出现 */
+  var stage1Done = ch6Unlocked && overallTotal > 0 && overallDone >= overallTotal;
+  if (stage1Done) {
+    $("#stage2-cta").style.display = "";
+  }
+
+  /* ============================================================
+     第二阶段：课程包数据 + 方向问卷 + 推荐榜
+     ============================================================ */
+  var PACKAGES = [
+    { code: "A", langs: ["python"], name: "类与对象", intro: "代码的进化论", tag: "编程基础", file: "第二阶段_课程包A_类与对象.html", keys: ["coding-101-pkgA-m1-progress", "coding-101-pkgA-m2-progress", "coding-101-pkgA-m3-progress", "coding-101-pkgA-m4-progress", "coding-101-pkgA-m5-progress"], total: 20, built: true, note: "全部 5 个模块已上线，点击进入学习。" },
+    { code: "B", langs: ["python"], name: "异常处理", intro: "程序也会生病", tag: "编程基础", file: "第二阶段_课程包B_异常处理.html", keys: ["coding-101-pkgB-m1-progress", "coding-101-pkgB-m2-progress", "coding-101-pkgB-m3-progress", "coding-101-pkgB-m4-progress", "coding-101-pkgB-m5-progress", "coding-101-pkgB-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "C", langs: ["python"], name: "标准库", intro: "Python 的百宝箱（其实C++也行）", tag: "编程基础", file: "第二阶段_课程包C_标准库.html", keys: ["coding-101-pkgC-m1-progress", "coding-101-pkgC-m2-progress", "coding-101-pkgC-m3-progress", "coding-101-pkgC-m4-progress", "coding-101-pkgC-m5-progress"], total: 22, built: true, note: "全部 5 个模块已上线，点击进入学习。" },
+    { code: "D", langs: ["cpp", "python"], name: "算法入门", intro: "让代码跑得更聪明", tag: "算法竞赛", file: "第二阶段_课程包D_算法入门.html", keys: ["coding-101-pkgD-m1-progress", "coding-101-pkgD-m2-progress", "coding-101-pkgD-m3-progress", "coding-101-pkgD-m4-progress", "coding-101-pkgD-m5-progress", "coding-101-pkgD-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "E", langs: ["cpp", "python"], name: "数据结构进阶", intro: "从链表到图", tag: "算法竞赛", file: "第二阶段_课程包E_数据结构进阶.html", keys: ["coding-101-pkgE-m1-progress", "coding-101-pkgE-m2-progress", "coding-101-pkgE-m3-progress", "coding-101-pkgE-m4-progress", "coding-101-pkgE-m5-progress", "coding-101-pkgE-m6-progress"], total: 26, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "F", langs: ["cpp", "python"], name: "动态规划", intro: "竞赛必杀技", tag: "算法竞赛", file: "第二阶段_课程包F_动态规划.html", keys: ["coding-101-pkgF-m1-progress", "coding-101-pkgF-m2-progress", "coding-101-pkgF-m3-progress", "coding-101-pkgF-m4-progress", "coding-101-pkgF-m5-progress", "coding-101-pkgF-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "G", langs: ["cpp", "python"], name: "计算机解剖", intro: "学完手搓CPU", tag: "计算机原理", file: "第二阶段_课程包G_计算机解剖.html", keys: ["coding-101-pkgG-m1-progress", "coding-101-pkgG-m2-progress", "coding-101-pkgG-m3-progress", "coding-101-pkgG-m4-progress", "coding-101-pkgG-m5-progress", "coding-101-pkgG-m6-progress", "coding-101-pkgG-m7-progress"], total: 28, built: true, note: "全部 7 个模块已上线，点击进入学习。" },
+    { code: "H", langs: ["cpp", "python"], name: "操作系统", intro: "电脑里的管家", tag: "计算机原理", file: "第二阶段_课程包H_操作系统.html", keys: ["coding-101-pkgH-m1-progress", "coding-101-pkgH-m2-progress", "coding-101-pkgH-m3-progress", "coding-101-pkgH-m4-progress", "coding-101-pkgH-m5-progress", "coding-101-pkgH-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "I", langs: ["python"], name: "网络漫游", intro: "数据包的环球旅行", tag: "计算机原理", file: "第二阶段_课程包I_网络漫游.html", keys: ["coding-101-pkgI-m1-progress", "coding-101-pkgI-m2-progress", "coding-101-pkgI-m3-progress", "coding-101-pkgI-m4-progress", "coding-101-pkgI-m5-progress", "coding-101-pkgI-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "J", langs: ["cpp", "python"], name: "编程语言家谱", intro: "各门各派的武功", tag: "计算机原理", file: "第二阶段_课程包J_编程语言家谱.html", keys: ["coding-101-pkgJ-m1-progress", "coding-101-pkgJ-m2-progress", "coding-101-pkgJ-m3-progress", "coding-101-pkgJ-m4-progress", "coding-101-pkgJ-m5-progress", "coding-101-pkgJ-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "K", langs: ["cpp", "python"], name: "项目管理", intro: "从想法到蓝图", tag: "项目创作", file: "第二阶段_课程包K_项目管理.html", keys: ["coding-101-pkgK-m1-progress", "coding-101-pkgK-m2-progress", "coding-101-pkgK-m3-progress", "coding-101-pkgK-m4-progress", "coding-101-pkgK-m5-progress", "coding-101-pkgK-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "L", langs: ["python"], name: "Git 时光机", intro: "删错了能反悔", tag: "项目创作", file: "第二阶段_课程包L_Git_时光机.html", keys: ["coding-101-pkgL-m1-progress", "coding-101-pkgL-m2-progress", "coding-101-pkgL-m3-progress", "coding-101-pkgL-m4-progress", "coding-101-pkgL-m5-progress", "coding-101-pkgL-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "M", langs: ["python"], name: "API 与库", intro: "站在巨人肩膀", tag: "项目创作", file: "第二阶段_课程包M_API_与库.html", keys: ["coding-101-pkgM-m1-progress", "coding-101-pkgM-m2-progress", "coding-101-pkgM-m3-progress", "coding-101-pkgM-m4-progress", "coding-101-pkgM-m5-progress", "coding-101-pkgM-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "N", langs: ["cpp", "python"], name: "Vibe Coding 高阶", intro: "当 AI 的导演", tag: "项目创作", file: "第二阶段_课程包N_Vibe_Coding_高阶.html", keys: ["coding-101-pkgN-m1-progress", "coding-101-pkgN-m2-progress", "coding-101-pkgN-m3-progress", "coding-101-pkgN-m4-progress", "coding-101-pkgN-m5-progress", "coding-101-pkgN-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "O", langs: ["python"], name: "网页开发", intro: "我的第一个网站", tag: "项目创作", file: "第二阶段_课程包O_网页开发.html", keys: ["coding-101-pkgO-m1-progress", "coding-101-pkgO-m2-progress", "coding-101-pkgO-m3-progress", "coding-101-pkgO-m4-progress", "coding-101-pkgO-m5-progress", "coding-101-pkgO-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "P", langs: ["python"], name: "游戏开发", intro: "做个小游戏", tag: "项目创作", file: "第二阶段_课程包P_游戏开发.html", keys: ["coding-101-pkgP-m1-progress", "coding-101-pkgP-m2-progress", "coding-101-pkgP-m3-progress", "coding-101-pkgP-m4-progress", "coding-101-pkgP-m5-progress", "coding-101-pkgP-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "Q", langs: ["python"], name: "数据分析", intro: "Excel 的终结者", tag: "办公效率", file: "第二阶段_课程包Q_数据分析.html", keys: ["coding-101-pkgQ-m1-progress", "coding-101-pkgQ-m2-progress", "coding-101-pkgQ-m3-progress", "coding-101-pkgQ-m4-progress", "coding-101-pkgQ-m5-progress"], total: 20, built: true, note: "全部 5 个模块已上线，点击进入学习。" },
+    { code: "R", langs: ["python"], name: "自动化办公", intro: "让电脑替我搬砖", tag: "办公效率", file: "第二阶段_课程包R_自动化办公.html", keys: ["coding-101-pkgR-m1-progress", "coding-101-pkgR-m2-progress", "coding-101-pkgR-m3-progress", "coding-101-pkgR-m4-progress", "coding-101-pkgR-m5-progress", "coding-101-pkgR-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "S", langs: ["python"], name: "爬虫入门", intro: "网上抓点数据", tag: "办公效率", file: "第二阶段_课程包S_爬虫入门.html", keys: ["coding-101-pkgS-m1-progress", "coding-101-pkgS-m2-progress", "coding-101-pkgS-m3-progress", "coding-101-pkgS-m4-progress", "coding-101-pkgS-m5-progress", "coding-101-pkgS-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+    { code: "T", langs: ["python"], name: "数据库", intro: "数据的仓库管理员", tag: "办公效率", file: "第二阶段_课程包T_数据库.html", keys: ["coding-101-pkgT-m1-progress", "coding-101-pkgT-m2-progress", "coding-101-pkgT-m3-progress", "coding-101-pkgT-m4-progress", "coding-101-pkgT-m5-progress", "coding-101-pkgT-m6-progress"], total: 24, built: true, note: "全部 6 个模块已上线，点击进入学习。" },
+  ];
+  var BY_CODE = {};
+  PACKAGES.forEach(function (p) { BY_CODE[p.code] = p; });
+
+  var DIRECTIONS = {
+    deep:   { key: "deep",   label: "深入编程",       desc: "辅助学校课程 / 准备竞赛 / 想深入理解代码。以 C++ 为主语言。", must: ["A","B","C","D","E","F","T"], explore: ["G","H","I","L","N","S"] },
+    fun:    { key: "fun",    label: "趣味编程",       desc: "学着玩 / 拓展知识 / 科普向。以 Python 为主语言。",           must: ["G","H","I","J","O","P"], explore: ["D","Q","R","S","L","M"] },
+    create: { key: "create", label: "AI 编程 · 创作", desc: "有创意 / 想零代码或低代码实现 / 希望作品变现。Python 专属。", must: ["K","L","M","N","O","T","A"], explore: ["P","Q","S","R","B","C"] },
+    office: { key: "office", label: "AI 编程 · 办公", desc: "自动办公 / 上班摸鱼 / 效率工具党。Python 专属。",           must: ["C","M","N","Q","R","S","T"], explore: ["K","L","B","O","I","H"] }
+  };
+
+  var QUIZ = [
+    { q: "你学编程，最想要的是？", opts: ["考试拿高分，或者参加编程竞赛", "搞懂电脑到底怎么工作的，满足好奇心", "做出一个能用的东西，给别人看", "让电脑帮我做重复工作，提高效率"] },
+    { q: "以下哪种情况，最能让你觉得「学编程真没白学」？", opts: ["一道难题，我写出了比同学更简洁更快的解法", "终于搞懂了以前觉得神秘的电脑原理，能跟朋友讲清楚", "做出了一个能点开、能玩的小作品，别人问我「这是你做的？」", "原本要手动搞一上午的重复工作，现在一键就搞定了"] },
+    { q: "接到一个新任务时，你更习惯怎么开始？", opts: ["先把任务拆成小步骤，画个流程图，确保逻辑通顺", "先搜资料，搞懂这个任务背后涉及什么技术原理", "先在脑子里想象最终效果长什么样，再倒推怎么做", "先搜搜有没有现成的工具、模板或脚本能直接拿来用"] },
+    { q: "遇到看不懂的代码时，你更希望？", opts: ["一行一行啃，搞懂每一行为什么这样写", "先搞懂这段代码在电脑里是怎么被执行的", "直接问 AI「这段代码是干什么的」，先知道功能再慢慢理解", "先跑起来看看效果，能跑就行，细节以后再说"] }
+  ];
+  /* 选项下标：0→深入编程 1→趣味编程 2→AI创作 3→AI办公 */
+  var OPT_DIR = ["deep", "fun", "create", "office"];
+
+  var DIR_KEY = "coding-101-direction";
+  var activeDir = read(DIR_KEY) || null;
+
+  /* 问卷计分：最高分方向；同分按 Q1→Q2→Q3→Q4 优先级 */
+  function scoreQuiz(answers) {
+    var score = { deep: 0, fun: 0, create: 0, office: 0 };
+    var firstIdx = { deep: 99, fun: 99, create: 99, office: 99 };
+    answers.forEach(function (a, i) {
+      var d = OPT_DIR[a];
+      score[d]++;
+      if (i < firstIdx[d]) firstIdx[d] = i;
+    });
+    var best = null, bestScore = -1, bestFirst = 99;
+    Object.keys(score).forEach(function (d) {
+      if (score[d] > bestScore || (score[d] === bestScore && firstIdx[d] < bestFirst)) {
+        bestScore = score[d]; bestFirst = firstIdx[d]; best = d;
+      }
+    });
+    return best;
+  }
+
+  /* 汇总一个课程包所有模块的学习进度 */
+  function packageProgress(p) {
+    if (!p.keys || p.keys.length === 0) return progressFor(p.key, p.total);
+    var done = 0;
+    p.keys.forEach(function (key) {
+      var data = {};
+      try { data = JSON.parse(read(key) || "{}"); } catch (e) {}
+      done += Object.keys(data).filter(function (k) { return data[k]; }).length;
+    });
+    return { done: done, total: p.total, pct: p.total ? Math.round(done / p.total * 100) : 0 };
+  }
+
+  /* 渲染单个课程包卡片 */
+  function pkgCard(p, dim) {
+    var action, extra = "";
+    if (p.built && p.keys) {
+      var pp = packageProgress(p);
+      extra =
+        '<div class="pkg-progress">学习进度 ' + pp.done + "/" + pp.total + ' 小节' +
+        '<div class="bar"><i style="width:' + pp.pct + '%"></i></div></div>';
+      action = '<a class="btn" href="' + p.file + '">' + (pp.pct === 100 ? "✓ 已完成 · 复习" : "开始学习 →") + '</a>';
+    } else if (p.built) {
+      action = '<a class="btn" href="' + p.file + '">查看模块 →</a>';
+    } else {
+      action = '<span class="soon-badge" aria-disabled="true">敬请期待</span>';
+    }
+    var note = p.note ? '<p class="pkg-note">' + p.note + '</p>' : '';
+    return '<article class="pkg-card' + (dim ? ' dim' : '') + '">' +
+      '<div class="pkg-head"><span class="pkg-code">' + p.code + '</span><span class="pkg-tag">' + p.tag + '</span></div>' +
+      '<h4>' + p.name + '</h4>' +
+      '<p class="pkg-intro">' + p.intro + '</p>' +
+      note + extra +
+      '<div class="pkg-actions">' + action + '</div>' +
+    '</article>';
+  }
+
+  function recGroup(title, sub, codes, dim) {
+    var cards = codes.map(function (c) { return pkgCard(BY_CODE[c], dim); }).join("");
+    return '<div class="rec-group"><div class="rec-title">' + title + '<span>' + sub + '</span></div>' +
+      '<div class="pkg-grid">' + cards + '</div></div>';
+  }
+
+  function renderDirection(dirKey) {
+    activeDir = dirKey;
+    store(DIR_KEY, dirKey);
+    var dir = DIRECTIONS[dirKey];
+    var other = PACKAGES.map(function (p) { return p.code; })
+      .filter(function (c) { return dir.must.indexOf(c) < 0 && dir.explore.indexOf(c) < 0; });
+    var html = '';
+    html += '<div class="rec-head"><span class="rec-dir">🎯 你的推荐方向：' + dir.label + '</span>' +
+      '<p>' + dir.desc + '</p></div>';
+    html += recGroup("🔥 必学榜", "与你方向极度契合，优先安排", dir.must, false);
+    html += recGroup("🌈 探索榜", "兴趣拓展，学有余力再碰", dir.explore, false);
+    html += recGroup("📚 其他课程", "暂非重点，未来可回看", other, true);
+    if (activeLangFilter !== "all") {
+      var lang = activeLangFilter;
+      var mustSup = dir.must.filter(function (c) { return BY_CODE[c].langs.indexOf(lang) >= 0; });
+      var mustOth = dir.must.filter(function (c) { return BY_CODE[c].langs.indexOf(lang) < 0; });
+      var expSup = dir.explore.filter(function (c) { return BY_CODE[c].langs.indexOf(lang) >= 0; });
+      var expOth = dir.explore.filter(function (c) { return BY_CODE[c].langs.indexOf(lang) < 0; });
+      var other = PACKAGES.map(function (p) { return p.code; })
+        .filter(function (c) { return dir.must.indexOf(c) < 0 && dir.explore.indexOf(c) < 0; });
+      var otherSup = other.filter(function (c) { return BY_CODE[c].langs.indexOf(lang) >= 0; });
+      var otherOth = other.filter(function (c) { return BY_CODE[c].langs.indexOf(lang) < 0; });
+      html = '<div class="rec-head"><span class="rec-dir">🎯 ' + dir.label + ' · 同时筛选 ' + (lang === "cpp" ? "C++" : "Python") + '</span>' +
+        '<p>' + dir.desc + '</p></div>';
+      if (mustSup.length) html += recGroup("🔥 必学榜 · 支持 " + (lang === "cpp" ? "C++" : "Python"), "方向契合且提供该语言示例", mustSup, false);
+      if (mustOth.length) html += recGroup("🔥 必学榜 · 其他", "方向契合但主要用 Python", mustOth, false);
+      if (expSup.length) html += recGroup("🌈 探索榜 · 支持 " + (lang === "cpp" ? "C++" : "Python"), "兴趣拓展且提供该语言示例", expSup, false);
+      if (expOth.length) html += recGroup("🌈 探索榜 · 其他", "兴趣拓展但主要用 Python", expOth, false);
+      if (otherSup.length) html += recGroup("📚 其他课程 · 支持 " + (lang === "cpp" ? "C++" : "Python"), "暂非重点且提供该语言示例", otherSup, true);
+      if (otherOth.length) html += recGroup("📚 其他课程", "暂非重点，未来可回看", otherOth, true);
+    }
+
+    $("#rec-area").innerHTML = html;
+
+    $$(".dir-tab").forEach(function (t) {
+      t.classList.toggle("active", t.getAttribute("data-dir") === dirKey);
+    });
+    $$(".lang-filter button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === activeLangFilter);
+    });
+  }
+
+  function renderCatalog() {
+    var cards = PACKAGES.map(function (p) { return pkgCard(p, false); }).join("");
+    $("#rec-area").innerHTML =
+      '<div class="rec-group"><div class="rec-title">全部课程包' +
+      '<span>完成上方问卷或选择一个方向，查看为你推荐的必学榜 / 探索榜</span></div>' +
+      '<div class="pkg-grid">' + cards + '</div></div>';
+    $$(".dir-tab").forEach(function (t) { t.classList.remove("active"); });
+  }
+
+
+  var LANG_FILTER_KEY = "coding-101-stage2-lang-filter";
+  var activeLangFilter = read(LANG_FILTER_KEY) || "all";
+
+  function renderByLang(lang) {
+    activeLangFilter = lang;
+    store(LANG_FILTER_KEY, lang);
+    var supported = [], unsupported = [];
+    PACKAGES.forEach(function (p) {
+      if (p.langs && p.langs.indexOf(lang) >= 0) supported.push(p.code);
+      else unsupported.push(p.code);
+    });
+    var html = '';
+    html += '<div class="rec-head"><span class="rec-dir">🌐 按语言筛选：' + (lang === "cpp" ? "C++" : "Python") + '</span>' +
+      '<p>下方是支持该语言的课程包，其余课程包主要使用 Python 讲解。</p></div>';
+    html += recGroup("✅ 支持 " + (lang === "cpp" ? "C++" : "Python") + " 的课程包", "代码示例提供该语言版本", supported, false);
+    html += recGroup("📚 其他课程包", "主要以 Python 讲解，概念仍可迁移", unsupported, true);
+    $("#rec-area").innerHTML = html;
+
+    $$(".lang-filter button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+    $$(".dir-tab").forEach(function (t) { t.classList.remove("active"); });
+  }
+
+  /* 渲染问卷 */
+  (function buildQuiz() {
+    var html = "";
+    QUIZ.forEach(function (item, qi) {
+      var opts = item.opts.map(function (o, oi) {
+        return '<label class="quiz-opt"><input type="radio" name="q' + qi + '" value="' + oi + '">' +
+          '<span>' + String.fromCharCode(65 + oi) + ". " + o + '</span></label>';
+      }).join("");
+      html += '<div class="quiz-q"><div class="quiz-q-title">Q' + (qi + 1) + ". " + item.q + '</div>' + opts + '</div>';
+    });
+    $("#quiz-body").innerHTML = html;
+
+    /* 选中态高亮（兼容不支持 :has 的浏览器） */
+    $$("#quiz-body input[type=radio]").forEach(function (inp) {
+      inp.addEventListener("change", function () {
+        $$("#quiz-body .quiz-opt").forEach(function (l) { l.classList.remove("checked"); });
+        if (inp.checked) inp.closest(".quiz-opt").classList.add("checked");
+      });
+    });
+  })();
+
+  $("#quiz-submit").addEventListener("click", function () {
+    var answers = [];
+    for (var i = 0; i < QUIZ.length; i++) {
+      var sel = document.querySelector('input[name="q' + i + '"]:checked');
+      if (!sel) { alert("请先回答第 " + (i + 1) + " 题"); return; }
+      answers.push(parseInt(sel.value, 10));
+    }
+    var dir = scoreQuiz(answers);
+    renderDirection(dir);
+    $("#rec-area").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  /* 方向切换标签 */
+  (function buildTabs() {
+    var html = Object.keys(DIRECTIONS).map(function (k) {
+      return '<button class="dir-tab" data-dir="' + k + '">' + DIRECTIONS[k].label + '</button>';
+    }).join("");
+    $("#dir-tabs").innerHTML = html;
+    $$(".dir-tab").forEach(function (t) {
+      t.addEventListener("click", function () { renderDirection(t.getAttribute("data-dir")); });
+    });
+  })();
+
+  /* 语言筛选事件 */
+  (function buildLangFilter() {
+    $$(".lang-filter button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var lang = b.dataset.lang;
+        if (lang === "all") {
+          activeLangFilter = "all";
+          store(LANG_FILTER_KEY, "all");
+          if (activeDir && DIRECTIONS[activeDir]) renderDirection(activeDir);
+          else renderCatalog();
+        } else {
+          renderByLang(lang);
+        }
+      });
+    });
+  })();
+
+  /* 计算并渲染第二阶段总进度 */
+  function refreshStage2Progress() {
+    var done = 0, total = 0;
+    PACKAGES.forEach(function (p) {
+      var pp = packageProgress(p);
+      done += pp.done;
+      total += pp.total;
+    });
+    var pct = total ? Math.round(done / total * 100) : 0;
+    $("#stage2-progress-text").textContent = done + "/" + total + " 小节";
+    $("#stage2-progress-bar").style.width = pct + "%";
+  }
+
+  /* 初始：优先应用已保存的语言筛选，再应用方向推荐 */
+  if (activeLangFilter !== "all") {
+    renderByLang(activeLangFilter);
+  } else if (activeDir && DIRECTIONS[activeDir]) {
+    renderDirection(activeDir);
+  } else {
+    renderCatalog();
+  }
+  refreshStage2Progress();
+
+})();
+</script>
+
+<!-- 第一阶段全部小节学完 → 跳转庆祝页（只跳一次） -->
+<script>
+(function () {
+  /* 庆祝节点只看前五章：第六章是解锁后的加餐，不参与判定 */
+  var STAGE1_KEYS = [
+    "coding-101-progress",
+    "coding-101-ch2-progress",
+    "coding-101-ch3-progress",
+    "coding-101-ch4-progress",
+    "coding-101-ch5-progress"
+  ];
+  var STAGE1_TOTALS = [6, 8, 7, 7, 5];
+
+  function allDone() {
+    try {
+      for (var i = 0; i < STAGE1_KEYS.length; i++) {
+        var d = JSON.parse(localStorage.getItem(STAGE1_KEYS[i]) || "{}");
+        var n = 0;
+        for (var k in d) { if (d[k]) n++; }
+        if (n < STAGE1_TOTALS[i]) return false;
+      }
+      return true;
+    } catch (e) { return false; }
+  }
+  function maybeCelebrate() {
+    try { if (localStorage.getItem("coding-101-congrats-shown")) return; } catch (e) {}
+    if (allDone()) {
+      try { localStorage.setItem("coding-101-congrats-shown", "1"); } catch (e) {}
+      location.href = "完成恭喜.html";
+    }
+  }
+  window.__maybeCelebrate = maybeCelebrate;
+  maybeCelebrate();
+  document.addEventListener("click", function (ev) {
+    if (ev.target.closest && ev.target.closest(".done-btn")) setTimeout(maybeCelebrate, 120);
+  });
+})();
+</script>
+<script>
+(function () {
+  /* 捐赠按钮在前五章全部完成后常驻显示 */
+  var STAGE1_KEYS = [
+    "coding-101-progress",
+    "coding-101-ch2-progress",
+    "coding-101-ch3-progress",
+    "coding-101-ch4-progress",
+    "coding-101-ch5-progress"
+  ];
+  var STAGE1_TOTALS = [6, 8, 7, 7, 5];
+
+  function allDone() {
+    try {
+      for (var i = 0; i < STAGE1_KEYS.length; i++) {
+        var d = JSON.parse(localStorage.getItem(STAGE1_KEYS[i]) || "{}");
+        var n = 0;
+        for (var k in d) { if (d[k]) n++; }
+        if (n < STAGE1_TOTALS[i]) return false;
+      }
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function refreshDonate() {
+    var btn = document.getElementById("donate-top");
+    if (!btn) return;
+    btn.style.display = allDone() ? "inline-block" : "none";
+  }
+
+  refreshDonate();
+  document.addEventListener("click", function (ev) {
+    if (ev.target.closest && ev.target.closest(".done-btn")) setTimeout(refreshDonate, 120);
+  });
+})();
+</script>
+
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js");}</script></body>
+</html>

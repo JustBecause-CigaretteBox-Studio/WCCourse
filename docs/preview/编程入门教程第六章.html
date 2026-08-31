@@ -1,4 +1,421 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="写给完全新手的编程入门课第 6 章：语法补完课。学会逻辑运算符、三元表达式、位运算、列表切片、字符串格式化、文件读写等第二阶段必备语法。支持 C++ / Python 双语、深色模式，单文件离线可用。"><title>野鸡动画编程课 · 第 6 章</title><style> /* ══════════════════════════════════════════════════════════ 1. 主题变量（与第 1 章保持一致） ══════════════════════════════════════════════════════════ */ :root { --bg: #f6f4ee; --bg-section: #fdfcf9; --bg-card: #ffffff; --bg-soft: #f8fafc; --text: #1e293b; --text-soft: #475569; --text-faint: #94a3b8; --border: #e2e8f0; --code-inline-bg: #f1f5f9; } html.dark { --bg: #0e1120; --bg-section: #161a2c; --bg-card: #1e2336; --bg-soft: #232842; --text: #e2e8f0; --text-soft: #cbd5e1; --text-faint: #64748b; --border: #2a3049; --code-inline-bg: #2a3049; } /* ══════════════════════════════════════════════════════════ 2. 基础与布局 ══════════════════════════════════════════════════════════ */ * { margin: 0; padding: 0; box-sizing: border-box; } html { scroll-behavior: smooth; } body { background: var(--bg); color: var(--text); font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif; transition: background .2s; } code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, "Courier New", monospace; } ::selection { background: rgba(14,165,233,.25); } .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; } .layout { display: flex; gap: 32px; padding-top: 32px; } /* ── 顶栏 ── */ header { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); } .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; } .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; } .brand .logo { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: #1c1f2e; color: #38bdf8; font-size: 15px; } .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; } .progress-mini { display: none; align-items: center; gap: 8px; font-size: 12px; color: var(--text-faint); } @media (min-width: 768px) { .progress-mini { display: flex; } } .bar { width: 96px; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; } .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; } /* 语言切换（C++ / Python） */ .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); } .lang-toggle button { border: 0; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 700; cursor: pointer; background: transparent; color: var(--text-faint); } .lang-toggle button.active { background: #0ea5e9; color: #fff; } .icon-btn { display: flex; align-items: center; justify-content: center; gap: 4px; height: 32px; min-width: 32px; padding: 0 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-soft); font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; } .icon-btn:hover { background: var(--bg-soft); } .icon-btn.home-btn { background: #38bdf8; color: #fff; border-color: #38bdf8; font-weight: 700; font-size: 15px; padding: 0 22px; border-radius: 9999px; } .icon-btn.home-btn:hover { background: #0ea5e9; border-color: #0ea5e9; } #toc-btn { display: flex; } @media (min-width: 1024px) { #toc-btn { display: none; } } /* ── 侧边目录 ── */ aside { display: none; width: 260px; flex-shrink: 0; } @media (min-width: 1024px) { aside { display: block; position: sticky; top: 80px; height: calc(100vh - 96px); overflow-y: auto; } } .aside-title { font-size: 12px; font-weight: 700; letter-spacing: 2px; color: var(--text-faint); margin-bottom: 12px; } .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; margin-bottom: 4px; color: var(--text-soft); text-decoration: none; font-size: 14px; } .nav-item:hover { background: var(--bg-soft); } .nav-item.active { background: #e0f2fe; color: #0369a1; font-weight: 700; } html.dark .nav-item.active { background: rgba(3,105,161,.35); color: #7dd3fc; } .nav-num { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 99px; flex-shrink: 0; background: var(--code-inline-bg); color: var(--text-faint); font-size: 11px; font-weight: 700; } .nav-item.done .nav-num { background: #10b981; color: #fff; } .nav-sub { display: block; font-size: 12px; font-weight: 400; color: var(--text-faint); } .progress-card { margin-top: 24px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); font-size: 12px; } .progress-card .bar { width: 100%; margin-top: 8px; } #toc-panel { display: none; border-top: 1px solid var(--border); padding: 12px 16px; background: var(--bg-card); } #toc-panel.open { display: block; } /* ── 主内容 ── */ main { flex: 1; min-width: 0; padding-bottom: 96px; } section.lesson { scroll-margin-top: 96px; margin-bottom: 40px; padding: 28px; border: 1px solid var(--border); border-radius: 16px; background: var(--bg-section); } @media (max-width: 640px) { section.lesson { padding: 20px; } } .lesson-head { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 24px; } .lesson-no { font-size: 12px; font-weight: 700; letter-spacing: 2px; color: #0284c7; } html.dark .lesson-no { color: #38bdf8; } .lesson-head h2 { font-size: 24px; font-weight: 900; margin-top: 4px; } .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; } .lesson-body p { font-size: 15px; line-height: 2; color: var(--text-soft); margin-bottom: 24px; } .lesson-body h3 { font-size: 18px; font-weight: 700; margin: 32px 0 24px; } .lesson-body strong { color: var(--text); } .hl-rose { color: #e11d48; } html.dark .hl-rose { color: #fb7185; } .hl-sky { color: #0369a1; } html.dark .hl-sky { color: #38bdf8; } code.inline { background: var(--code-inline-bg); color: #e11d48; border-radius: 4px; padding: 2px 6px; font-size: 13.5px; } html.dark code.inline { color: #fb7185; } footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 16px; } /* ══════════════════════════════════════════════════════════ 3. 组件 ══════════════════════════════════════════════════════════ */ /* ── Hero 头图 ── */ .hero { position: relative; overflow: hidden; border-radius: 16px; padding: 48px 32px; margin-bottom: 40px; background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440); color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25); } .hero::before, .hero::after { content: ""; position: absolute; width: 256px; height: 256px; border-radius: 99px; filter: blur(60px); opacity: .25; } .hero::before { right: -64px; top: -64px; background: #0ea5e9; } .hero::after { left: -40px; bottom: -80px; background: #8b5cf6; } .hero > * { position: relative; } .hero .tag { display: inline-block; padding: 4px 12px; border-radius: 99px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); font-size: 12px; color: #7dd3fc; } .hero h1 { font-size: 44px; font-weight: 900; margin-top: 16px; } @media (max-width: 640px) { .hero h1 { font-size: 30px; } } .hero p { max-width: 560px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; } .hero .start-btn { display: inline-flex; align-items: center; gap: 8px; margin-top: 28px; padding: 12px 24px; border-radius: 12px; background: #0ea5e9; color: #fff; font-weight: 700; font-size: 14px; text-decoration: none; box-shadow: 0 8px 20px rgba(14,165,233,.35); } .hero .meta { margin-left: 16px; font-size: 12px; color: #94a3b8; } /* ── 代码块 ── */ .code-block { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; background: #1c1f2e; color: #e2e8f0; } .code-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid #2a2f45; background: #232738; font-size: 12px; color: #94a3b8; } .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; } .code-block pre { padding: 16px; overflow-x: auto; font-size: 13.5px; line-height: 1.8; color: #cbd5e1; } /* 语言切换显示控制 */ body.lang-cpp .lang-py { display: none !important; } body.lang-py .lang-cpp { display: none !important; } /* ── 表格 ── */ .syntax-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; } .syntax-table th, .syntax-table td { padding: 12px 14px; border: 1px solid var(--border); text-align: left; } .syntax-table th { background: var(--bg-soft); color: var(--text); font-weight: 700; } .syntax-table td { color: var(--text-soft); } .syntax-table code.inline { font-size: 12.5px; } /* ── 小测验 ── */ .quiz { border: 1px dashed var(--border); border-radius: 12px; background: var(--bg-card); padding: 24px; margin-top: 32px; } .quiz h4 { font-size: 16px; margin-bottom: 16px; color: var(--text); } .quiz-opt { display: block; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; cursor: pointer; font-size: 14px; color: var(--text-soft); transition: all .15s; } .quiz-opt:hover { border-color: #38bdf8; } .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); } .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); } .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); line-height: 1.8; } .done-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-soft); font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; } .done-btn:hover { background: var(--bg-soft); } .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; } .callout { border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); padding: 18px; margin-bottom: 24px; } .callout-title { font-weight: 700; color: var(--text); margin-bottom: 8px; } .callout p { margin-bottom: 0 !important; } .tip { border-left: 4px solid #0ea5e9; padding: 12px 16px; background: var(--bg-card); border-radius: 0 12px 12px 0; margin-bottom: 24px; font-size: 14px; color: var(--text-soft); line-height: 1.8; } .tip strong { color: var(--text); } /* 真值表示例 */ .truth-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; text-align: center; font-size: 14px; } .truth-grid > div { background: var(--bg-card); padding: 10px; color: var(--text-soft); } .truth-grid > div.head { background: var(--bg-soft); color: var(--text); font-weight: 700; } .truth-grid > div.high { color: #0ea5e9; font-weight: 700; } </style><script> (function () { /* 标记写过的，或 ch6-progress 里有数据（旧用户）都算解锁 */ var unlocked = false; try { if (localStorage.getItem("coding-101-ch6-unlocked") === "1") { unlocked = true; } else { var p = JSON.parse(localStorage.getItem("coding-101-ch6-progress") || "{}"); for (var _k in p) { if (p[_k]) { unlocked = true; break; } } } } catch (e) {} if (unlocked) return; /* 未解锁时盖一层全屏遮罩，不销毁正文，避免破坏页面自身的脚本 */ function lock() { var box = document.createElement("div"); box.style.cssText = "position:fixed;inset:0;z-index:99999;display:flex;align-items:center;" + "justify-content:center;padding:24px;text-align:center;background:var(--bg,#f1f5f9);"; box.innerHTML = '<div style="max-width:480px">' + '<div style="font-size:48px">🔒</div>' + '<h1 style="font-size:24px;margin:16px 0 14px;color:var(--text,#0f172a)">第六章还没解锁</h1>' + '<p style="line-height:2;color:var(--text-soft,#475569)">' + '这一章是核心课程之后的补充内容。<br>先把前五章全部学完，它会自动解锁。' + '</p>' + '<a href="index.html" style="display:inline-block;margin-top:22px;padding:12px 30px;' + 'border-radius:12px;background:#0ea5e9;color:#fff;font-size:15px;font-weight:700;text-decoration:none">' + '返回主页</a>' + '</div>'; document.body.appendChild(box); document.body.style.overflow = "hidden"; } if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", lock); } else { lock(); } })(); </script></head><body><header><div class="container header-inner"><a class="brand" href="index.html"><span class="logo">&lt;/&gt;</span><span>野鸡动画编程课</span></a><div class="header-right"><div class="progress-mini"><span id="progress-text">0/7 小节</span><div class="bar"><i id="bar-top"></i></div></div><div class="lang-toggle" id="lang-toggle"><button data-lang="cpp">C++</button><button data-lang="python">Python</button></div><a class="icon-btn home-btn" href="index.html">返回主页</a><button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button><button class="icon-btn" id="toc-btn" aria-label="目录">☰</button></div></div></header><div class="container layout"><aside><div class="aside-title">本课内容</div><nav><a class="nav-item" href="#lesson-1"><span class="nav-num">1</span><span>逻辑运算符<span class="nav-sub">and / or / not</span></span></a><a class="nav-item" href="#lesson-2"><span class="nav-num">2</span><span>三元表达式<span class="nav-sub">?: 一行做判断</span></span></a><a class="nav-item" href="#lesson-3"><span class="nav-num">3</span><span>位运算<span class="nav-sub">&amp; / | / ^ / ~</span></span></a><a class="nav-item" href="#lesson-4"><span class="nav-num">4</span><span>列表切片与遍历<span class="nav-sub">in / zip / enumerate</span></span></a><a class="nav-item" href="#lesson-5"><span class="nav-num">5</span><span>字符串格式化<span class="nav-sub">f-string / %</span></span></a><a class="nav-item" href="#lesson-6"><span class="nav-num">6</span><span>文件读写<span class="nav-sub">open / with</span></span></a><a class="nav-item" href="#lesson-7"><span class="nav-num">7</span><span>综合实战<span class="nav-sub">把语法串起来</span></span></a></nav><div class="progress-card"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>本章进度</span><span id="side-progress">0/7</span></div><div class="bar"><i id="side-bar"></i></div></div></aside><main><div class="hero"><span class="tag">第 6 章</span><h1>语法补完课</h1><p>前面五章已经学会了编程的骨架：变量、判断、循环、函数、数组。这一章把第二阶段常用的"小语法"一次性补齐，让你之后看任何课程包的代码都不会卡壳。</p><a class="start-btn" href="#lesson-1">开始第 6 章 →</a><span class="meta">7 个小节 · 进度自动保存</span></div><div id="toc-panel"></div><section class="lesson" id="lesson-1"><div class="lesson-head"><div class="lesson-no">第 1 小节</div><h2>逻辑运算符：把多个条件串起来</h2><div class="lesson-sub"><span class="lang-py">and / or / not</span><span class="lang-cpp">&amp;&amp; / || / !</span></div></div><div class="lesson-body"><p>第五章之前，<code class="inline">if</code> 后面只放了一个条件。但真实代码里经常需要同时判断多个条件，例如「成绩大于 60 <strong>并且</strong> 出勤率大于 80」。这时就要用到<strong>逻辑运算符</strong>。</p><table class="syntax-table"><thead><tr><th>含义</th><th>Python</th><th>C++</th></tr></thead><tbody><tr><td>并且</td><td><code class="inline">and</code></td><td><code class="inline">&amp;&amp;</code></td></tr><tr><td>或者</td><td><code class="inline">or</code></td><td><code class="inline">||</code></td></tr><tr><td>取反</td><td><code class="inline">not</code></td><td><code class="inline">!</code></td></tr></tbody></table><p>先看一个生活化的例子：判断一首歌能不能进播放列表。</p><div class="code-block lang-py" data-file="logic_demo.py" data-lang="python"><div class="code-head"><span class="dot"></span>logic_demo.py</div> <pre>score = 85      # 评分 0~100
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    语法补完课 · 新手编程入门课（第 6 章）
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开，
+    无需联网、无需安装任何东西。
+
+    学习进度保存在 localStorage 的 "coding-101-ch6-progress"，
+    课程主页（index.html）会读取这个键来显示本章完成度。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="写给完全新手的编程入门课第 6 章：语法补完课。学会逻辑运算符、三元表达式、位运算、列表切片、字符串格式化、文件读写等第二阶段必备语法。支持 C++ / Python 双语、深色模式，单文件离线可用。">
+  <title>野鸡动画编程课 · 第 6 章</title>
+
+  <style>
+  /* ══════════════════════════════════════════════════════════
+     1. 主题变量（与第 1 章保持一致）
+     ══════════════════════════════════════════════════════════ */
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     2. 基础与布局
+     ══════════════════════════════════════════════════════════ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s;
+  }
+  code, pre, .mono {
+    font-family: "JetBrains Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+  }
+  ::selection { background: rgba(14,165,233,.25); }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  .layout { display: flex; gap: 32px; padding-top: 32px; }
+
+  /* ── 顶栏 ── */
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .progress-mini { display: none; align-items: center; gap: 8px; font-size: 12px; color: var(--text-faint); }
+  @media (min-width: 768px) { .progress-mini { display: flex; } }
+  .bar { width: 96px; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+
+  /* 语言切换（C++ / Python） */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button {
+    border: 0; border-radius: 6px; padding: 4px 10px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    background: transparent; color: var(--text-faint);
+  }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  .icon-btn.home-btn {
+    background: #38bdf8; color: #fff; border-color: #38bdf8;
+    font-weight: 700; font-size: 15px; padding: 0 22px;
+    border-radius: 9999px;
+  }
+  .icon-btn.home-btn:hover { background: #0ea5e9; border-color: #0ea5e9; }
+  #toc-btn { display: flex; }
+  @media (min-width: 1024px) { #toc-btn { display: none; } }
+
+  /* ── 侧边目录 ── */
+  aside { display: none; width: 260px; flex-shrink: 0; }
+  @media (min-width: 1024px) {
+    aside { display: block; position: sticky; top: 80px; height: calc(100vh - 96px); overflow-y: auto; }
+  }
+  .aside-title { font-size: 12px; font-weight: 700; letter-spacing: 2px; color: var(--text-faint); margin-bottom: 12px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 8px; margin-bottom: 4px;
+    color: var(--text-soft); text-decoration: none; font-size: 14px;
+  }
+  .nav-item:hover { background: var(--bg-soft); }
+  .nav-item.active { background: #e0f2fe; color: #0369a1; font-weight: 700; }
+  html.dark .nav-item.active { background: rgba(3,105,161,.35); color: #7dd3fc; }
+  .nav-num {
+    display: flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 99px; flex-shrink: 0;
+    background: var(--code-inline-bg); color: var(--text-faint);
+    font-size: 11px; font-weight: 700;
+  }
+  .nav-item.done .nav-num { background: #10b981; color: #fff; }
+  .nav-sub { display: block; font-size: 12px; font-weight: 400; color: var(--text-faint); }
+  .progress-card { margin-top: 24px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); font-size: 12px; }
+  .progress-card .bar { width: 100%; margin-top: 8px; }
+  #toc-panel { display: none; border-top: 1px solid var(--border); padding: 12px 16px; background: var(--bg-card); }
+  #toc-panel.open { display: block; }
+
+  /* ── 主内容 ── */
+  main { flex: 1; min-width: 0; padding-bottom: 96px; }
+  section.lesson {
+    scroll-margin-top: 96px;
+    margin-bottom: 40px; padding: 28px;
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-section);
+  }
+  @media (max-width: 640px) { section.lesson { padding: 20px; } }
+  .lesson-head { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 24px; }
+  .lesson-no { font-size: 12px; font-weight: 700; letter-spacing: 2px; color: #0284c7; }
+  html.dark .lesson-no { color: #38bdf8; }
+  .lesson-head h2 { font-size: 24px; font-weight: 900; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body p { font-size: 15px; line-height: 2; color: var(--text-soft); margin-bottom: 24px; }
+  .lesson-body h3 { font-size: 18px; font-weight: 700; margin: 32px 0 24px; }
+  .lesson-body strong { color: var(--text); }
+  .hl-rose { color: #e11d48; } html.dark .hl-rose { color: #fb7185; }
+  .hl-sky  { color: #0369a1; } html.dark .hl-sky  { color: #38bdf8; }
+  code.inline {
+    background: var(--code-inline-bg); color: #e11d48;
+    border-radius: 4px; padding: 2px 6px; font-size: 13.5px;
+  }
+  html.dark code.inline { color: #fb7185; }
+
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 16px; }
+
+  /* ══════════════════════════════════════════════════════════
+     3. 组件
+     ══════════════════════════════════════════════════════════ */
+
+  /* ── Hero 头图 ── */
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 16px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 44px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 30px; } }
+  .hero p { max-width: 560px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .hero .start-btn {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 28px;
+    padding: 12px 24px; border-radius: 12px;
+    background: #0ea5e9; color: #fff; font-weight: 700; font-size: 14px;
+    text-decoration: none; box-shadow: 0 8px 20px rgba(14,165,233,.35);
+  }
+  .hero .meta { margin-left: 16px; font-size: 12px; color: #94a3b8; }
+
+  /* ── 代码块 ── */
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px;
+    background: #1c1f2e; color: #e2e8f0;
+  }
+  .code-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-bottom: 1px solid #2a2f45; background: #232738;
+    font-size: 12px; color: #94a3b8;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 16px; overflow-x: auto; font-size: 13.5px; line-height: 1.8; color: #cbd5e1; }
+
+  /* 语言切换显示控制 */
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+
+  /* ── 表格 ── */
+  .syntax-table {
+    width: 100%; border-collapse: collapse; margin-bottom: 24px;
+    font-size: 14px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+  }
+  .syntax-table th, .syntax-table td {
+    padding: 12px 14px; border: 1px solid var(--border); text-align: left;
+  }
+  .syntax-table th { background: var(--bg-soft); color: var(--text); font-weight: 700; }
+  .syntax-table td { color: var(--text-soft); }
+  .syntax-table code.inline { font-size: 12.5px; }
+
+  /* ── 小测验 ── */
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-card); padding: 24px; margin-top: 32px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 16px; color: var(--text); }
+  .quiz-opt {
+    display: block; padding: 12px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 14px; color: var(--text-soft); transition: all .15s;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); line-height: 1.8; }
+
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 16px; padding: 10px 16px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s;
+  }
+  .done-btn:hover { background: var(--bg-soft); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+
+  .callout {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-card); padding: 18px; margin-bottom: 24px;
+  }
+  .callout-title { font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .callout p { margin-bottom: 0 !important; }
+
+  .tip {
+    border-left: 4px solid #0ea5e9; padding: 12px 16px;
+    background: var(--bg-card); border-radius: 0 12px 12px 0;
+    margin-bottom: 24px; font-size: 14px; color: var(--text-soft); line-height: 1.8;
+  }
+  .tip strong { color: var(--text); }
+
+  /* 真值表示例 */
+  .truth-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    margin-bottom: 24px; text-align: center; font-size: 14px;
+  }
+  .truth-grid > div { background: var(--bg-card); padding: 10px; color: var(--text-soft); }
+  .truth-grid > div.head { background: var(--bg-soft); color: var(--text); font-weight: 700; }
+  .truth-grid > div.high { color: #0ea5e9; font-weight: 700; }
+  </style>
+
+<!-- 第六章默认锁住：前五章全部完成（见过恭喜页）后才可进入 -->
+<script>
+(function () {
+  /* 标记写过的，或 ch6-progress 里有数据（旧用户）都算解锁 */
+  var unlocked = false;
+  try {
+    if (localStorage.getItem("coding-101-ch6-unlocked") === "1") {
+      unlocked = true;
+    } else {
+      var p = JSON.parse(localStorage.getItem("coding-101-ch6-progress") || "{}");
+      for (var _k in p) { if (p[_k]) { unlocked = true; break; } }
+    }
+  } catch (e) {}
+  if (unlocked) return;
+
+  /* 未解锁时盖一层全屏遮罩，不销毁正文，避免破坏页面自身的脚本 */
+  function lock() {
+    var box = document.createElement("div");
+    box.style.cssText =
+      "position:fixed;inset:0;z-index:99999;display:flex;align-items:center;" +
+      "justify-content:center;padding:24px;text-align:center;background:var(--bg,#f1f5f9);";
+    box.innerHTML =
+      '<div style="max-width:480px">' +
+        '<div style="font-size:48px">🔒</div>' +
+        '<h1 style="font-size:24px;margin:16px 0 14px;color:var(--text,#0f172a)">第六章还没解锁</h1>' +
+        '<p style="line-height:2;color:var(--text-soft,#475569)">' +
+          '这一章是核心课程之后的补充内容。<br>先把前五章全部学完，它会自动解锁。' +
+        '</p>' +
+        '<a href="index.html" style="display:inline-block;margin-top:22px;padding:12px 30px;' +
+        'border-radius:12px;background:#0ea5e9;color:#fff;font-size:15px;font-weight:700;text-decoration:none">' +
+        '返回主页</a>' +
+      '</div>';
+    document.body.appendChild(box);
+    document.body.style.overflow = "hidden";
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", lock);
+  } else {
+    lock();
+  }
+})();
+</script>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     顶栏
+     ════════════════════════════════════════════════════════════ -->
+<header>
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="logo">&lt;/&gt;</span>
+      <span>野鸡动画编程课</span>
+    </a>
+    <div class="header-right">
+      <div class="progress-mini">
+        <span id="progress-text">0/7 小节</span>
+        <div class="bar"><i id="bar-top"></i></div>
+      </div>
+      <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+      <a class="icon-btn home-btn" href="index.html">返回主页</a>
+      <button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+      <button class="icon-btn" id="toc-btn" aria-label="目录">☰</button>
+    </div>
+  </div>
+</header>
+
+<div class="container layout">
+
+  <!-- ════════════════════════════════════════════════════════════
+       侧边目录
+       ════════════════════════════════════════════════════════════ -->
+  <aside>
+    <div class="aside-title">本课内容</div>
+    <nav>
+      <a class="nav-item" href="#lesson-1"><span class="nav-num">1</span><span>逻辑运算符<span class="nav-sub">and / or / not</span></span></a>
+      <a class="nav-item" href="#lesson-2"><span class="nav-num">2</span><span>三元表达式<span class="nav-sub">?: 一行做判断</span></span></a>
+      <a class="nav-item" href="#lesson-3"><span class="nav-num">3</span><span>位运算<span class="nav-sub">&amp; / | / ^ / ~</span></span></a>
+      <a class="nav-item" href="#lesson-4"><span class="nav-num">4</span><span>列表切片与遍历<span class="nav-sub">in / zip / enumerate</span></span></a>
+      <a class="nav-item" href="#lesson-5"><span class="nav-num">5</span><span>字符串格式化<span class="nav-sub">f-string / %</span></span></a>
+      <a class="nav-item" href="#lesson-6"><span class="nav-num">6</span><span>文件读写<span class="nav-sub">open / with</span></span></a>
+      <a class="nav-item" href="#lesson-7"><span class="nav-num">7</span><span>综合实战<span class="nav-sub">把语法串起来</span></span></a>
+    </nav>
+    <div class="progress-card">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span>本章进度</span>
+        <span id="side-progress">0/7</span>
+      </div>
+      <div class="bar"><i id="side-bar"></i></div>
+    </div>
+  </aside>
+
+  <!-- ════════════════════════════════════════════════════════════
+       主内容
+       ════════════════════════════════════════════════════════════ -->
+  <main>
+
+    <div class="hero">
+      <span class="tag">第 6 章</span>
+      <h1>语法补完课</h1>
+      <p>前面五章已经学会了编程的骨架：变量、判断、循环、函数、数组。这一章把第二阶段常用的"小语法"一次性补齐，让你之后看任何课程包的代码都不会卡壳。</p>
+      <a class="start-btn" href="#lesson-1">开始第 6 章 →</a>
+      <span class="meta">7 个小节 · 进度自动保存</span>
+    </div>
+
+    <div id="toc-panel"></div>
+
+    <!-- 第 1 小节：逻辑运算符 -->
+    <section class="lesson" id="lesson-1">
+      <div class="lesson-head">
+        <div class="lesson-no">第 1 小节</div>
+        <h2>逻辑运算符：把多个条件串起来</h2>
+        <div class="lesson-sub">
+          <span class="lang-py">and / or / not</span>
+          <span class="lang-cpp">&amp;&amp; / || / !</span>
+        </div>
+      </div>
+      <div class="lesson-body">
+        <p>第五章之前，<code class="inline">if</code> 后面只放了一个条件。但真实代码里经常需要同时判断多个条件，例如「成绩大于 60 <strong>并且</strong> 出勤率大于 80」。这时就要用到<strong>逻辑运算符</strong>。</p>
+
+        <table class="syntax-table">
+          <thead>
+            <tr><th>含义</th><th>Python</th><th>C++</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>并且</td><td><code class="inline">and</code></td><td><code class="inline">&amp;&amp;</code></td></tr>
+            <tr><td>或者</td><td><code class="inline">or</code></td><td><code class="inline">||</code></td></tr>
+            <tr><td>取反</td><td><code class="inline">not</code></td><td><code class="inline">!</code></td></tr>
+          </tbody>
+        </table>
+
+        <p>先看一个生活化的例子：判断一首歌能不能进播放列表。</p>
+
+        <div class="code-block lang-py" data-file="logic_demo.py" data-lang="python">
+          <div class="code-head"><span class="dot"></span>logic_demo.py</div>
+          <pre>score = 85      # 评分 0~100
  listened = True # 是否已经听过
 
  # 评分高并且没听过，就加入播放列表
@@ -10,7 +427,12 @@
  # 只要评分极高或者已经听过且喜欢，就推荐给别人
  if score &gt;= 95 or (listened and score &gt;= 70):
      print("推荐给朋友")
-</pre> </div><div class="code-block lang-cpp" data-file="logic_demo.cpp" data-lang="cpp"><div class="code-head"><span class="dot"></span>logic_demo.cpp</div> <pre>#include &lt;iostream&gt;
+</pre>
+        </div>
+
+        <div class="code-block lang-cpp" data-file="logic_demo.cpp" data-lang="cpp">
+          <div class="code-head"><span class="dot"></span>logic_demo.cpp</div>
+          <pre>#include &lt;iostream&gt;
 using namespace std;
 
 int main() {
@@ -27,13 +449,67 @@ int main() {
         cout &lt;&lt; "推荐给朋友" &lt;&lt; endl;
     }
     return 0;
-}</pre> </div><div class="callout"><div class="callout-title">⚡ 短路求值</div><p>逻辑运算符有一个省事的特性：如果前半句已经能决定结果，后半句就不会执行。例如 <code class="inline">a &gt; 0 and b / a &gt; 2</code>，如果 <code class="inline">a &gt; 0</code> 不成立，Python 不会计算 <code class="inline">b / a</code>，所以不会报错。</p></div><h3>组合条件的优先级</h3><p>当一句话里同时出现 <code class="inline">and</code> / <code class="inline">or</code> / <code class="inline">not</code>（或 C++ 的 <code class="inline">&amp;&amp;</code> / <code class="inline">||</code> / <code class="inline">!</code>）时，电脑会按固定顺序理解：</p><ol style="margin-left:1.5em;margin-bottom:24px;line-height:2;color:var(--text-soft);"><li><strong>not / !</strong> 最先算；</li><li><strong>and / &amp;&amp;</strong> 其次；</li><li><strong>or / ||</strong> 最后。</li></ol><p>例如 <code class="inline">a &gt; 0 and b &gt; 0 or c &gt; 0</code>，电脑会先算两个 <code class="inline">and</code>，再算 <code class="inline">or</code>。如果你本来想表达「a 和 b 都大于 0，<strong>或者</strong> c 大于 0」，这么写是对的；但如果你想表达「a 大于 0，并且（b 大于 0 或 c 大于 0）」，就必须写成 <code class="inline">a &gt; 0 and (b &gt; 0 or c &gt; 0)</code>。</p><p>写组合条件时，善用括号 <code class="inline">()</code> 可以让优先级一目了然。记不住优先级的时候，直接加括号，永远是最安全的选择。</p><button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button></div></section><section class="lesson" id="lesson-2"><div class="lesson-head"><div class="lesson-no">第 2 小节</div><h2>三元表达式：一行写完 if / else</h2><div class="lesson-sub"><span class="lang-py">值 if 条件 else 另一个值</span><span class="lang-cpp">条件 ? 值 : 另一个值</span></div></div><div class="lesson-body"><p>有时候判断很简单，只是为了给变量选两个值中的一个。如果专门写四五行 <code class="inline">if / else</code> 就显得啰嗦。<strong>三元表达式</strong>就是用来解决这种场景的。</p><table class="syntax-table"><thead><tr><th>语言</th><th>写法</th></tr></thead><tbody><tr><td>Python</td><td><code class="inline">值 if 条件 else 另一个值</code></td></tr><tr><td>C++</td><td><code class="inline">条件 ? 值 : 另一个值</code></td></tr></tbody></table><p>例如：根据分数是否及格，给出一个评价。</p><div class="code-block lang-py" data-file="ternary.py" data-lang="python"><div class="code-head"><span class="dot"></span>ternary.py</div> <pre>score = 72
+}</pre>
+        </div>
+
+        <div class="callout">
+          <div class="callout-title">⚡ 短路求值</div>
+          <p>逻辑运算符有一个省事的特性：如果前半句已经能决定结果，后半句就不会执行。例如 <code class="inline">a &gt; 0 and b / a &gt; 2</code>，如果 <code class="inline">a &gt; 0</code> 不成立，Python 不会计算 <code class="inline">b / a</code>，所以不会报错。</p>
+        </div>
+
+        <h3>组合条件的优先级</h3>
+        <p>当一句话里同时出现 <code class="inline">and</code> / <code class="inline">or</code> / <code class="inline">not</code>（或 C++ 的 <code class="inline">&amp;&amp;</code> / <code class="inline">||</code> / <code class="inline">!</code>）时，电脑会按固定顺序理解：</p>
+        <ol style="margin-left:1.5em;margin-bottom:24px;line-height:2;color:var(--text-soft);">
+          <li><strong>not / !</strong> 最先算；</li>
+          <li><strong>and / &amp;&amp;</strong> 其次；</li>
+          <li><strong>or / ||</strong> 最后。</li>
+        </ol>
+        <p>例如 <code class="inline">a &gt; 0 and b &gt; 0 or c &gt; 0</code>，电脑会先算两个 <code class="inline">and</code>，再算 <code class="inline">or</code>。如果你本来想表达「a 和 b 都大于 0，<strong>或者</strong> c 大于 0」，这么写是对的；但如果你想表达「a 大于 0，并且（b 大于 0 或 c 大于 0）」，就必须写成 <code class="inline">a &gt; 0 and (b &gt; 0 or c &gt; 0)</code>。</p>
+        <p>写组合条件时，善用括号 <code class="inline">()</code> 可以让优先级一目了然。记不住优先级的时候，直接加括号，永远是最安全的选择。</p>
+
+        <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+      </div>
+    </section>
+
+    <!-- 第 2 小节：三元表达式 -->
+    <section class="lesson" id="lesson-2">
+      <div class="lesson-head">
+        <div class="lesson-no">第 2 小节</div>
+        <h2>三元表达式：一行写完 if / else</h2>
+        <div class="lesson-sub">
+          <span class="lang-py">值 if 条件 else 另一个值</span>
+          <span class="lang-cpp">条件 ? 值 : 另一个值</span>
+        </div>
+      </div>
+      <div class="lesson-body">
+        <p>有时候判断很简单，只是为了给变量选两个值中的一个。如果专门写四五行 <code class="inline">if / else</code> 就显得啰嗦。<strong>三元表达式</strong>就是用来解决这种场景的。</p>
+
+        <table class="syntax-table">
+          <thead>
+            <tr><th>语言</th><th>写法</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Python</td><td><code class="inline">值 if 条件 else 另一个值</code></td></tr>
+            <tr><td>C++</td><td><code class="inline">条件 ? 值 : 另一个值</code></td></tr>
+          </tbody>
+        </table>
+
+        <p>例如：根据分数是否及格，给出一个评价。</p>
+
+        <div class="code-block lang-py" data-file="ternary.py" data-lang="python">
+          <div class="code-head"><span class="dot"></span>ternary.py</div>
+          <pre>score = 72
 result = "及格" if score &gt;= 60 else "不及格"
 print(result)
 
 # 嵌套也可以，但 readability 会下降
 grade = "A" if score &gt;= 90 else "B" if score &gt;= 80 else "C"
-print(grade)</pre> </div><div class="code-block lang-cpp" data-file="ternary.cpp" data-lang="cpp"><div class="code-head"><span class="dot"></span>ternary.cpp</div> <pre>#include &lt;iostream&gt;
+print(grade)</pre>
+        </div>
+
+        <div class="code-block lang-cpp" data-file="ternary.cpp" data-lang="cpp">
+          <div class="code-head"><span class="dot"></span>ternary.cpp</div>
+          <pre>#include &lt;iostream&gt;
 using namespace std;
 
 int main() {
@@ -45,7 +521,47 @@ int main() {
     string grade = (score &gt;= 90) ? "A" : (score &gt;= 80) ? "B" : "C";
     cout &lt;&lt; grade &lt;&lt; endl;
     return 0;
-}</pre> </div><div class="tip"><strong>💡 使用建议</strong><br> 三元表达式适合「二选一」的简短判断。如果逻辑复杂，还是乖乖写 <code class="inline">if / else</code>，不要为了少写几行而牺牲可读性。 </div><button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button></div></section><section class="lesson" id="lesson-3"><div class="lesson-head"><div class="lesson-no">第 3 小节</div><h2>位运算：直接操作 0 和 1</h2><div class="lesson-sub">&amp; / | / ^ / ~ / &lt;&lt; / &gt;&gt;</div></div><div class="lesson-body"><p>前面学过，计算机里所有数据最终都是 0 和 1。<strong>位运算</strong>就是直接对这些二进制位进行操作，速度极快，常用于权限、开关、压缩等场景。</p><table class="syntax-table"><thead><tr><th>运算符</th><th>名称</th><th>含义</th></tr></thead><tbody><tr><td><code class="inline">&amp;</code></td><td>按位与</td><td>两位都为 1，结果才为 1</td></tr><tr><td><code class="inline">|</code></td><td>按位或</td><td>有一位为 1，结果就为 1</td></tr><tr><td><code class="inline">^</code></td><td>按位异或</td><td>两位不同，结果才为 1</td></tr><tr><td><code class="inline">~</code></td><td>按位取反</td><td>0 变 1，1 变 0</td></tr><tr><td><code class="inline">&lt;&lt;</code></td><td>左移</td><td>所有位向左移动，右侧补 0</td></tr><tr><td><code class="inline">&gt;&gt;</code></td><td>右移</td><td>所有位向右移动</td></tr></tbody></table><p>最典型的例子是「权限开关」。假设一个用户有三个权限：读（001）、写（010）、执行（100），可以用一个数字同时表示。</p><div class="code-block lang-py" data-file="bitflags.py" data-lang="python"><div class="code-head"><span class="dot"></span>bitflags.py</div> <pre>READ = 1    # 001
+}</pre>
+        </div>
+
+        <div class="tip">
+          <strong>💡 使用建议</strong><br>
+          三元表达式适合「二选一」的简短判断。如果逻辑复杂，还是乖乖写 <code class="inline">if / else</code>，不要为了少写几行而牺牲可读性。
+        </div>
+
+        <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+      </div>
+    </section>
+
+    <!-- 第 3 小节：位运算 -->
+    <section class="lesson" id="lesson-3">
+      <div class="lesson-head">
+        <div class="lesson-no">第 3 小节</div>
+        <h2>位运算：直接操作 0 和 1</h2>
+        <div class="lesson-sub">&amp; / | / ^ / ~ / &lt;&lt; / &gt;&gt;</div>
+      </div>
+      <div class="lesson-body">
+        <p>前面学过，计算机里所有数据最终都是 0 和 1。<strong>位运算</strong>就是直接对这些二进制位进行操作，速度极快，常用于权限、开关、压缩等场景。</p>
+
+        <table class="syntax-table">
+          <thead>
+            <tr><th>运算符</th><th>名称</th><th>含义</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code class="inline">&amp;</code></td><td>按位与</td><td>两位都为 1，结果才为 1</td></tr>
+            <tr><td><code class="inline">|</code></td><td>按位或</td><td>有一位为 1，结果就为 1</td></tr>
+            <tr><td><code class="inline">^</code></td><td>按位异或</td><td>两位不同，结果才为 1</td></tr>
+            <tr><td><code class="inline">~</code></td><td>按位取反</td><td>0 变 1，1 变 0</td></tr>
+            <tr><td><code class="inline">&lt;&lt;</code></td><td>左移</td><td>所有位向左移动，右侧补 0</td></tr>
+            <tr><td><code class="inline">&gt;&gt;</code></td><td>右移</td><td>所有位向右移动</td></tr>
+          </tbody>
+        </table>
+
+        <p>最典型的例子是「权限开关」。假设一个用户有三个权限：读（001）、写（010）、执行（100），可以用一个数字同时表示。</p>
+
+        <div class="code-block lang-py" data-file="bitflags.py" data-lang="python">
+          <div class="code-head"><span class="dot"></span>bitflags.py</div>
+          <pre>READ = 1    # 001
 WRITE = 2   # 010
 EXEC = 4    # 100
 
@@ -64,7 +580,12 @@ if not (permission &amp; WRITE):
 
 # 左移一位相当于乘 2
 print(5 &lt;&lt; 1)  # 10
-print(5 &gt;&gt; 1)  # 2</pre> </div><div class="code-block lang-cpp" data-file="bitflags.cpp" data-lang="cpp"><div class="code-head"><span class="dot"></span>bitflags.cpp</div> <pre>#include &lt;iostream&gt;
+print(5 &gt;&gt; 1)  # 2</pre>
+        </div>
+
+        <div class="code-block lang-cpp" data-file="bitflags.cpp" data-lang="cpp">
+          <div class="code-head"><span class="dot"></span>bitflags.cpp</div>
+          <pre>#include &lt;iostream&gt;
 using namespace std;
 
 int main() {
@@ -85,12 +606,47 @@ int main() {
     cout &lt;&lt; (5 &lt;&lt; 1) &lt;&lt; endl; // 10
     cout &lt;&lt; (5 &gt;&gt; 1) &lt;&lt; endl; // 2
     return 0;
-}</pre> </div><div class="callout"><div class="callout-title">🧠 位运算与逻辑运算的区别</div><p><code class="inline">&amp;&amp;</code> 和 <code class="inline">||</code> 判断的是「真假」；<code class="inline">&amp;</code> 和 <code class="inline">|</code> 是对二进制位逐位计算。大多数情况下写判断用 <code class="inline">&amp;&amp;</code> / <code class="inline">||</code>，只有需要对二进制位做文章时才用 <code class="inline">&amp;</code> / <code class="inline">|</code>。</p></div><button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button></div></section><section class="lesson" id="lesson-4"><div class="lesson-head"><div class="lesson-no">第 4 小节</div><h2>列表切片与遍历技巧</h2><div class="lesson-sub"><span class="lang-py">in / zip / enumerate / [start:end]</span><span class="lang-cpp">数组下标与循环遍历</span></div></div><div class="lesson-body"><p>第二章学过用下标取数组元素，例如 <code class="inline">arr[0]</code>。但如果想取「第 2 到第 4 个元素」，或者想同时拿到「下标和值」，就要用到下面这些小技巧。</p><h3>1. in 运算符：判断「在不在」</h3><p><code class="inline">in</code> 用来检查一个值是否在列表/字符串里，非常直观。</p><div class="code-block lang-py" data-file="in_demo.py" data-lang="python"><div class="code-head"><span class="dot"></span>in_demo.py</div> <pre>fruits = ["苹果", "香蕉", "橙子"]
+}</pre>
+        </div>
+
+        <div class="callout">
+          <div class="callout-title">🧠 位运算与逻辑运算的区别</div>
+          <p><code class="inline">&amp;&amp;</code> 和 <code class="inline">||</code> 判断的是「真假」；<code class="inline">&amp;</code> 和 <code class="inline">|</code> 是对二进制位逐位计算。大多数情况下写判断用 <code class="inline">&amp;&amp;</code> / <code class="inline">||</code>，只有需要对二进制位做文章时才用 <code class="inline">&amp;</code> / <code class="inline">|</code>。</p>
+        </div>
+
+        <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+      </div>
+    </section>
+
+    <!-- 第 4 小节：列表切片与遍历技巧 -->
+    <section class="lesson" id="lesson-4">
+      <div class="lesson-head">
+        <div class="lesson-no">第 4 小节</div>
+        <h2>列表切片与遍历技巧</h2>
+        <div class="lesson-sub">
+          <span class="lang-py">in / zip / enumerate / [start:end]</span>
+          <span class="lang-cpp">数组下标与循环遍历</span>
+        </div>
+      </div>
+      <div class="lesson-body">
+        <p>第二章学过用下标取数组元素，例如 <code class="inline">arr[0]</code>。但如果想取「第 2 到第 4 个元素」，或者想同时拿到「下标和值」，就要用到下面这些小技巧。</p>
+
+        <h3>1. in 运算符：判断「在不在」</h3>
+        <p><code class="inline">in</code> 用来检查一个值是否在列表/字符串里，非常直观。</p>
+
+        <div class="code-block lang-py" data-file="in_demo.py" data-lang="python">
+          <div class="code-head"><span class="dot"></span>in_demo.py</div>
+          <pre>fruits = ["苹果", "香蕉", "橙子"]
 if "香蕉" in fruits:
     print("有香蕉")
 
 if "瓜" not in "苹果":
-    print("苹果里没有瓜")</pre> </div><div class="code-block lang-cpp" data-file="in_demo.cpp" data-lang="cpp"><div class="code-head"><span class="dot"></span>in_demo.cpp</div> <pre>#include &lt;iostream&gt;
+    print("苹果里没有瓜")</pre>
+        </div>
+
+        <div class="code-block lang-cpp" data-file="in_demo.cpp" data-lang="cpp">
+          <div class="code-head"><span class="dot"></span>in_demo.cpp</div>
+          <pre>#include &lt;iostream&gt;
 #include &lt;string&gt;
 using namespace std;
 
@@ -104,11 +660,24 @@ int main() {
         cout &lt;&lt; "找到了 app" &lt;&lt; endl;
     }
     return 0;
-}</pre> </div><h3>2. 切片：一次取一段</h3><p>Python 的切片写法是 <code class="inline">列表[start:end]</code>，C++ 可以用循环或标准库实现类似效果。</p><div class="code-block lang-py" data-file="slice.py" data-lang="python"><div class="code-head"><span class="dot"></span>slice.py</div> <pre>nums = [10, 20, 30, 40, 50]
+}</pre>
+        </div>
+
+        <h3>2. 切片：一次取一段</h3>
+        <p>Python 的切片写法是 <code class="inline">列表[start:end]</code>，C++ 可以用循环或标准库实现类似效果。</p>
+
+        <div class="code-block lang-py" data-file="slice.py" data-lang="python">
+          <div class="code-head"><span class="dot"></span>slice.py</div>
+          <pre>nums = [10, 20, 30, 40, 50]
 print(nums[1:4])   # [20, 30, 40]
 print(nums[:3])    # [10, 20, 30]
 print(nums[2:])    # [30, 40, 50]
-print(nums[::2])   # [10, 30, 50]，每隔一个取一个</pre> </div><div class="code-block lang-cpp" data-file="slice.cpp" data-lang="cpp"><div class="code-head"><span class="dot"></span>slice.cpp</div> <pre>#include &lt;iostream&gt;
+print(nums[::2])   # [10, 30, 50]，每隔一个取一个</pre>
+        </div>
+
+        <div class="code-block lang-cpp" data-file="slice.cpp" data-lang="cpp">
+          <div class="code-head"><span class="dot"></span>slice.cpp</div>
+          <pre>#include &lt;iostream&gt;
 using namespace std;
 
 int main() {
@@ -119,7 +688,15 @@ int main() {
     }
     cout &lt;&lt; endl;
     return 0;
-}</pre> </div><h3>3. enumerate 与 zip：同时拿多个信息</h3><p><code class="inline">enumerate</code> 让你在遍历列表时同时拿到下标和值；<code class="inline">zip</code> 可以把两个列表「拉链」到一起同时遍历。</p><div class="code-block lang-py" data-file="loop_tricks.py" data-lang="python"><div class="code-head"><span class="dot"></span>loop_tricks.py</div> <pre>names = ["Alice", "Bob", "Carol"]
+}</pre>
+        </div>
+
+        <h3>3. enumerate 与 zip：同时拿多个信息</h3>
+        <p><code class="inline">enumerate</code> 让你在遍历列表时同时拿到下标和值；<code class="inline">zip</code> 可以把两个列表「拉链」到一起同时遍历。</p>
+
+        <div class="code-block lang-py" data-file="loop_tricks.py" data-lang="python">
+          <div class="code-head"><span class="dot"></span>loop_tricks.py</div>
+          <pre>names = ["Alice", "Bob", "Carol"]
 scores = [85, 92, 78]
 
 # 同时拿下标和值
@@ -128,7 +705,12 @@ for i, name in enumerate(names):
 
 # 同时遍历两个列表
 for name, score in zip(names, scores):
-    print(name, score)</pre> </div><div class="code-block lang-cpp" data-file="loop_tricks.cpp" data-lang="cpp"><div class="code-head"><span class="dot"></span>loop_tricks.cpp</div> <pre>#include &lt;iostream&gt;
+    print(name, score)</pre>
+        </div>
+
+        <div class="code-block lang-cpp" data-file="loop_tricks.cpp" data-lang="cpp">
+          <div class="code-head"><span class="dot"></span>loop_tricks.cpp</div>
+          <pre>#include &lt;iostream&gt;
 #include &lt;string&gt;
 using namespace std;
 
@@ -145,7 +727,32 @@ int main() {
         cout &lt;&lt; names[i] &lt;&lt; " " &lt;&lt; scores[i] &lt;&lt; endl;
     }
     return 0;
-}</pre> </div><button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button></div></section><section class="lesson" id="lesson-5"><div class="lesson-head"><div class="lesson-no">第 5 小节</div><h2>字符串格式化：让输出更漂亮</h2><div class="lesson-sub"><span class="lang-py">f-string 与 % 格式化</span><span class="lang-cpp">printf 格式化</span></div></div><div class="lesson-body"><p>第一章用 <code class="inline">print</code> 输出变量时，经常要把字符串和变量拼在一起。如果变量很多，用加号拼接会又臭又长。格式化字符串可以让输出更清晰。</p><h3>1. Python：f-string（推荐）</h3><p>在字符串前面加一个 <code class="inline">f</code>，就可以在大括号 <code class="inline">{}</code> 里直接放变量或表达式。</p><div class="code-block lang-py" data-file="fstring.py" data-lang="python"><div class="code-head"><span class="dot"></span>fstring.py</div> <pre>name = "小圆"
+}</pre>
+        </div>
+
+        <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+      </div>
+    </section>
+
+    <!-- 第 5 小节：字符串格式化 -->
+    <section class="lesson" id="lesson-5">
+      <div class="lesson-head">
+        <div class="lesson-no">第 5 小节</div>
+        <h2>字符串格式化：让输出更漂亮</h2>
+        <div class="lesson-sub">
+          <span class="lang-py">f-string 与 % 格式化</span>
+          <span class="lang-cpp">printf 格式化</span>
+        </div>
+      </div>
+      <div class="lesson-body">
+        <p>第一章用 <code class="inline">print</code> 输出变量时，经常要把字符串和变量拼在一起。如果变量很多，用加号拼接会又臭又长。格式化字符串可以让输出更清晰。</p>
+
+        <h3>1. Python：f-string（推荐）</h3>
+        <p>在字符串前面加一个 <code class="inline">f</code>，就可以在大括号 <code class="inline">{}</code> 里直接放变量或表达式。</p>
+
+        <div class="code-block lang-py" data-file="fstring.py" data-lang="python">
+          <div class="code-head"><span class="dot"></span>fstring.py</div>
+          <pre>name = "小圆"
 score = 92.5
 
 print(f"{name} 考了 {score} 分")
@@ -153,7 +760,15 @@ print(f"{name} 的两倍分数是 {score * 2:.1f}")  # .1f 表示保留 1 位小
 
 # 对齐也很好用
 for i in range(1, 4):
-    print(f"第 {i:2d} 名")</pre> </div><h3>2. C++：多种方式</h3><p>C++ 传统上可以用 <code class="inline">&lt;&lt;</code> 拼接，也可以用 <code class="inline">printf</code> 格式化。现代 C++20 还有 <code class="inline">std::format</code>，但这里先介绍最通用的 <code class="inline">printf</code>。</p><div class="code-block lang-cpp" data-file="printf.cpp" data-lang="cpp"><div class="code-head"><span class="dot"></span>printf.cpp</div> <pre>#include &lt;cstdio&gt;
+    print(f"第 {i:2d} 名")</pre>
+        </div>
+
+        <h3>2. C++：多种方式</h3>
+        <p>C++ 传统上可以用 <code class="inline">&lt;&lt;</code> 拼接，也可以用 <code class="inline">printf</code> 格式化。现代 C++20 还有 <code class="inline">std::format</code>，但这里先介绍最通用的 <code class="inline">printf</code>。</p>
+
+        <div class="code-block lang-cpp" data-file="printf.cpp" data-lang="cpp">
+          <div class="code-head"><span class="dot"></span>printf.cpp</div>
+          <pre>#include &lt;cstdio&gt;
 using namespace std;
 
 int main() {
@@ -167,7 +782,42 @@ int main() {
         printf("第 %2d 名\n", i);
     }
     return 0;
-}</pre> </div><table class="syntax-table"><thead><tr><th>格式符</th><th>含义</th></tr></thead><tbody><tr><td><code class="inline">%d</code></td><td>整数</td></tr><tr><td><code class="inline">%f</code></td><td>浮点数</td></tr><tr><td><code class="inline">%.2f</code></td><td>保留两位小数</td></tr><tr><td><code class="inline">%s</code></td><td>字符串</td></tr><tr><td><code class="inline">%c</code></td><td>单个字符</td></tr></tbody></table><button class="done-btn" data-lesson="lesson-5" type="button">标记为已完成</button></div></section><section class="lesson" id="lesson-6"><div class="lesson-head"><div class="lesson-no">第 6 小节</div><h2>文件读写：让数据离开内存</h2><div class="lesson-sub"><span class="lang-py">open / with</span><span class="lang-cpp">fstream</span></div></div><div class="lesson-body"><p>前面程序的数据都只在运行时存在，程序一关就消失了。想让数据永久保存，就要读写<strong>文件</strong>。文件就像硬盘上的一张纸，程序可以往上面写，也可以从上面读。</p><div class="code-block lang-py" data-file="file_io.py" data-lang="python"><div class="code-head"><span class="dot"></span>file_io.py</div> <pre># 写文件：with 会自动关闭文件
+}</pre>
+        </div>
+
+        <table class="syntax-table">
+          <thead>
+            <tr><th>格式符</th><th>含义</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code class="inline">%d</code></td><td>整数</td></tr>
+            <tr><td><code class="inline">%f</code></td><td>浮点数</td></tr>
+            <tr><td><code class="inline">%.2f</code></td><td>保留两位小数</td></tr>
+            <tr><td><code class="inline">%s</code></td><td>字符串</td></tr>
+            <tr><td><code class="inline">%c</code></td><td>单个字符</td></tr>
+          </tbody>
+        </table>
+
+        <button class="done-btn" data-lesson="lesson-5" type="button">标记为已完成</button>
+      </div>
+    </section>
+
+    <!-- 第 6 小节：文件读写 -->
+    <section class="lesson" id="lesson-6">
+      <div class="lesson-head">
+        <div class="lesson-no">第 6 小节</div>
+        <h2>文件读写：让数据离开内存</h2>
+        <div class="lesson-sub">
+          <span class="lang-py">open / with</span>
+          <span class="lang-cpp">fstream</span>
+        </div>
+      </div>
+      <div class="lesson-body">
+        <p>前面程序的数据都只在运行时存在，程序一关就消失了。想让数据永久保存，就要读写<strong>文件</strong>。文件就像硬盘上的一张纸，程序可以往上面写，也可以从上面读。</p>
+
+        <div class="code-block lang-py" data-file="file_io.py" data-lang="python">
+          <div class="code-head"><span class="dot"></span>file_io.py</div>
+          <pre># 写文件：with 会自动关闭文件
 with open("note.txt", "w", encoding="utf-8") as f:
     f.write("hello, file!\n")
     f.write("第二行\n")
@@ -180,7 +830,12 @@ with open("note.txt", "r", encoding="utf-8") as f:
 # 逐行读
 with open("note.txt", "r", encoding="utf-8") as f:
     for line in f:
-        print("行：", line.strip())</pre> </div><div class="code-block lang-cpp" data-file="file_io.cpp" data-lang="cpp"><div class="code-head"><span class="dot"></span>file_io.cpp</div> <pre>#include &lt;iostream&gt;
+        print("行：", line.strip())</pre>
+        </div>
+
+        <div class="code-block lang-cpp" data-file="file_io.cpp" data-lang="cpp">
+          <div class="code-head"><span class="dot"></span>file_io.cpp</div>
+          <pre>#include &lt;iostream&gt;
 #include &lt;fstream&gt;
 #include &lt;string&gt;
 using namespace std;
@@ -200,7 +855,31 @@ int main() {
     }
     in.close();
     return 0;
-}</pre> </div><div class="tip"><strong>💡 模式说明</strong><br> <code class="inline">"r"</code> / <code class="inline">ifstream</code> 表示读；<code class="inline">"w"</code> / <code class="inline">ofstream</code> 表示写（会覆盖原文件）；<code class="inline">"a"</code> 表示追加（在后面接着写）。 </div><button class="done-btn" data-lesson="lesson-6" type="button">标记为已完成</button></div></section><section class="lesson" id="lesson-7"><div class="lesson-head"><div class="lesson-no">第 7 小节</div><h2>综合实战：学生成绩小工具</h2><div class="lesson-sub">把这一章的语法串起来用一次</div></div><div class="lesson-body"><p>现在把前面学的语法拼成一个完整的小程序：读取一组学生成绩，判断每个学生的等级，把结果格式化后写进文件。</p><div class="code-block lang-py" data-file="grade_tool.py" data-lang="python"><div class="code-head"><span class="dot"></span>grade_tool.py</div> <pre>names = ["Alice", "Bob", "Carol", "David"]
+}</pre>
+        </div>
+
+        <div class="tip">
+          <strong>💡 模式说明</strong><br>
+          <code class="inline">"r"</code> / <code class="inline">ifstream</code> 表示读；<code class="inline">"w"</code> / <code class="inline">ofstream</code> 表示写（会覆盖原文件）；<code class="inline">"a"</code> 表示追加（在后面接着写）。
+        </div>
+
+        <button class="done-btn" data-lesson="lesson-6" type="button">标记为已完成</button>
+      </div>
+    </section>
+
+    <!-- 第 7 小节：综合实战 -->
+    <section class="lesson" id="lesson-7">
+      <div class="lesson-head">
+        <div class="lesson-no">第 7 小节</div>
+        <h2>综合实战：学生成绩小工具</h2>
+        <div class="lesson-sub">把这一章的语法串起来用一次</div>
+      </div>
+      <div class="lesson-body">
+        <p>现在把前面学的语法拼成一个完整的小程序：读取一组学生成绩，判断每个学生的等级，把结果格式化后写进文件。</p>
+
+        <div class="code-block lang-py" data-file="grade_tool.py" data-lang="python">
+          <div class="code-head"><span class="dot"></span>grade_tool.py</div>
+          <pre>names = ["Alice", "Bob", "Carol", "David"]
 scores = [92, 58, 77, 85]
 
 with open("grades.txt", "w", encoding="utf-8") as f:
@@ -210,7 +889,12 @@ with open("grades.txt", "w", encoding="utf-8") as f:
         line = f"{i+1}. {name:8s} {score:3d}分 等级{level} {pass_text}\n"
         f.write(line)
 
-print("成绩已写入 grades.txt")</pre> </div><div class="code-block lang-cpp" data-file="grade_tool.cpp" data-lang="cpp"><div class="code-head"><span class="dot"></span>grade_tool.cpp</div> <pre>#include &lt;iostream&gt;
+print("成绩已写入 grades.txt")</pre>
+        </div>
+
+        <div class="code-block lang-cpp" data-file="grade_tool.cpp" data-lang="cpp">
+          <div class="code-head"><span class="dot"></span>grade_tool.cpp</div>
+          <pre>#include &lt;iostream&gt;
 #include &lt;fstream&gt;
 #include &lt;string&gt;
 using namespace std;
@@ -237,4 +921,200 @@ int main() {
 
     cout &lt;&lt; "成绩已写入 grades.txt" &lt;&lt; endl;
     return 0;
-}</pre> </div><div class="callout"><div class="callout-title">🎯 这一章你都学了什么</div><p>逻辑运算符、三元表达式、位运算、列表切片与遍历技巧、字符串格式化、文件读写。这些语法点分布在第二阶段各个课程包的代码示例中，学完这一章，你就不会再被它们卡住了。</p></div><button class="done-btn" data-lesson="lesson-7" type="button">标记为已完成</button><div class="quiz" data-answer="C"><h4>以下哪个表达式等价于「a 大于 0 并且 b 大于 0」？</h4><button class="quiz-opt" data-val="A" data-explain="不对。a &gt; 0 || b &gt; 0 不是本题的正确答案。a &gt; 0 &amp;&amp; b &gt; 0 才是正确的。">A. a &gt; 0 || b &gt; 0</button><button class="quiz-opt" data-val="B" data-explain="不对。a &gt; 0 | b &gt; 0 不是本题的正确答案。a &gt; 0 &amp;&amp; b &gt; 0 才是正确的。">B. a &gt; 0 | b &gt; 0</button><button class="quiz-opt" data-val="C" data-explain="正确。a &gt; 0 &amp;&amp; b &gt; 0">C. a &gt; 0 &amp;&amp; b &gt; 0</button><button class="quiz-opt" data-val="D" data-explain="不对。a &gt; 0 and b &gt; 0（C++ 写法） 不是本题的正确答案。a &gt; 0 &amp;&amp; b &gt; 0 才是正确的。">D. a &gt; 0 and b &gt; 0（C++ 写法）</button><div class="quiz-explain"></div></div></div></section></main></div><footer class="site"><p>写给新手的编程课 · 第 6 章 · 语法补完课</p><p>语法是工具，不是终点。现在，去第二阶段把它们用出来吧。</p></footer><script> (function () { "use strict"; var $ = function (sel) { return document.querySelector(sel); }; var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }; function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} } function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } } /* ── 主题切换 ── */ var THEME_KEY = "coding-101-theme"; var themeBtn = $("#theme-btn"); function applyTheme(dark) { document.documentElement.classList.toggle("dark", dark); themeBtn.textContent = dark ? "☀️" : "🌙"; } var savedTheme = read(THEME_KEY); var startDark = savedTheme !== null ? savedTheme === "dark" : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches); applyTheme(startDark); themeBtn.addEventListener("click", function () { var dark = !document.documentElement.classList.contains("dark"); applyTheme(dark); store(THEME_KEY, dark ? "dark" : "light"); }); /* ── C++ / Python 语言切换 ── */ var LANG_KEY = "coding-101-language"; function applyLang(lang) { document.body.classList.toggle("lang-cpp", lang === "cpp"); document.body.classList.toggle("lang-py", lang === "python"); $$(".lang-toggle button").forEach(function (b) { b.classList.toggle("active", b.dataset.lang === lang); }); } var savedLang = read(LANG_KEY); var startLang = savedLang === "python" ? "python" : "cpp"; applyLang(startLang); $$(".lang-toggle button").forEach(function (b) { b.addEventListener("click", function () { applyLang(b.dataset.lang); store(LANG_KEY, b.dataset.lang); }); }); /* ── 目录高亮与移动面板 ── */ var tocBtn = $("#toc-btn"); var tocPanel = $("#toc-panel"); var sections = $$("section.lesson"); var navItems = $$(".nav-item"); function buildTocPanel() { if (!tocPanel) return; var html = '<div class="aside-title" style="margin-bottom:12px;">本课内容</div><nav>'; navItems.forEach(function (item) { html += '<a class="nav-item" href="' + item.getAttribute("href") + '">' + item.innerHTML + '</a>'; }); html += '</nav>'; tocPanel.innerHTML = html; } buildTocPanel(); tocBtn.addEventListener("click", function () { tocPanel.classList.toggle("open"); }); function onScroll() { var scrollY = window.scrollY + 120; var current = sections[0]; sections.forEach(function (sec) { if (sec.offsetTop <= scrollY) current = sec; }); var id = current ? current.id : ""; navItems.forEach(function (item) { item.classList.toggle("active", item.getAttribute("href") === "#" + id); }); } window.addEventListener("scroll", onScroll); onScroll(); /* ── 学习进度 ── */ var PROGRESS_KEY = "coding-101-ch6-progress"; var TOTAL = 7; var doneBtns = $$(".done-btn"); function loadProgress() { var data = {}; try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {} return data; } function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); } function renderProgress() { var data = loadProgress(); var n = 0; for (var k in data) { if (data[k]) n++; } var pct = Math.round(n / TOTAL * 100); $("#progress-text").textContent = n + "/" + TOTAL + " 小节"; $("#bar-top").style.width = pct + "%"; $("#side-progress").textContent = n + "/" + TOTAL; $("#side-bar").style.width = pct + "%"; doneBtns.forEach(function (btn) { var lesson = btn.dataset.lesson; var completed = !!data[lesson]; btn.classList.toggle("completed", completed); btn.textContent = completed ? "✓ 已完成" : "标记为已完成"; var item = $('.nav-item[href="#' + lesson + '"]'); if (item) item.classList.toggle("done", completed); }); } doneBtns.forEach(function (btn) { btn.addEventListener("click", function () { var data = loadProgress(); var lesson = btn.dataset.lesson; data[lesson] = !data[lesson]; saveProgress(data); renderProgress(); }); }); renderProgress(); /* ── 小测验 ── */ /* ──────────────────────────────────────────────── 小测验：点击选项后显示该选项的专属解析 ──────────────────────────────────────────────── */ $ /* ──────────────────────────────────────────────── 小测验：点击选项后显示该选项的专属解析 ──────────────────────────────────────────────── */ $$(".quiz[data-answer]").forEach(function (quiz) { var answer = quiz.getAttribute("data-answer"); var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback"); var opts = $$(".quiz-opt", quiz); opts.forEach(function (opt, i) { if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i)); opt.addEventListener("click", function () { var val = opt.getAttribute("data-val"); var right = val === answer; var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。"); opts.forEach(function (o) { o.disabled = true; var oVal = o.getAttribute("data-val"); o.classList.toggle("correct", oVal === answer); if (oVal !== answer) o.classList.add("dim"); }); if (!right) opt.classList.add("wrong"); if (explainBox) { explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain; explainBox.classList.add("show", right ? "right" : "bad"); } }); }); }); })(); </script><script>if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js");}</script></body></html>
+}</pre>
+        </div>
+
+        <div class="callout">
+          <div class="callout-title">🎯 这一章你都学了什么</div>
+          <p>逻辑运算符、三元表达式、位运算、列表切片与遍历技巧、字符串格式化、文件读写。这些语法点分布在第二阶段各个课程包的代码示例中，学完这一章，你就不会再被它们卡住了。</p>
+        </div>
+
+        <button class="done-btn" data-lesson="lesson-7" type="button">标记为已完成</button>
+
+        <div class="quiz" data-answer="C">
+          <h4>以下哪个表达式等价于「a 大于 0 并且 b 大于 0」？</h4>
+          <button class="quiz-opt" data-val="A" data-explain="不对。a &gt; 0 || b &gt; 0 不是本题的正确答案。a &gt; 0 &amp;&amp; b &gt; 0 才是正确的。">A. a &gt; 0 || b &gt; 0</button>
+          <button class="quiz-opt" data-val="B" data-explain="不对。a &gt; 0 | b &gt; 0 不是本题的正确答案。a &gt; 0 &amp;&amp; b &gt; 0 才是正确的。">B. a &gt; 0 | b &gt; 0</button>
+          <button class="quiz-opt" data-val="C" data-explain="正确。a &gt; 0 &amp;&amp; b &gt; 0">C. a &gt; 0 &amp;&amp; b &gt; 0</button>
+          <button class="quiz-opt" data-val="D" data-explain="不对。a &gt; 0 and b &gt; 0（C++ 写法） 不是本题的正确答案。a &gt; 0 &amp;&amp; b &gt; 0 才是正确的。">D. a &gt; 0 and b &gt; 0（C++ 写法）</button>
+          <div class="quiz-explain"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第 6 章 · 语法补完课</p>
+  <p>语法是工具，不是终点。现在，去第二阶段把它们用出来吧。</p>
+</footer>
+
+<!-- ════════════════════════════════════════════════════════════
+     交互脚本
+     ════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  /* ── 主题切换 ── */
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* ── C++ / Python 语言切换 ── */
+  var LANG_KEY = "coding-101-language";
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  /* ── 目录高亮与移动面板 ── */
+  var tocBtn = $("#toc-btn");
+  var tocPanel = $("#toc-panel");
+  var sections = $$("section.lesson");
+  var navItems = $$(".nav-item");
+
+  function buildTocPanel() {
+    if (!tocPanel) return;
+    var html = '<div class="aside-title" style="margin-bottom:12px;">本课内容</div><nav>';
+    navItems.forEach(function (item) {
+      html += '<a class="nav-item" href="' + item.getAttribute("href") + '">' + item.innerHTML + '</a>';
+    });
+    html += '</nav>';
+    tocPanel.innerHTML = html;
+  }
+  buildTocPanel();
+
+  tocBtn.addEventListener("click", function () {
+    tocPanel.classList.toggle("open");
+  });
+
+  function onScroll() {
+    var scrollY = window.scrollY + 120;
+    var current = sections[0];
+    sections.forEach(function (sec) {
+      if (sec.offsetTop <= scrollY) current = sec;
+    });
+    var id = current ? current.id : "";
+    navItems.forEach(function (item) {
+      item.classList.toggle("active", item.getAttribute("href") === "#" + id);
+    });
+  }
+  window.addEventListener("scroll", onScroll);
+  onScroll();
+
+  /* ── 学习进度 ── */
+  var PROGRESS_KEY = "coding-101-ch6-progress";
+  var TOTAL = 7;
+  var doneBtns = $$(".done-btn");
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) {
+    store(PROGRESS_KEY, JSON.stringify(data));
+  }
+  function renderProgress() {
+    var data = loadProgress();
+    var n = 0;
+    for (var k in data) { if (data[k]) n++; }
+    var pct = Math.round(n / TOTAL * 100);
+    $("#progress-text").textContent = n + "/" + TOTAL + " 小节";
+    $("#bar-top").style.width = pct + "%";
+    $("#side-progress").textContent = n + "/" + TOTAL;
+    $("#side-bar").style.width = pct + "%";
+
+    doneBtns.forEach(function (btn) {
+      var lesson = btn.dataset.lesson;
+      var completed = !!data[lesson];
+      btn.classList.toggle("completed", completed);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+      var item = $('.nav-item[href="#' + lesson + '"]');
+      if (item) item.classList.toggle("done", completed);
+    });
+  }
+
+  doneBtns.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var data = loadProgress();
+      var lesson = btn.dataset.lesson;
+      data[lesson] = !data[lesson];
+      saveProgress(data);
+      renderProgress();
+    });
+  });
+  renderProgress();
+
+  /* ── 小测验 ── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js");}</script></body>
+</html>
