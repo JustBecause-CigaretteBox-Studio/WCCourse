@@ -238,8 +238,11 @@
     font-size: 14px; color: var(--text-soft); transition: all .15s;
   }
   .quiz-opt:hover { border-color: #38bdf8; }
-  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
-  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-opt.correct { border-color: #6ee7b7; background: #ecfdf5; color: #065f46; }
+  .quiz-opt.wrong   { border-color: #fda4af; background: #fff1f2; color: #9f1239; }
+  html.dark .quiz-opt.correct { border-color: #059669; background: rgba(6,78,59,.4); color: #a7f3d0; }
+  html.dark .quiz-opt.wrong   { border-color: #be123c; background: rgba(76,5,25,.4);  color: #fda4af; }
+
   .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); line-height: 1.8; }
 
   .done-btn {
