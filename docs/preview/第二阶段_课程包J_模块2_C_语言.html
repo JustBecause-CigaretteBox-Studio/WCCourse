@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    C 语言 · 第二阶段课程包 J 模块 2
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgJ-m2-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 J 模块 2：造房子的砖头，理解指针与内存。支持离线打开、深色模式、学习进度本地保存。">
+  <title>C 语言 · 第二阶段课程包 J 模块 2</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>C 语言 · 课程包 J</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/4 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包J_编程语言家谱.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包J_编程语言家谱.html">课程包 J</a>
+    <span>/</span>
+    <span>模块 2：C 语言</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 J · 模块 2</span>
+    <h1>C 语言</h1>
+    <p>造房子的砖头，理解指针与内存</p>
+    <a class="start-btn" href="#lesson-1">开始模块 2 第 1 小节 →</a>
+    <span class="meta">模块 2 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>C 语言：现代系统的基石</h2>
+    </div>
+    <div class="lesson-body">
+      <p>C 语言诞生于 1972 年，由贝尔实验室的丹尼斯·里奇设计。它最初是为了重写 UNIX 操作系统而生，后来却成了<strong>影响最深远的编程语言之一</strong>。</p>
+      <p>Windows、Linux、macOS、Android、iOS 等主流系统的内核，以及 Python 解释器、Node.js 引擎、数据库 MySQL 等关键软件，底层几乎都有 C 语言的身影。可以说：<strong>C 语言是计算机世界里的英语</strong>。</p>
+      <p>C 语言的设计哲学很简单：<strong>给程序员足够的控制力，同时保持相对紧凑的语法</strong>。它不像 Python 那样内置丰富的高级工具，也不像汇编那样直接绑定某款 CPU。它处在“人和机器之间”的黄金位置。</p>
+      <div class="code-block" data-file="hello.c" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>C</div>
+        <pre>#include &lt;stdio.h&gt;
+
+int main() {
+    printf("Hello from C\n");
+    return 0;
+}</pre></div>
+      <p>这段代码虽小，却已经包含 C 的核心元素：<code>#include</code> 引入工具库、<code>int main()</code> 程序入口、<code>printf</code> 输出、<code>return 0</code> 告诉系统“正常结束”。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>指针：C 语言最锋利的工具</h2>
+    </div>
+    <div class="lesson-body">
+      <p>如果说变量是一个装着数据的盒子，那么<strong>指针就是盒子的地址</strong>。在 C 语言里，每个变量都住在内存的某个房间里，指针告诉你房间号。</p>
+      <p>用生活中的比喻：变量是快递柜里的包裹，指针是取件码。知道取件码，你就能找到包裹，也能把包裹换成别的。</p>
+      <div class="code-block" data-file="pointer.c" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>C</div>
+        <pre>#include &lt;stdio.h&gt;
+
+int main() {
+    int a = 10;
+    int *p = &a;   // p 存储的是 a 的地址
+
+    printf("a = %d\n", a);     // 10
+    printf("p 指向的值 = %d\n", *p);  // 10
+
+    *p = 20;       // 通过指针修改 a 的值
+    printf("a = %d\n", a);     // 20
+    return 0;
+}</pre></div>
+      <p>上面的 <code>&a</code> 表示“取 a 的地址”，<code>*p</code> 表示“访问 p 指向地址里的值”。指针让 C 能直接操作内存，效率极高，但也要求程序员对内存负责。</p>
+      <p><strong>为什么需要指针？</strong> 因为它们让函数可以“远程”修改外部变量，也让数组、字符串、链表等结构成为可能。没有指针，C 语言会立刻失去大半威力。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>动手试一试：指针修改数组</h2>
+    </div>
+    <div class="lesson-body">
+      <p>数组在 C 里其实是连续排列的变量。数组名本身就是一个指向首元素的指针。通过指针移动，我们可以依次访问每个元素。</p>
+      <div class="code-block" data-file="array.c" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>C</div>
+        <pre>#include &lt;stdio.h&gt;
+
+int main() {
+    int nums[] = {10, 20, 30, 40, 50};
+    int *p = nums;  // p 指向 nums[0]
+
+    // 用指针遍历数组
+    for (int i = 0; i &lt; 5; i++) {
+        printf("nums[%d] = %d\n", i, *(p + i));
+    }
+
+    // 通过指针把每个数加 1
+    for (int i = 0; i &lt; 5; i++) {
+        *(p + i) += 1;
+    }
+
+    printf("修改后：nums[0] = %d\n", nums[0]);  // 11
+    return 0;
+}</pre></div>
+      <p>注意 <code>*(p + i)</code> 和 <code>p[i]</code> 在 C 里几乎是等价的。这体现了 C 语言一个核心思想：<strong>指针和数组共享同一片内存语义</strong>。</p>
+      <p>初学者常犯的错误是以为“指针很神秘”。其实它只是一个整数，存储的是内存地址。真正需要小心的，是访问“已经不属于你的房间”——也就是<strong>野指针</strong>。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：交换两个数</h2>
+      <div class="lesson-sub">传值与传指针的区别</div>
+    </div>
+    <div class="lesson-body">
+      <p>C 函数默认是<strong>传值调用</strong>：把实参复制一份给形参。如果想在函数内部真正修改外部变量，必须传递指针。这是 C 语言最经典的小实验之一。</p>
+      <div class="code-block" data-file="swap.c" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>C</div>
+        <pre>#include &lt;stdio.h&gt;
+
+// 错误示范：传值交换，外部不变
+void swap_bad(int a, int b) {
+    int tmp = a;
+    a = b;
+    b = tmp;
+}
+
+// 正确做法：传指针，直接改内存
+void swap(int *a, int *b) {
+    int tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+int main() {
+    int x = 5, y = 10;
+    swap(&amp;x, &amp;y);
+    printf("x = %d, y = %d\n", x, y);  // x = 10, y = 5
+    return 0;
+}</pre></div>
+      <p>对比 Python，交换变量则简单得多，因为它内部已经用引用机制处理好了：</p>
+      <div class="code-block" data-file="swap.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>Python</div>
+        <pre>def swap(a, b):
+    return b, a
+
+x, y = 5, 10
+x, y = swap(x, y)
+print(x, y)  # 10 5</pre></div>
+      <p>C 语言需要手动管理指针，这既是它的力量来源，也是新手最容易踩坑的地方。理解指针，你就理解了 C 的灵魂。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：造房子的砖头，理解指针与内存</p>
+      <div class="quiz" data-answer="C">
+        <h4>在 C 语言中，如果想让函数修改调用者传进来的变量，通常应该怎么做？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。直接传变量的值 不是本题的正确答案。传变量的地址（指针） 才是正确的。" type="button">A. 直接传变量的值</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。在函数里重新定义同名变量 不是本题的正确答案。传变量的地址（指针） 才是正确的。" type="button">B. 在函数里重新定义同名变量</button>
+        <button class="quiz-opt" data-val="C" data-explain="正确。传变量的地址（指针）" type="button">C. 传变量的地址（指针）</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 J · 模块 2</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  if (!isDualLang) { var lt = document.getElementById("lang-toggle"); if (lt && lt.parentNode) lt.parentNode.removeChild(lt); }
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgJ-m2-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

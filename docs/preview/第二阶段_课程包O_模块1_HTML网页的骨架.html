@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    HTML：网页的骨架 · 第二阶段课程包 O 模块 1
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgO-m1-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 O 模块 1：标签、结构、语义化。支持离线打开、深色模式、学习进度本地保存。">
+  <title>HTML：网页的骨架 · 第二阶段课程包 O 模块 1</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  
+  /* ── 代码块实时预览 ── */
+  .code-preview-btn {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2);
+    background: rgba(255,255,255,.08); color: #7dd3fc;
+    font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .code-preview-btn:hover { background: rgba(255,255,255,.16); }
+  .code-preview-btn.active { background: #0ea5e9; color: #fff; border-color: #0ea5e9; }
+  .preview-panel { display: none; border-top: 1px solid rgba(255,255,255,.14); }
+  .preview-panel.open { display: block; }
+  .preview-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 12px; background: #161a2c; font-size: 11px; color: #94a3b8;
+  }
+  .preview-bar .re-run {
+    margin-left: auto; padding: 2px 8px; border-radius: 5px;
+    border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08);
+    color: #94a3b8; font-size: 11px; cursor: pointer; font-family: inherit;
+  }
+  .preview-bar .re-run:hover { color: #fff; background: rgba(255,255,255,.16); }
+  .preview-frame {
+    display: block; width: 100%; height: 320px; border: 0; background: #fff;
+  }
+</style>
+</head>
+<body class="lang-py single-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>HTML：网页的骨架 · 课程包 O</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包O_网页开发.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active" disabled>Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包O_网页开发.html">课程包 O</a>
+    <span>/</span>
+    <span>模块 1：HTML：网页的骨架</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 O · 模块 1</span>
+    <h1>HTML：网页的骨架</h1>
+    <p>标签、结构、语义化</p>
+    <a class="start-btn" href="#lesson-1">开始模块 1 第 1 小节 →</a>
+    <span class="meta">模块 1 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>标签</h2>
+    </div>
+    <div class="lesson-body">
+      <p>HTML 是 HyperText Markup Language 的缩写，翻译成中文就是「超文本标记语言」。你可以把它理解成网页的<strong>骨架</strong>：它决定了页面上有什么内容，以及这些内容是什么关系。</p>
+      <p>HTML 用「标签」来标记内容。标签通常成对出现：一个开始标签，一个结束标签，中间包裹内容。比如下面这段代码会用大字号显示一句话：</p>
+      <div class="code-block" data-file="index.html">
+        <div class="code-title"><span class="dot"></span>index.html</div>
+        <pre>&lt;h1&gt;欢迎来到我的网站&lt;/h1&gt;
+&lt;p&gt;这是我写的第一个网页。&lt;/p&gt;</pre>
+      </div>
+      <p><code>&lt;h1&gt;</code> 是「一级标题」标签，<code>&lt;p&gt;</code> 是「段落」标签。浏览器看到这些标签，就知道「哦，这里是一段文字，那里是一个大标题」。</p>
+      <p>除了文字，标签还能放链接、图片、列表等。下面这张「常用标签速查卡」可以先收藏起来：</p>
+      <div class="code-block" data-file="常用标签.html">
+        <div class="code-title"><span class="dot"></span>常用标签速查</div>
+        <pre>&lt;!-- 标题：h1 最大，h6 最小 --&gt;
+&lt;h1&gt;大标题&lt;/h1&gt;
+&lt;h2&gt;小标题&lt;/h2&gt;
+
+&lt;!-- 段落与换行 --&gt;
+&lt;p&gt;这是一段文字。&lt;/p&gt;
+&lt;br&gt;  &lt;!-- 单独使用，表示换行 --&gt;
+
+&lt;!-- 链接与图片 --&gt;
+&lt;a href="https://example.com"&gt;点我跳转&lt;/a&gt;
+&lt;img src="photo.jpg" alt="描述文字"&gt;
+
+&lt;!-- 无序列表 --&gt;
+&lt;ul&gt;
+  &lt;li&gt;第一项&lt;/li&gt;
+  &lt;li&gt;第二项&lt;/li&gt;
+&lt;/ul&gt;</pre>
+      </div>
+      <p>你可以把标签想象成给内容贴便利贴：这张便利贴上写「这是标题」，那张写「这是图片」。浏览器按照便利贴的指示，把内容组织成完整的页面。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>结构</h2>
+    </div>
+    <div class="lesson-body">
+      <p>来看这个HTML文档。</p>
+      <div class="code-block" data-file="完整页面.html">
+        <div class="code-title"><span class="dot"></span>一份完整的 HTML 文档</div>
+        <pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;我的第一个网站&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;你好，世界！&lt;/h1&gt;
+  &lt;p&gt;这是我的第一个网页。&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+      </div>
+      <p>每个部分都有明确分工：</p>
+      <ul style="margin-bottom: 12px; padding-left: 24px; line-height: 1.9;">
+        <li><code>&lt;!DOCTYPE html&gt;</code>：告诉浏览器「这是 HTML5 文档」。</li>
+        <li><code>&lt;html&gt;</code>：整个文档的根容器。</li>
+        <li><code>&lt;head&gt;</code>：放浏览器看的信息，比如标题、字符编码、样式引用。</li>
+        <li><code>&lt;body&gt;</code>：放用户看的内容，比如标题、段落、图片。</li>
+      </ul>
+      <p>标签还需要正确<strong>嵌套</strong>：外套不能穿在内衣里面。结束标签的顺序要和开始标签相反：</p>
+      <div class="code-block" data-file="嵌套示例.html">
+        <div class="code-title"><span class="dot"></span>正确的嵌套</div>
+        <pre>&lt;!-- 正确：先开始 p，再开始 strong，先结束 strong，再结束 p --&gt;
+&lt;p&gt;这句话里&lt;strong&gt;有一部分加粗&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;!-- 错误：标签交叉了 --&gt;
+&lt;p&gt;这句话里&lt;strong&gt;有一部分加粗&lt;/p&gt;&lt;/strong&gt;</pre>
+      </div>
+      <p>把这段代码保存为 <code>.html</code> 文件，然后用浏览器打开，你就能看到自己的第一个网页了。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>语义化</h2>
+    </div>
+    <div class="lesson-body">
+      <p>网页不仅给浏览器看，也给搜索引擎、屏幕阅读器和未来的你自己看。<strong>语义化</strong>就是选择「有含义」的标签，让任何人（包括机器）一眼就知道这块内容是什么。</p>
+      <p>比如下面两种方式都能显示一个页面头部，但语义化写法更清楚：</p>
+      <div class="code-block" data-file="语义化对比.html">
+        <div class="code-title"><span class="dot"></span>div 写法 vs 语义化写法</div>
+        <pre>&lt;!-- 没有语义：全是 div，只能靠 class 猜 --&gt;
+&lt;div class="header"&gt;
+  &lt;div class="nav"&gt;...&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="main"&gt;...&lt;/div&gt;
+&lt;div class="footer"&gt;...&lt;/div&gt;
+
+&lt;!-- 语义化写法：标签本身就说明作用 --&gt;
+&lt;header&gt;
+  &lt;nav&gt;...&lt;/nav&gt;
+&lt;/header&gt;
+&lt;main&gt;...&lt;/main&gt;
+&lt;footer&gt;...&lt;/footer&gt;</pre>
+      </div>
+      <p>常用的语义化标签有：</p>
+      <ul style="margin-bottom: 12px; padding-left: 24px; line-height: 1.9;">
+        <li><code>&lt;header&gt;</code>：页面或区块的顶部。</li>
+        <li><code>&lt;nav&gt;</code>：导航链接区域。</li>
+        <li><code>&lt;main&gt;</code>：页面的主要内容。</li>
+        <li><code>&lt;section&gt;</code>：一个主题区块。</li>
+        <li><code>&lt;article&gt;</code>：一篇独立的文章。</li>
+        <li><code>&lt;footer&gt;</code>：页面或区块的底部。</li>
+      </ul>
+      <p>语义化不会立刻让页面变漂亮（那是 CSS 的工作），但它让页面更容易维护、更容易被搜索引擎理解，也更方便视障用户通过屏幕阅读器浏览。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战</h2>
+      <div class="lesson-sub">用纯 HTML 写一张自我介绍页</div>
+    </div>
+    <div class="lesson-body">
+      <p>现在把前三节的内容串起来：用纯 HTML 写一张「自我介绍页」。先不要管好不好看，重点是结构正确、标签用得恰当。</p>
+      <div class="code-block" data-file="about-me.html">
+        <div class="code-title"><span class="dot"></span>about-me.html</div>
+        <pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;关于我&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;header&gt;
+    &lt;h1&gt;我是阿杰&lt;/h1&gt;
+    &lt;p&gt;一个正在学习网页开发的新手&lt;/p&gt;
+  &lt;/header&gt;
+
+  &lt;main&gt;
+    &lt;section&gt;
+      &lt;h2&gt;我的兴趣&lt;/h2&gt;
+      &lt;ul&gt;
+        &lt;li&gt;编程&lt;/li&gt;
+        &lt;li&gt;动画&lt;/li&gt;
+        &lt;li&gt;跑步&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/section&gt;
+
+    &lt;section&gt;
+      &lt;h2&gt;我的目标&lt;/h2&gt;
+      &lt;p&gt;学完这个课程包后，做出自己的&lt;strong&gt;个人作品集网页&lt;/strong&gt;。&lt;/p&gt;
+    &lt;/section&gt;
+  &lt;/main&gt;
+
+  &lt;footer&gt;
+    &lt;p&gt;联系方式：&lt;a href="mailto:example@email.com"&gt;example@email.com&lt;/a&gt;&lt;/p&gt;
+  &lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+      </div>
+      <p>实战任务：</p>
+      <ol style="margin-bottom: 12px; padding-left: 24px; line-height: 1.9;">
+        <li>把上面的代码复制到记事本或 VS Code 中。</li>
+        <li>把「阿杰」改成你的名字，把兴趣和目标换成你自己的。</li>
+        <li>保存为 <code>about-me.html</code>，双击用浏览器打开。</li>
+        <li>尝试再添加一个 <code>&lt;section&gt;</code>，比如「我喜欢的项目」或「我正在学的技术」。</li>
+      </ol>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：哪个标签用来表示页面中最重要的标题？</p>
+      <div class="quiz" data-answer="A">
+        <h4>下面哪个标签代表页面中最高层级的标题？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。&lt;h1&gt;" type="button">A. &lt;h1&gt;</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。&lt;p&gt; 不是本题的正确答案。&lt;h1&gt; 才是正确的。" type="button">B. &lt;p&gt;</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。&lt;div&gt; 不是本题的正确答案。&lt;h1&gt; 才是正确的。" type="button">C. &lt;div&gt;</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 O · 模块 1</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgO-m1-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+
+
+/* ── 代码块实时预览：给 .html / .css / .js 示例挂上「预览」按钮 ── */
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+
+  /* 演示页的基础美化：放在用户代码之前，保证用户写的样式能覆盖它 */
+  var BASE_CSS = [
+    'body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;',
+    'margin:0;padding:20px;color:#1e293b;background:#fff;line-height:1.75}',
+    'h1{font-size:24px;margin:0 0 12px}',
+    'h2{font-size:19px;margin:0 0 10px}',
+    'p{margin:0 0 12px}',
+    'ul{margin:0 0 12px;padding-left:22px}',
+    'button{padding:6px 14px;border:0;border-radius:8px;background:#0ea5e9;color:#fff;',
+    'font-size:14px;font-family:inherit;cursor:pointer;margin:4px 4px 4px 0}',
+    '.card,.box,.item{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:10px;padding:12px}',
+    '.container{display:flex;gap:8px;margin-bottom:12px}',
+    '.container .box{flex:1;text-align:center}',
+    '.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}',
+    '.gallery .item{text-align:center}',
+    '#box{margin:8px 0;padding:12px}',
+    '.out{margin-top:12px;padding:10px 12px;background:#0f172a;color:#a7f3d0;',
+    'border-radius:8px;font-size:13px;min-height:22px;white-space:pre-wrap;',
+    'font-family:ui-monospace,Consolas,monospace}'
+  ].join("");
+
+  /* CSS 预览的演示宿主：覆盖教学里常见的选择器 */
+  var CSS_BODY = [
+    '<h1>标题 H1</h1>',
+    '<p>这是一段示例文字，用来观察 CSS 的效果。</p>',
+    '<div class="card">.card 卡片</div>',
+    '<div class="container">',
+    '<div class="box">1</div><div class="box">2</div><div class="box">3</div>',
+    '</div>',
+    '<div class="gallery">',
+    '<div class="item">A</div><div class="item">B</div><div class="item">C</div>',
+    '</div>',
+    '<ul class="list"><li class="item">列表项 1</li><li class="item">列表项 2</li></ul>',
+    '<button class="btn">按钮</button>'
+  ].join("");
+
+  /* JS 预览的演示宿主：提供示例里会用到的元素，并把 console.log 显示到页面 */
+  var JS_BODY = [
+    '<h1 id="title">示例标题</h1>',
+    '<p id="text">这是一段文字。</p>',
+    '<div id="box">#box 盒子</div>',
+    '<ul class="list"><li class="item">项目一</li><li class="item">项目二</li><li class="item">项目三</li></ul>',
+    '<p><input type="text" id="nameInput" placeholder="请输入你的名字">',
+    ' 已输入 <span id="count">0</span> 个字</p>',
+    '<button id="myBtn">点我</button>',
+    '<pre id="__out" class="out"></pre>'
+  ].join("");
+
+  function isWholeDocument(code) {
+    return /<!DOCTYPE|<html[\s>]|<body[\s>]|<script[\s>]/i.test(code);
+  }
+
+  /* 片段补成完整文档 */
+  function htmlDoc(code) {
+    if (/<!DOCTYPE/i.test(code)) return code;
+    if (/<html[\s>]/i.test(code)) return "<!DOCTYPE html>\n" + code;
+    return '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n' +
+           '<style>' + BASE_CSS + '</style>\n</head>\n<body>\n' + code + '\n</body>\n</html>';
+  }
+
+  function cssDoc(code) {
+    return '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n' +
+           '<style>' + BASE_CSS + "\n" + code + '</style>\n</head>\n<body>\n' +
+           CSS_BODY + '\n</body>\n</html>';
+  }
+
+  function jsDoc(code) {
+    return '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n' +
+           '<style>' + BASE_CSS + '</style>\n</head>\n<body>\n' + JS_BODY + '\n' +
+           '<script>' +
+           'var __out=document.getElementById("__out");' +
+           'console.log=function(){__out.textContent+=[].slice.call(arguments).join(" ")+"\\n";};' +
+           'window.onerror=function(m){__out.textContent+="运行出错: "+m+"\\n";};' +
+           '<\/script>\n' +
+           '<script>\n' + code + '\n<\/script>\n' +
+           '</body>\n</html>';
+  }
+
+  function buildDoc(ext, code) {
+    // 内容本身就是完整片段（例如写着 .js 其实是一整段 HTML）
+    if (isWholeDocument(code) && ext !== "css") return htmlDoc(code);
+    if (ext === "css") return cssDoc(code);
+    if (ext === "js") return jsDoc(code);
+    return htmlDoc(code);
+  }
+
+  var seq = 0;
+
+  $$(".code-block").forEach(function (block) {
+    var file = block.getAttribute("data-file") || "";
+    var ext = (file.split(".").pop() || "").toLowerCase();
+    if (["html", "css", "js"].indexOf(ext) === -1) return;
+    var pre = block.querySelector("pre");
+    if (!pre) return;
+
+    var code = pre.textContent;
+    var title = block.querySelector(".code-title");
+    if (!title) {
+      title = document.createElement("div");
+      title.className = "code-title";
+      title.innerHTML = '<span class="dot"></span>' + file;
+      block.insertBefore(title, block.firstChild);
+    }
+
+    seq++;
+    var panelId = "preview-panel-" + seq;
+    var frameId = "preview-frame-" + seq;
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "code-preview-btn";
+    btn.textContent = "▶ 预览";
+    btn.setAttribute("aria-controls", panelId);
+    title.appendChild(btn);
+
+    var panel = document.createElement("div");
+    panel.className = "preview-panel";
+    panel.id = panelId;
+    panel.innerHTML =
+      '<div class="preview-bar">' +
+        '<span>实时预览</span>' +
+        '<button type="button" class="re-run">↻ 重新运行</button>' +
+      '</div>' +
+      '<iframe class="preview-frame" id="' + frameId + '" title="代码预览" ' +
+      'sandbox="allow-scripts allow-modals"></iframe>';
+    block.appendChild(panel);
+
+    var frame = panel.querySelector("iframe");
+
+    function render() {
+      frame.srcdoc = buildDoc(ext, code);
+    }
+
+    btn.addEventListener("click", function () {
+      var open = panel.classList.toggle("open");
+      btn.classList.toggle("active", open);
+      btn.textContent = open ? "▾ 收起预览" : "▶ 预览";
+      if (open) render();
+    });
+
+    panel.querySelector(".re-run").addEventListener("click", render);
+  });
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

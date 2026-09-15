@@ -25,3 +25,4 @@ _count_modules.js
 # OS files
 .DS_Store
 Thumbs.db
+docs_backup_*/

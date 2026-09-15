@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    Pandas 入门 · 第二阶段课程包 Q 模块 1
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgQ-m1-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 Q 模块 1：Python 里的 Excel，DataFrame 概念。支持离线打开、深色模式、学习进度本地保存。">
+  <title>Pandas 入门 · 第二阶段课程包 Q 模块 1</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-py single-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>Pandas 入门 · 课程包 Q</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包Q_数据分析.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active" disabled>Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包Q_数据分析.html">课程包 Q</a>
+    <span>/</span>
+    <span>模块 1：Pandas 入门</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 Q · 模块 1</span>
+    <h1>Pandas 入门</h1>
+    <p>Python 里的 Excel，DataFrame 概念</p>
+    <a class="start-btn" href="#lesson-1">开始模块 1 第 1 小节 →</a>
+    <span class="meta">模块 1 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>Excel 的末日：为什么用 Pandas</h2>
+      <div class="lesson-sub">用代码处理表格，比手动拖拽更高效</div>
+    </div>
+    <div class="lesson-body">
+      <p>你有没有过这样的经历：Excel 里几千行数据，想筛选、排序、求和，光是拖拽公式就累得不行；一不小心改错一个单元格，整张表都乱套了。Pandas 就是 Python 世界里的「超级 Excel」，它把表格变成了一行行代码，能自动、快速、可重复地处理数据。</p>
+      <p>如果把 Excel 比作「手动榨汁机」，Pandas 就是「全自动果汁工厂」：你写好一次配方，之后无论来多少水果，它都能按同样的流程处理。更重要的是，它可以和前面学过的文件读写、循环判断无缝结合，让数据分析真正成为程序的一部分。</p>
+      <p>本模块不会涉及复杂的数学，只要求你记住一个核心概念：<strong>DataFrame</strong>。你可以把它理解成「Python 里的电子表格」——有行、有列，每列是同一种数据类型，可以用代码快速增删改查。</p>
+
+      <div class="code-block" data-file="hello_pandas.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>hello_pandas.py</div>
+        <pre>import pandas as pd
+
+# 用字典造一张最简单的表
+data = {
+    "姓名": ["阿明", "小红", "小刚"],
+    "年龄": [18, 20, 19],
+    "成绩": [85, 92, 78]
+}
+
+df = pd.DataFrame(data)
+print(df)</pre>
+      </div>
+
+      <p>上面的代码里，<code class="code-inline">pd.DataFrame(data)</code> 就像对 Python 说：「帮我把这个字典变成一张表」。运行后会看到整齐的行列，和 Excel 的观感几乎一样，但它完全由代码控制。</p>
+
+      <div class="code-block" data-file="shape_info.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>shape_info.py</div>
+        <pre># 看看这张表的基本信息
+print("行数, 列数:", df.shape)      # (3, 3)
+print("列名:", df.columns.tolist())
+print("数据类型:")
+print(df.dtypes)</pre>
+      </div>
+
+      <p>先记住这两个工具：一个是 <code class="code-inline">pd.DataFrame()</code> 用来造表，另一个是 <code class="code-inline">df.shape</code> 用来快速查看表的规模。下一个小节，我们会学习怎么从这张表里「拿数据」。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>DataFrame：行、列与单元格</h2>
+      <div class="lesson-sub">像查字典一样取数据</div>
+    </div>
+    <div class="lesson-body">
+      <p>学会造表之后，下一步是学会「读表」。在 Pandas 里，取一列、取一行、取一个单元格都有专门的写法。你只要记住一句话：<strong>先选列，再选行</strong>。</p>
+      <p>比如你想看所有人的成绩，可以直接用 <code class="code-inline">df["成绩"]</code>；想看第 0 行的所有信息，用 <code class="code-inline">df.iloc[0]</code>；想看小红的年龄，用 <code class="code-inline">df.loc[1, "年龄"]</code>（因为小红在第 1 行）。</p>
+
+      <div class="code-block" data-file="select_data.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>select_data.py</div>
+        <pre>import pandas as pd
+
+df = pd.DataFrame({
+    "姓名": ["阿明", "小红", "小刚"],
+    "年龄": [18, 20, 19],
+    "成绩": [85, 92, 78]
+})
+
+# 取一列
+print(df["成绩"])
+
+# 取一行（按位置，第 0 行）
+print(df.iloc[0])
+
+# 取一个单元格（第 1 行，"年龄" 列）
+print(df.loc[1, "年龄"])</pre>
+      </div>
+
+      <p>这里有两个容易混淆的方法：<code class="code-inline">loc</code> 和 <code class="code-inline">iloc</code>。可以简单记忆：i 代表 index（位置编号），所以 <code class="code-inline">iloc[0]</code> 永远是第一行；而 <code class="code-inline">loc</code> 更灵活，可以用行标签和列名组合。</p>
+
+      <div class="code-block" data-file="modify_data.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>modify_data.py</div>
+        <pre># 新增一列：是否及格
+df["是否及格"] = df["成绩"] &gt;= 60
+
+# 修改小刚的成绩
+df.loc[2, "成绩"] = 80
+
+print(df)</pre>
+      </div>
+
+      <p>从取数据到改数据，核心思路始终没有变：先告诉 Pandas 你要哪一列，再告诉它你要哪一行。下一节，我们会把这些操作串起来，做一个能自动判断成绩的小工具。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>动手：成绩登记表</h2>
+      <div class="lesson-sub">创建、读取、修改一气呵成</div>
+    </div>
+    <div class="lesson-body">
+      <p>前面两节分别学了「造表」和「取数」。现在把它们连起来：做一张成绩登记表，自动计算每个人的总分，并给不及格的同学标红提示。</p>
+
+      <div class="code-block" data-file="score_tool.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>score_tool.py</div>
+        <pre>import pandas as pd
+
+df = pd.DataFrame({
+    "姓名": ["阿明", "小红", "小刚", "小丽"],
+    "语文": [85, 92, 58, 76],
+    "数学": [90, 88, 62, 95],
+    "英语": [78, 95, 70, 82]
+})
+
+# 新增一列：总分
+df["总分"] = df["语文"] + df["数学"] + df["英语"]
+
+# 新增一列：是否全科及格
+df["全科及格"] = (df["语文"] &gt;= 60) &amp; (df["数学"] &gt;= 60) &amp; (df["英语"] &gt;= 60)
+
+print(df)</pre>
+      </div>
+
+      <p>注意代码里判断多个条件时，用的是 <code class="code-inline">&</code> 而不是 <code class="code-inline">and</code>。因为 Pandas 的一列是很多个 True/False，<code class="code-inline">&</code> 能逐个元素对比，而 <code class="code-inline">and</code> 会报错。这是新手最常见的坑之一。</p>
+
+      <div class="code-block" data-file="who_failed.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>who_failed.py</div>
+        <pre># 找出所有没有全科及格的同学
+failed = df[df["全科及格"] == False]
+print("需要补考的同学：")
+print(failed[["姓名", "语文", "数学", "英语"]])</pre>
+      </div>
+
+      <p>到这里，你已经能用 Pandas 完成：创建表格、读取列、计算新列、按条件筛选。这些就是数据分析的最小可用技能包。下一节会把它们放进一个小项目里。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：班级成绩分析器</h2>
+      <div class="lesson-sub">用 DataFrame 生成一份完整统计</div>
+    </div>
+    <div class="lesson-body">
+      <p>假设你是班长，班主任让你统计一次小测的成绩。要求很简单：列出全班名单、算出总分和平均分、找出最高分，并标出哪些同学需要补考。用 Pandas 几分钟就能搞定。</p>
+
+      <div class="code-block" data-file="class_report.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>class_report.py</div>
+        <pre>import pandas as pd
+
+# 1. 创建成绩表
+df = pd.DataFrame({
+    "姓名": ["阿明", "小红", "小刚", "小丽", "小军"],
+    "语文": [85, 92, 58, 76, 88],
+    "数学": [90, 88, 62, 95, 70],
+    "英语": [78, 95, 70, 82, 65]
+})
+
+# 2. 计算总分和平均分
+df["总分"] = df["语文"] + df["数学"] + df["英语"]
+df["平均分"] = df["总分"] / 3
+
+# 3. 标记是否全科及格
+df["全科及格"] = (df["语文"] &gt;= 60) &amp; (df["数学"] &gt;= 60) &amp; (df["英语"] &gt;= 60)
+
+# 4. 输出统计信息
+print("=== 全班成绩 ===")
+print(df)
+
+print("\n=== 最高总分 ===")
+print(df["总分"].max())
+
+print("\n=== 需要补考的同学 ===")
+print(df[df["全科及格"] == False][["姓名", "语文", "数学", "英语"]])</pre>
+      </div>
+
+      <p>这个项目的关键在于：先用 DataFrame 把数据结构化，再用列运算批量计算。一旦数据变多，你只需改前面的字典，后面的统计会自动生效。这就是代码优于手动表格的地方。</p>
+      <p><strong>进阶挑战</strong>：试着把「姓名」列设成表格的索引，用 <code class="code-inline">df.set_index("姓名")</code>，然后用 <code class="code-inline">df.loc["小红", "总分"]</code> 直接查某个人的总分。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：如何从 DataFrame 中取出指定单元格？</p>
+      <div class="quiz" data-answer="B">
+        <h4>假设 df 是 DataFrame，想取第 0 行、"成绩" 列的值，正确写法是？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。df[0][&quot;成绩&quot;] 不是本题的正确答案。df.loc[0, &quot;成绩&quot;] 才是正确的。" type="button">A. df[0]["成绩"]</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。df.loc[0, &quot;成绩&quot;]" type="button">B. df.loc[0, "成绩"]</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。df.iloc[&quot;成绩&quot;, 0] 不是本题的正确答案。df.loc[0, &quot;成绩&quot;] 才是正确的。" type="button">C. df.iloc["成绩", 0]</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 Q · 模块 1</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgQ-m1-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

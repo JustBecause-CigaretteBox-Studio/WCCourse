@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    综合实战 · 第二阶段课程包 K 模块 6
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgK-m6-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 K 模块 6：设计「口算题生成器 2.0」的完整方案。支持离线打开、深色模式、学习进度本地保存。">
+  <title>综合实战 · 第二阶段课程包 K 模块 6</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  </style>
+</head>
+<body class="">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>综合实战 · 课程包 K</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包K_项目管理.html">返回课程包</a>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包K_项目管理.html">课程包 K</a>
+    <span>/</span>
+    <span>模块 6：综合实战</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 K · 模块 6</span>
+    <h1>综合实战</h1>
+    <p>设计「口算题生成器 2.0」的完整方案</p>
+    <a class="start-btn" href="#lesson-1">开始模块 6 第 1 小节 →</a>
+    <span class="meta">模块 6 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+    <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>项目回顾与目标</h2>
+    </div>
+    <div class="lesson-body">
+      <p>这个模块会把前面五个模块的内容串起来，为「口算题生成器 2.0」输出一份<strong>完整方案</strong>。这份方案不是代码，而是写代码之前的「地图」。</p>
+      <p>一份完整的项目方案通常包括四部分：需求澄清、WBS 拆解、流程图、伪代码与 MVP 范围。</p>
+      <div class="code-block" data-file="项目计划">
+        <div class="code-title"><span class="dot"></span>项目计划</div>
+        <pre>1. 需求澄清：用户是谁？解决什么问题？
+2. WBS 拆解：拆成哪些可执行任务？
+3. 流程图：程序怎么一步步跑？
+4. 伪代码 + MVP：先写什么，后写什么？</pre>
+      </div>
+      <p>带着这份地图去写代码，你才不会在中途迷路。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>需求 + WBS + 流程图</h2>
+    </div>
+    <div class="lesson-body">
+      <p>先复习一遍口算题生成器 2.0 的核心需求，再用 WBS 和流程图把它结构化。</p>
+      <div class="code-block" data-file="核心 WBS">
+        <div class="code-title"><span class="dot"></span>核心 WBS</div>
+        <pre>需求：让小学生快速完成一次口算练习并知道成绩。
+
+WBS：
+├─ 设置练习参数（年级、题量）
+├─ 生成题目
+├─ 循环答题
+├─ 自动判分
+└─ 显示结果
+
+主流程：
+[开始] → [选年级] → [生成题] → [答题] → [判分] → [显示结果] → [结束]</pre>
+      </div>
+      <p>这一步的重点不是写代码，而是大致确认“APP是怎么跑起来的”。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>伪代码与 MVP 边界</h2>
+    </div>
+    <div class="lesson-body">
+      <p>最后，把流程图转成伪代码，并划定 MVP 边界。</p>
+      <div class="code-block" data-file="MVP 伪代码">
+        <div class="code-title"><span class="dot"></span>MVP 伪代码</div>
+        <pre>开始
+设置年级 = 1，题量 = 10
+生成 10 道 1 年级加减法题
+score = 0
+
+对每道题：
+    显示题目
+    获取答案
+    如果答案正确：score 加 1
+
+显示 "得分：score / 10"
+结束
+
+MVP 边界：只支持 1 年级加减法，10 题固定，无登录、无排行榜。</pre>
+      </div>
+      <p>这个版本很小，但它已经是一个「能用」的口算题生成器。后续可以逐步加入年级选择、乘法、错题本等功能。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+    <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：写出完整方案文档</h2>
+      <div class="lesson-sub">把本模块内容用起来</div>
+    </div>
+    <div class="lesson-body">
+      <p>现在请你独立完成一份「口算题生成器 2.0」的方案文档。内容不需要很长，但必须包含四个部分：</p>
+      <div class="code-block" data-file="项目提案模板">
+        <div class="code-title"><span class="dot"></span>项目提案模板</div>
+        <pre>项目名：口算题生成器 2.0
+
+一、需求澄清
+   用户：__________
+   场景：__________
+   目标：__________
+
+二、WBS 拆解
+   1. ____________
+   2. ____________
+   3. ____________
+
+三、主流程图
+   （用文字箭头或画图工具表示）
+
+四、MVP 与伪代码
+   必须有的功能：__________
+   这次不做的功能：__________</pre>
+      </div>
+      <p>完成后，你的方案就是下一阶段真正写代码时的路线图。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+    <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>一个完整的项目方案通常不包含以下哪一项？</p>
+      <div class="quiz" data-answer="B">
+        <h4>一个完整的项目方案通常不包含以下哪一项？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。需求澄清、WBS、流程图、伪代码与 MVP 不是本题的正确答案。直接复制的第三方源代码 才是正确的。" type="button">A. 需求澄清、WBS、流程图、伪代码与 MVP</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。直接复制的第三方源代码" type="button">B. 直接复制的第三方源代码</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。对用户的场景与目标的描述 不是本题的正确答案。直接复制的第三方源代码 才是正确的。" type="button">C. 对用户的场景与目标的描述</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 K · 模块 6</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+
+  var PROGRESS_KEY = "coding-101-pkgK-m6-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

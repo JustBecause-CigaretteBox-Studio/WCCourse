@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    部署上线 · 第二阶段课程包 O 模块 5
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgO-m5-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 O 模块 5：GitHub Pages / Streamlit Cloud，让全世界看到。支持离线打开、深色模式、学习进度本地保存。">
+  <title>部署上线 · 第二阶段课程包 O 模块 5</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-py single-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>部署上线 · 课程包 O</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包O_网页开发.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active" disabled>Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包O_网页开发.html">课程包 O</a>
+    <span>/</span>
+    <span>模块 5：部署上线</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 O · 模块 5</span>
+    <h1>部署上线</h1>
+    <p>GitHub Pages / Streamlit Cloud，让全世界看到</p>
+    <a class="start-btn" href="#lesson-1">开始模块 5 第 1 小节 →</a>
+    <span class="meta">模块 5 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>为什么需要部署</h2>
+    </div>
+    <div class="lesson-body">
+      <p>到目前为止，我们写的网页都保存在本地电脑上，只有你自己能打开。要让朋友、家人或全世界的人看到，就需要把网页文件放到一台<strong>24 小时不关机的服务器</strong>上，这个过程就叫「部署」。</p>
+      <p>部署方式大体分两类：</p>
+      <ul style="margin-bottom: 12px; padding-left: 24px; line-height: 1.9;">
+        <li><strong>静态网站托管</strong>：只包含 HTML、CSS、JS、图片等文件，不需要服务器实时计算。适合个人博客、作品集、宣传页。</li>
+        <li><strong>动态应用托管</strong>：需要服务器运行 Python 等程序，根据用户输入实时生成内容。适合 BMI 计算器、数据看板、后台系统。</li>
+      </ul>
+      <p>本模块的静态网站用 <strong>GitHub Pages</strong>，动态 Streamlit 应用用 <strong>Streamlit Cloud</strong>。两者都有免费额度，对新手非常友好。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>GitHub Pages</h2>
+    </div>
+    <div class="lesson-body">
+      <p>GitHub Pages 是 GitHub 提供的免费静态网站托管服务。只要你把 HTML 文件推送到 GitHub 仓库，再开启 Pages 功能，就能得到一个公开的网址。</p>
+      <p>操作步骤：</p>
+      <ol style="margin-bottom: 12px; padding-left: 24px; line-height: 1.9;">
+        <li>在 GitHub 上新建一个仓库，比如 <code>my-portfolio</code>。</li>
+        <li>把网页文件上传到仓库，确保仓库根目录有 <code>index.html</code>。</li>
+        <li>进入仓库的 Settings → Pages。</li>
+        <li>在 Branch 选项里选择 <code>main</code> 分支，保存。</li>
+        <li>等待 1-2 分钟，浏览器访问 <code>https://你的用户名.github.io/my-portfolio</code>。</li>
+      </ol>
+      <p>一个最小的仓库结构如下：</p>
+      <div class="code-block" data-file="仓库结构">
+        <div class="code-title"><span class="dot"></span>静态网站仓库结构</div>
+        <pre>my-portfolio/
+├── index.html
+├── style.css
+├── script.js
+└── images/
+    └── avatar.png</pre>
+      </div>
+      <p>GitHub Pages 适合个人作品集、项目演示页和文档站点。它只托管静态文件，不能运行 Python 代码。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>Streamlit Cloud</h2>
+    </div>
+    <div class="lesson-body">
+      <p>如果你做的是 Streamlit 应用，就需要一台能运行 Python 的服务器。<strong>Streamlit Cloud</strong> 可以直接读取你的 GitHub 仓库，自动安装依赖并运行应用。</p>
+      <p>操作步骤：</p>
+      <ol style="margin-bottom: 12px; padding-left: 24px; line-height: 1.9;">
+        <li>把 <code>app.py</code> 放到 GitHub 仓库根目录。</li>
+        <li>如果用了第三方库，在仓库里放一个 <code>requirements.txt</code>，里面列出库名。</li>
+        <li>访问 <code>share.streamlit.io</code>，用 GitHub 账号登录。</li>
+        <li>选择对应的仓库，点击 Deploy。</li>
+      </ol>
+      <p>一个典型的 Streamlit 仓库结构：</p>
+      <div class="code-block" data-file="仓库结构" data-lang="python">
+        <div class="code-title"><span class="dot"></span>Streamlit 仓库结构</div>
+        <pre>my-bmi-app/
+├── app.py
+└── requirements.txt</pre>
+      </div>
+      <p><code>requirements.txt</code> 示例：</p>
+      <div class="code-block" data-file="requirements.txt" data-lang="python">
+        <div class="code-title"><span class="dot"></span>requirements.txt</div>
+        <pre>streamlit==1.40.0</pre>
+      </div>
+      <p>部署完成后，你会得到一个类似 <code>https://my-bmi-app-xxx.streamlit.app</code> 的网址，把它发给朋友就能直接使用。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战</h2>
+      <div class="lesson-sub">把你的 BMI 计算器或作品集发布到网上</div>
+    </div>
+    <div class="lesson-body">
+      <p>选一个你在前面模块完成的项目，把它真正发布出去。这里给出两条路线，你可以根据项目类型选择。</p>
+      <p><strong>路线 A：静态作品集网页（用 GitHub Pages）</strong></p>
+      <ol style="margin-bottom: 12px; padding-left: 24px; line-height: 1.9;">
+        <li>整理模块 6 要做的作品集页面，确保入口文件叫 <code>index.html</code>。</li>
+        <li>把文件推送到 GitHub 仓库。</li>
+        <li>开启 GitHub Pages，等待网站上线。</li>
+      </ol>
+      <p><strong>路线 B：Streamlit 应用（用 Streamlit Cloud）</strong></p>
+      <ol style="margin-bottom: 12px; padding-left: 24px; line-height: 1.9;">
+        <li>把模块 4 的 <code>bmi.py</code> 重命名为 <code>app.py</code>。</li>
+        <li>添加 <code>requirements.txt</code> 并写上 <code>streamlit</code>。</li>
+        <li>把文件推送到 GitHub 仓库。</li>
+        <li>在 Streamlit Cloud 上选择仓库并部署。</li>
+      </ol>
+      <p>实战任务：</p>
+      <ul style="margin-bottom: 12px; padding-left: 24px; line-height: 1.9;">
+        <li>注册一个 GitHub 账号（如果还没有）。</li>
+        <li>创建仓库，上传文件。</li>
+        <li>完成部署后，把链接复制到浏览器打开，确认能正常访问。</li>
+        <li>把链接发给一个朋友，让他也看一看。</li>
+      </ul>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：纯 HTML/CSS/JS 网页最适合部署到哪里？</p>
+      <div class="quiz" data-answer="B">
+        <h4>一个只包含 HTML、CSS、JS 的静态网页，最适合部署到？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。Streamlit Cloud 不是本题的正确答案。GitHub Pages 才是正确的。" type="button">A. Streamlit Cloud</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。GitHub Pages" type="button">B. GitHub Pages</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。本地文件夹 不是本题的正确答案。GitHub Pages 才是正确的。" type="button">C. 本地文件夹</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 O · 模块 5</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgO-m5-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

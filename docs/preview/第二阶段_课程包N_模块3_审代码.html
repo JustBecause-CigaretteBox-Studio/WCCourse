@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    审代码 · 第二阶段课程包 N 模块 3
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgN-m3-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 N 模块 3：AI 写的也不一定对，怎么检查。支持离线打开、深色模式、学习进度本地保存。">
+  <title>审代码 · 第二阶段课程包 N 模块 3</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>审代码 · 课程包 N</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包N_Vibe_Coding_高阶.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包N_Vibe_Coding_高阶.html">课程包 N</a>
+    <span>/</span>
+    <span>模块 3：审代码</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 N · 模块 3</span>
+    <h1>审代码</h1>
+    <p>AI 写的也不一定对，怎么检查</p>
+    <a class="start-btn" href="#lesson-1">开始模块 3 第 1 小节 →</a>
+    <span class="meta">模块 3 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>AI 也会犯错</h2>
+      <div class="lesson-sub">别把 AI 输出当圣旨</div>
+    </div>
+    <div class="lesson-body">
+      <p>
+        AI 写代码很快，但它不是全知全能。它可能犯三类典型错误：
+      </p>
+      <p><strong>1. 幻觉（Hallucination）</strong></p>
+      <p>
+        AI 可能编造一个不存在的函数、库或 API。比如你让它用 Python 处理日期，
+        它可能给你写一个 <code>datetime.smart_parse()</code>，这个函数根本不存在。
+      </p>
+      <div class="code-block lang-py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>幻觉示例 (Python)</div>
+        <pre>from datetime import datetime
+
+# ❌ 错误：datetime 没有 smart_parse 方法
+t = datetime.smart_parse("2024-08-20")
+print(t)
+
+# ✅ 正确做法
+from datetime import datetime
+t = datetime.strptime("2024-08-20", "%Y-%m-%d")
+print(t)</pre>
+      </div>
+      <div class="code-block lang-cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>同一思路 (C++)</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;iomanip&gt;
+#include &lt;ctime&gt;
+
+int main() {
+    // ❌ 错误：C++ 标准库没有 smart_parse
+    // std::tm t = smart_parse("2024-08-20");
+
+    // ✅ 正确做法：用 stringstream + get_time
+    std::tm t{};
+    std::istringstream ss("2024-08-20");
+    ss &gt;&gt; std::get_time(&amp;t, "%Y-%m-%d");
+    if (ss.fail()) {
+        std::cerr &lt;&lt; "解析失败\n";
+    } else {
+        std::cout &lt;&lt; "解析成功\n";
+    }
+    return 0;
+}</pre>
+      </div>
+      <p><strong>2. 过时代码</strong></p>
+      <p>
+        AI 训练数据有截止日期，它可能推荐已经被弃用的写法。
+        比如某些旧的 jQuery 写法、Python 2 的语法，或者几年前的前端工具链。
+      </p>
+      <p><strong>3. 忽略边界情况</strong></p>
+      <p>
+        AI 常常写出「正常情况能用」的代码，但遇到空输入、特殊字符、网络失败时就崩了。
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>边界示例</div>
+        <pre>// AI 可能生成
+function divide(a, b) {
+  return a / b;
+}
+
+// 更安全的版本
+function divide(a, b) {
+  if (b === 0) return "不能除以零";
+  if (typeof a !== "number" || typeof b !== "number") return "请输入数字";
+  return a / b;
+}</pre>
+      </div>
+      <p>
+        审代码的第一步，就是建立「怀疑精神」：AI 给的不是最终答案，而是草稿。
+      </p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+<section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>静态检查：读代码找 bug</h2>
+      <div class="lesson-sub">不运行也能发现的问题</div>
+    </div>
+    <div class="lesson-body">
+      <p>
+        静态检查就是盯着代码看，不运行它。重点看五个地方：
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>静态检查清单</div>
+        <pre>1. 变量名和函数名是否一致？
+   - 声明时用 userName，后面写成 username 就会报错。
+
+2. API 是否存在？
+   - 用不认识的函数/方法时，去官方文档确认一下。
+
+3. 逻辑是否自洽？
+   - if 条件是否覆盖了所有分支？
+   - 有没有死循环的可能？
+
+4. 类型是否匹配？
+   - 字符串和数字直接相加，结果可能出乎意料。
+
+5. 安全问题：
+   - 用户输入有没有被直接拼进 SQL/HTML？
+   - 敏感信息有没有写死在代码里？</pre>
+      </div>
+      <p>
+        你还可以把代码直接丢给 AI，让它扮演「代码审查员」：
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>审查 prompt 示例</div>
+        <pre>请扮演一名资深代码审查员，检查下面这段代码。
+请从以下角度分析：
+1. 是否有明显 bug 或边界情况没处理
+2. 是否有性能或安全问题
+3. 变量命名和可读性如何
+4. 给出修改建议，并解释原因
+
+代码：
+[粘贴 AI 给你的代码]</pre>
+      </div>
+      <p>
+        让 AI 审查 AI 的代码，是 Vibe Coding 里的常用技巧。
+        两个 AI 视角互相挑错，比你一个人硬看要高效得多。
+      </p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+<section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>动态检查：跑起来验证</h2>
+      <div class="lesson-sub">运行 + 边界测试</div>
+    </div>
+    <div class="lesson-body">
+      <p>
+        代码能跑通，不等于代码没问题。动态检查的核心是：
+        <strong>用真实输入，尤其是边界输入，去测试它</strong>。
+      </p>
+      <p>
+        比如 AI 给你写了一个「判断是否为成年人」的函数：
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>待测试函数</div>
+        <pre>function isAdult(age) {
+  return age &gt;= 18;
+}</pre>
+      </div>
+      <p>
+        你应该测试：
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>边界测试用例</div>
+        <pre>正常值：
+- isAdult(20) → true
+- isAdult(17) → false
+
+边界值：
+- isAdult(18) → true（临界）
+- isAdult(0)  → false（最小值）
+
+异常值：
+- isAdult(-1)    → 应该返回 false 还是报错？
+- isAdult("abc") → 应该返回什么？
+- isAdult(null)  → 会报错吗？</pre>
+      </div>
+      <p>
+        动态检查的另一个好办法是：让 AI 自己写测试用例。
+        你只需要补充一句约束：「请为这段代码编写单元测试，覆盖正常和边界情况」。
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>让 AI 写测试的 prompt</div>
+        <pre>请为下面的 isAdult 函数编写测试用例，
+要求覆盖：正常值、边界值、异常输入。
+输出格式：输入 → 期望输出 → 实际输出（如果有）
+
+function isAdult(age) {
+  return age &gt;= 18;
+}</pre>
+      </div>
+      <p>
+        记住：<strong>没运行过的代码不要相信，没测过边界的代码不要上线</strong>。
+      </p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：审查一段 AI 生成的登录代码</h2>
+      <div class="lesson-sub">找出 bug 并给出反馈</div>
+    </div>
+    <div class="lesson-body">
+      <p>
+        现在实战练习审查能力。下面是一段 AI 生成的「用户登录」代码，请你找出至少 3 个问题。
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>待审查代码</div>
+        <pre>function login(email, password) {
+  if (email == "admin@test.com" &amp;&amp; password == "123456") {
+    return { success: true, token: "admin-token-123" };
+  }
+  return { success: false };
+}</pre>
+      </div>
+      <p><strong>请你从以下角度审查：</strong></p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>审查角度</div>
+        <pre>1. 安全问题：这段代码有哪些明显安全隐患？
+2. 边界情况：如果 email 或 password 为空会怎样？
+3. 可维护性： hardcode 用户密码有什么问题？
+4. 功能完整性：登录成功或失败，前端应该怎么处理？</pre>
+      </div>
+      <p><strong>参考答案（先自己找完再看）：</strong></p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>参考答案</div>
+        <pre>1. 密码明文比较且直接出现在代码中，任何人打开源码都能看到。
+2. 没有输入校验，空字符串也能触发比较。
+3. token 是固定的字符串，无法区分不同用户和会话。
+4. 没有错误提示信息，前端不知道具体失败原因。
+5. 使用 == 而非 ===，可能发生类型转换导致意外通过。</pre>
+      </div>
+      <p>
+        找完 bug 后，练习把问题整理成给 AI 的反馈：
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>反馈 prompt 模板</div>
+        <pre>请修改下面的 login 函数，解决以下问题：
+1. 不要 hardcode 用户密码
+2. 校验 email 和 password 不能为空
+3. token 应该随机生成或从外部传入
+4. 返回清晰的错误信息
+5. 使用严格相等 ===
+
+原代码：
+[粘贴]</pre>
+      </div>
+      <p>
+        这个练习让你熟悉「找问题 → 表达问题 → 让 AI 改」的完整审代码流程。
+      </p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：AI 写的也不一定对，怎么检查</p>
+      <div class="quiz" data-answer="A">
+        <h4>下面哪种做法最符合本模块提倡的审代码态度？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。AI 生成的代码要先检查再使用，尤其注意边界情况和安全问题" type="button">A. AI 生成的代码要先检查再使用，尤其注意边界情况和安全问题</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。AI 写的代码可以直接复制运行，不需要审查 不是本题的正确答案。AI 生成的代码要先检查再使用，尤其注意边界情况和安全问题 才是正确的。" type="button">B. AI 写的代码可以直接复制运行，不需要审查</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。只检查代码能不能运行，跑通就说明没问题 不是本题的正确答案。AI 生成的代码要先检查再使用，尤其注意边界情况和安全问题 才是正确的。" type="button">C. 只检查代码能不能运行，跑通就说明没问题</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 N · 模块 3</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgN-m3-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

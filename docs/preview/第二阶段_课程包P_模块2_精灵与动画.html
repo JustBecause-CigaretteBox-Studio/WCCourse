@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    精灵与动画 · 第二阶段课程包 P 模块 2
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgP-m2-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 P 模块 2：让角色动起来，帧与碰撞框。支持离线打开、深色模式、学习进度本地保存。">
+  <title>精灵与动画 · 第二阶段课程包 P 模块 2</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .lesson-body ul { margin: 12px 0 12px 20px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .code-block svg { width: 100%; height: auto; display: block; }
+  code.inline {
+    background: var(--code-inline-bg); color: #e11d48;
+    border-radius: 4px; padding: 2px 6px; font-size: 13.5px;
+    font-family: "JetBrains Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+  }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-py single-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>精灵与动画 · 课程包 P</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/4 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包P_游戏开发.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active" disabled>Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包P_游戏开发.html">课程包 P</a>
+    <span>/</span>
+    <span>模块 2：精灵与动画</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 P · 模块 2</span>
+    <h1>精灵与动画</h1>
+    <p>让角色动起来，帧与碰撞框</p>
+    <a class="start-btn" href="#lesson-1">开始模块 2 第 1 小节 →</a>
+    <span class="meta">模块 2 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>什么是精灵</h2>
+    </div>
+    <div class="lesson-body">
+<p>在游戏里，角色、敌人、子弹、金币这些「能动的东西」通常都叫<strong>精灵（Sprite）</strong>。你可以把精灵理解成皮影戏里的小人：它有一张图（表面），还有一个控制位置的框。</p>
+      <p>Pygame 里最简单的精灵就是一个 <code>Surface</code>（图像表面）加上一个 <code>Rect</code>（矩形位置框）。</p>
+      <div class="code-block" data-file="sprite.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>sprite.py</div>
+        <pre>import pygame
+
+pygame.init()
+screen = pygame.display.set_mode((800, 600))
+clock = pygame.time.Clock()
+
+# 创建一个 50×50 的红色方块作为精灵图像
+image = pygame.Surface((50, 50))
+image.fill((255, 80, 80))
+
+# Rect 控制精灵的位置
+rect = image.get_rect()
+rect.center = (400, 300)
+
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    screen.fill((30, 30, 30))
+    screen.blit(image, rect)       # 把精灵画到屏幕上
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()</pre>
+      </div>
+      <p><code>get_rect()</code> 会自动生成和图像一样大的矩形，并且可以通过 <code>rect.center</code>、<code>rect.x</code> 等方式快速定位。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>让精灵动起来</h2>
+    </div>
+    <div class="lesson-body">
+<p>动画的本质和翻页小画册一样：连续显示略有不同的画面，人眼就觉得它在动。在游戏中，我们只需要<strong>每帧稍微改变精灵的位置或图像</strong>。</p>
+      <p>下面这个例子让精灵每帧向右移动，超出右边界后回到左边：</p>
+      <div class="code-block" data-file="move.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>move.py</div>
+        <pre>import pygame
+
+pygame.init()
+screen = pygame.display.set_mode((800, 600))
+clock = pygame.time.Clock()
+
+image = pygame.Surface((50, 50))
+image.fill((80, 200, 255))
+rect = image.get_rect()
+rect.center = (0, 300)
+
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    rect.x += 3
+    if rect.left &gt; 800:
+        rect.right = 0           # 从左侧重新进入
+
+    screen.fill((20, 20, 20))
+    screen.blit(image, rect)
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()</pre>
+      </div>
+      <p>如果把 <code>rect.x += 3</code> 改成 <code>rect.x += 1</code>，精灵就会移动得更慢；改成 <code>rect.y += 3</code>，它就会向下移动。</p>
+
+      <p><strong>等等——为什么 y 变大是「向下」？</strong></p>
+      <p>这儿有个新手最容易踩的坑：<strong>游戏里的坐标系，和数学课上的坐标系是反的。</strong></p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>两种坐标系对比</div>
+        <svg viewBox="0 0 640 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="两种坐标系对比：左边是数学课的笛卡尔坐标系，y 向上；右边是游戏屏幕坐标系，原点在左上角，y 向下">
+          <defs>
+            <pattern id="cs-grid" width="26" height="26" patternUnits="userSpaceOnUse">
+              <path d="M26 0 L0 0 0 26" fill="none" stroke="var(--border)" stroke-width="1" opacity="0.5"/>
+            </pattern>
+            <marker id="cs-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+              <path d="M0 0 L10 5 L0 10 Z" fill="var(--text-soft)"/>
+            </marker>
+            <marker id="cs-arr-y" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+              <path d="M0 0 L10 5 L0 10 Z" fill="#0ea5e9"/>
+            </marker>
+          </defs>
+
+          <!-- ===== 左图：数学课（笛卡尔坐标系） ===== -->
+          <text x="160" y="26" fill="var(--text)" font-size="14" font-weight="800" text-anchor="middle" font-family="monospace">数学课（笛卡尔坐标系）</text>
+          <rect x="30" y="40" width="260" height="220" rx="10" fill="url(#cs-grid)" stroke="var(--border)"/>
+
+          <!-- 坐标轴 -->
+          <line x1="160" y1="235" x2="160" y2="62" stroke="#0ea5e9" stroke-width="2" marker-end="url(#cs-arr-y)"/>
+          <line x1="70" y1="165" x2="255" y2="165" stroke="var(--text-soft)" stroke-width="2" marker-end="url(#cs-arr)"/>
+
+          <!-- 轴标注 -->
+          <text x="170" y="70" fill="#0ea5e9" font-size="13" font-weight="bold" font-family="monospace">y</text>
+          <text x="262" y="170" fill="var(--text-soft)" font-size="13" font-weight="bold" font-family="monospace">x</text>
+          <text x="148" y="180" fill="var(--text-faint)" font-size="11" text-anchor="end" font-family="monospace">原点</text>
+          <circle cx="160" cy="165" r="3" fill="var(--text-soft)"/>
+
+          <!-- y 方向说明（向上） -->
+          <text x="132" y="120" fill="#0ea5e9" font-size="11.5" text-anchor="middle" font-family="monospace">y 越大</text>
+          <text x="132" y="134" fill="#0ea5e9" font-size="11.5" text-anchor="middle" font-family="monospace">越往上</text>
+
+          <!-- 图下注释 -->
+          <text x="160" y="286" fill="var(--text-faint)" font-size="12" text-anchor="middle" font-family="monospace">原点：通常在中间或左下</text>
+          <text x="160" y="306" fill="var(--text-faint)" font-size="12" text-anchor="middle" font-family="monospace">y 越大 → 越往上</text>
+
+          <!-- ===== 右图：游戏屏幕坐标系 ===== -->
+          <text x="480" y="26" fill="var(--text)" font-size="14" font-weight="800" text-anchor="middle" font-family="monospace">游戏屏幕（Pygame 等大多数引擎）</text>
+          <rect x="350" y="40" width="260" height="220" rx="10" fill="url(#cs-grid)" stroke="var(--border)"/>
+
+          <!-- 坐标轴：原点在左上角 -->
+          <line x1="390" y1="80" x2="575" y2="80" stroke="var(--text-soft)" stroke-width="2" marker-end="url(#cs-arr)"/>
+          <line x1="390" y1="80" x2="390" y2="235" stroke="#0ea5e9" stroke-width="2" marker-end="url(#cs-arr-y)"/>
+
+          <!-- 原点 -->
+          <circle cx="390" cy="80" r="3" fill="var(--text-soft)"/>
+          <text x="400" y="72" fill="var(--text)" font-size="12" font-weight="bold" font-family="monospace">(0,0)</text>
+
+          <!-- 轴标注 -->
+          <text x="582" y="85" fill="var(--text-soft)" font-size="13" font-weight="bold" font-family="monospace">x</text>
+          <text x="402" y="238" fill="#0ea5e9" font-size="13" font-weight="bold" font-family="monospace">y</text>
+
+          <!-- 方向说明 -->
+          <text x="500" y="70" fill="var(--text-faint)" font-size="11.5" text-anchor="middle" font-family="monospace">x 越大越靠右</text>
+          <text x="452" y="150" fill="#0ea5e9" font-size="11.5" text-anchor="middle" font-family="monospace">y 越大</text>
+          <text x="452" y="164" fill="#0ea5e9" font-size="11.5" text-anchor="middle" font-family="monospace">越靠下</text>
+
+          <!-- 图下注释 -->
+          <text x="480" y="286" fill="var(--text-faint)" font-size="12" text-anchor="middle" font-family="monospace">原点：屏幕左上角</text>
+          <text x="480" y="306" fill="var(--text-faint)" font-size="12" text-anchor="middle" font-family="monospace">y 越大 → 越往下</text>
+        </svg>
+      </div>
+      <p>
+        为什么屏幕要反着来？因为屏幕是<strong>从上往下一行一行画出来的</strong>——
+        从早期的 CRT 显示器到今天的液晶屏，像素都是先画第一行、再画第二行。
+        所以这里的「y」本质上就是<strong>行号</strong>：第 1 行在最上面，行号越大越往下，和看书、看文章一模一样。
+      </p>
+      <p>记住这三条，就不会搞混：</p>
+      <ul style="margin-bottom:16px;padding-left:24px;line-height:1.9;color:var(--text-soft)">
+        <li><strong>x 轴和数学一样</strong>：向右为正，<code>rect.x += 3</code> 是向右移。</li>
+        <li><strong>y 轴和数学相反</strong>：向下为正，<code>rect.y += 3</code> 是向<strong>下</strong>移。</li>
+        <li><strong>想让角色往上跳，y 要减小</strong>：<code>rect.y -= 5</code>。</li>
+      </ul>
+      <p>
+        顺便记一下 800×600 屏幕上的几个关键位置：左上角是 <code>(0, 0)</code>，右下角是 <code>(800, 600)</code>，正中间是 <code>(400, 300)</code>。
+        所以前面那句 <code>rect.center = (400, 300)</code>，意思就是「把精灵放到屏幕正中央」。
+      </p>
+      <p>但是在实际开发中，通常会写<strong>WORLD_WIDTH = 800</strong>，其他数据和函数同理，这样更方便修改和适配不同比例的屏幕</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>碰撞箱</h2>
+    </div>
+    <div class="lesson-body">
+<p>游戏要知道「两个东西有没有碰到」，但直接用图像像素判断太麻烦。所以每个精灵都会带一个<strong>碰撞箱</strong>，通常就是一个矩形 <code>Rect</code>，通过检测碰撞箱的接触来判断碰撞。</p>
+      <div class="code-block" data-file="hitbox.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>hitbox.py</div>
+        <pre>import pygame
+
+pygame.init()
+screen = pygame.display.set_mode((800, 600))
+clock = pygame.time.Clock()
+
+player = pygame.Surface((50, 50))
+player.fill((0, 200, 255))
+player_rect = player.get_rect()
+player_rect.center = (400, 300)
+
+coin = pygame.Surface((30, 30))
+coin.fill((255, 220, 0))
+coin_rect = coin.get_rect()
+coin_rect.center = (600, 300)
+
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:  player_rect.x -= 4
+    if keys[pygame.K_RIGHT]: player_rect.x += 4
+    if keys[pygame.K_UP]:    player_rect.y -= 4
+    if keys[pygame.K_DOWN]:  player_rect.y += 4
+
+    if player_rect.colliderect(coin_rect):
+        coin_rect.center = (-100, -100)   # 碰到后把金币移出画面
+
+    screen.fill((30, 30, 30))
+    screen.blit(player, player_rect)
+    screen.blit(coin, coin_rect)
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()</pre>
+      </div>
+      <p><code>colliderect()</code> 会判断两个矩形是否重叠，返回 <code>True</code> 或 <code>False</code>。这是游戏里最常用的碰撞检测方式之一。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：控制小人走动</h2>
+    </div>
+    <div class="lesson-body">
+<p>把精灵、移动和碰撞箱结合起来，做一个可以用方向键控制的小人。为了看得更清楚，我们再画一个目标物，碰到后目标物会变色。</p>
+      <div class="code-block" data-file="walk.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>walk.py</div>
+        <pre>import pygame
+
+pygame.init()
+screen = pygame.display.set_mode((800, 600))
+clock = pygame.time.Clock()
+
+hero = pygame.Surface((50, 50))
+hero.fill((0, 200, 255))
+hero_rect = hero.get_rect()
+hero_rect.center = (400, 300)
+
+target = pygame.Surface((60, 60))
+target.fill((255, 100, 100))
+target_rect = target.get_rect()
+target_rect.center = (600, 300)
+
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:  hero_rect.x -= 5
+    if keys[pygame.K_RIGHT]: hero_rect.x += 5
+    if keys[pygame.K_UP]:    hero_rect.y -= 5
+    if keys[pygame.K_DOWN]:  hero_rect.y += 5
+
+    if hero_rect.colliderect(target_rect):
+        target.fill((150, 255, 150))    # 碰到后变绿色
+
+    screen.fill((25, 25, 25))
+    screen.blit(hero, hero_rect)
+    screen.blit(target, target_rect)
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()</pre>
+      </div>
+      <p><strong>练习：</strong>给小人增加边界限制，让它不能跑出窗口；或者添加多个目标物，用列表来管理它们。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：</p>
+      <div class="quiz" data-answer="C">
+        <h4>在 Pygame 中，精灵的位置通常用什么对象来管理？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。list 不是本题的正确答案。Rect 才是正确的。" type="button">A. list</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。dict 不是本题的正确答案。Rect 才是正确的。" type="button">B. dict</button>
+        <button class="quiz-opt" data-val="C" data-explain="正确。Rect" type="button">C. Rect</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 P · 模块 2</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgP-m2-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

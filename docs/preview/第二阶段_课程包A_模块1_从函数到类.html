@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    从函数到类 · 第二阶段课程包 A 模块 1
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgA-m1-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 A 模块 1：为什么需要把数据和函数打包在一起。支持离线打开、深色模式、学习进度本地保存。">
+  <title>从函数到类 · 第二阶段课程包 A 模块 1</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>从函数到类 · 课程包 A</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包A_类与对象.html">返回课程包</a>
+      <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp">C++</button>
+        <button data-lang="python" class="active">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包A_类与对象.html">课程包 A</a>
+    <span>/</span>
+    <span>模块 1：从函数到类</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 A · 模块 1</span>
+    <h1>从函数到类</h1>
+    <p>为什么需要把数据和函数打包在一起</p>
+    <a class="start-btn" href="#lesson-1">开始模块 1 第 1 小节 →</a>
+    <span class="meta">模块 1 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>从「散装变量」到「打包管理」</h2>
+    </div>
+    <div class="lesson-body">
+      <p>在写小程序时，我们习惯用一个变量记录一个信息。比如要描述一个游戏角色，可能会写出这样一串变量：</p>
+      <div class="code-block lang-py" data-file="player_vars.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>player_vars.py</div>
+        <pre>player_name = "主角"
+player_x = 100
+player_y = 200
+player_hp = 80
+player_speed = 5</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="player_vars.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>player_vars.cpp</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+string player_name = "主角";
+int player_x = 100;
+int player_y = 200;
+int player_hp = 80;
+int player_speed = 5;</pre>
+      </div>
+      <p>当角色越来越多，或者函数需要用到这些信息时，麻烦就出现了：每次调用函数都要把这些变量当作参数传进去。</p>
+      <div class="code-block lang-py" data-file="move_player.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>move_player.py</div>
+        <pre>def move(name, x, y, hp, speed, direction):
+    if direction == "右":
+        x += speed
+    print(name, "移动到", x, y)
+    return x, y</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="move_player.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>move_player.cpp</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+int movePlayer(string name, int x, int y, int hp, int speed, string direction) {
+    if (direction == "右") {
+        x += speed;
+    }
+    cout &lt;&lt; name &lt;&lt; " 移动到 " &lt;&lt; x &lt;&lt; " " &lt;&lt; y &lt;&lt; endl;
+    return x;
+}</pre>
+      </div>
+      <p>参数一长串，不仅写起来累，还容易搞错顺序。如果以后还要加入攻击力、防御力、背包，参数列表会变得更加恐怖。于是程序员开始思考：有没有办法把这些<strong>相关的数据和函数打包</strong>在一起？</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>用结构把数据「装盒」</h2>
+    </div>
+    <div class="lesson-body">
+      <p>第一步改进，是把同类数据装进一个「盒子」。<span class="lang-py">在 Python 里可以用字典</span><span class="lang-cpp">在 C++ 里可以用结构体 <code>struct</code></span>。这样，原本散落在各处的变量就有了一个统一的名字。</p>
+      <div class="code-block lang-py" data-file="player_dict.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>player_dict.py</div>
+        <pre>player = {
+    "name": "主角",
+    "x": 100,
+    "y": 200,
+    "hp": 80
+}
+
+print(player["name"], "的血量是", player["hp"])</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="player_struct.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>player_struct.cpp</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+struct Player {
+    string name;
+    int x;
+    int y;
+    int hp;
+};
+
+int main() {
+    Player p = {"主角", 100, 200, 80};
+    cout &lt;&lt; p.name &lt;&lt; " 的血量是 " &lt;&lt; p.hp &lt;&lt; endl;
+    return 0;
+}</pre>
+      </div>
+      <p>「装盒」之后，数据的组织清晰多了。但操作这些数据的函数仍然游离在外，我们还是要写 <code>move(player)</code>、<code>attack(player, enemy)</code> 这样的函数。下一步，就是让函数也住进这个盒子里。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>类：把数据和行为一起打包</h2>
+    </div>
+    <div class="lesson-body">
+      <p>类（class）是更高级的盒子：它既能装<strong>数据</strong>，也能装<strong>操作这些数据的函数</strong>。<span class="lang-py">在 Python 里，类里的函数叫方法</span><span class="lang-cpp">在 C++ 里，类里的变量叫成员变量，函数叫成员函数</span>。</p>
+      <div class="code-block lang-py" data-file="player_class.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>player_class.py</div>
+        <pre>class Player:
+    def __init__(self, name, x, y, hp):
+        self.name = name
+        self.x = x
+        self.y = y
+        self.hp = hp
+
+    def move_right(self):
+        self.x += 5
+
+    def show(self):
+        print(self.name, "位于", self.x, self.y, "血量", self.hp)
+
+hero = Player("主角", 100, 200, 80)
+hero.move_right()
+hero.show()</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="player_class.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>player_class.cpp</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+class Player {
+public:
+    string name;
+    int x, y, hp;
+
+    void moveRight() {
+        x += 5;
+    }
+
+    void show() {
+        cout &lt;&lt; name &lt;&lt; " 位于 " &lt;&lt; x &lt;&lt; " " &lt;&lt; y
+             &lt;&lt; " 血量 " &lt;&lt; hp &lt;&lt; endl;
+    }
+};
+
+int main() {
+    Player hero = {"主角", 100, 200, 80};
+    hero.moveRight();
+    hero.show();
+    return 0;
+}</pre>
+      </div>
+      <p>现在，<code>hero</code> 不仅保存了角色的所有信息，还自带了移动和显示的方法。<span class="lang-py">调用 <code>hero.move_right()</code></span><span class="lang-cpp">调用 <code>hero.moveRight()</code></span> 时，函数自然知道要修改 <code>hero</code> 自己的 <code>x</code>，不再需要手动传一大堆参数。这就是「把数据和函数打包在一起」的核心好处。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：把玩家代码改成类</h2>
+      <div class="lesson-sub">把本模块内容用起来</div>
+    </div>
+    <div class="lesson-body">
+      <p>下面的代码用「散装变量」描述了一个敌人，并写了一个独立的受伤函数。请你把它改写成一个 <code>Enemy</code> 类，让数据和行为住在一起。</p>
+      <div class="code-block lang-py" data-file="enemy_before.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>enemy_before.py</div>
+        <pre>enemy_name = "史莱姆"
+enemy_hp = 50
+
+def take_damage(name, hp, damage):
+    hp -= damage
+    print(name, "受到", damage, "点伤害，剩余血量", hp)
+    return hp
+
+enemy_hp = take_damage(enemy_name, enemy_hp, 10)</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="enemy_before.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>enemy_before.cpp</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+string enemy_name = "史莱姆";
+int enemy_hp = 50;
+
+int takeDamage(string name, int hp, int damage) {
+    hp -= damage;
+    cout &lt;&lt; name &lt;&lt; " 受到 " &lt;&lt; damage &lt;&lt; " 点伤害，剩余血量 " &lt;&lt; hp &lt;&lt; endl;
+    return hp;
+}
+
+int main() {
+    enemy_hp = takeDamage(enemy_name, enemy_hp, 10);
+    return 0;
+}</pre>
+      </div>
+      <p>参考答案：</p>
+      <div class="code-block lang-py" data-file="enemy_class.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>enemy_class.py</div>
+        <pre>class Enemy:
+    def __init__(self, name, hp):
+        self.name = name
+        self.hp = hp
+
+    def take_damage(self, damage):
+        self.hp -= damage
+        print(self.name, "受到", damage, "点伤害，剩余血量", self.hp)
+
+slime = Enemy("史莱姆", 50)
+slime.take_damage(10)</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="enemy_class.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>enemy_class.cpp</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+class Enemy {
+public:
+    string name;
+    int hp;
+
+    Enemy(string n, int h) {
+        name = n;
+        hp = h;
+    }
+
+    void takeDamage(int damage) {
+        hp -= damage;
+        cout &lt;&lt; name &lt;&lt; " 受到 " &lt;&lt; damage &lt;&lt; " 点伤害，剩余血量 " &lt;&lt; hp &lt;&lt; endl;
+    }
+};
+
+int main() {
+    Enemy slime("史莱姆", 50);
+    slime.takeDamage(10);
+    return 0;
+}</pre>
+      </div>
+      <p>改写后，<code>name</code> 和 <code>hp</code> 不再作为参数传来传去，而是由 <code>slime</code> 对象自己保管。尝试再给史莱姆加一个 <span class="lang-py"><code>is_alive()</code></span><span class="lang-cpp"><code>isAlive()</code></span> 方法，判断血量是否大于 0。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：为什么需要把数据和函数打包在一起</p>
+      <div class="quiz" data-answer="A">
+        <h4>下面关于「类」的说法，哪个是正确的？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。类可以把相关的数据和行为（函数）打包在一起" type="button">A. 类可以把相关的数据和行为（函数）打包在一起</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。类只能用来存放数据，不能写函数 的说法过于绝对。实际上它不但可以完成这些事，还可以做更多。" type="button">B. 类只能用来存放数据，不能写函数</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。类会让程序一定比不用类时更慢 的说法不准确，实际情况并非绝对如此。" type="button">C. 类会让程序一定比不用类时更慢</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 A · 模块 1</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgA-m1-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

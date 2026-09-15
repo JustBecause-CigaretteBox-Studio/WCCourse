@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    TCP 与 UDP · 第二阶段课程包 I 模块 4
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgI-m4-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 I 模块 4：可靠的快递与飞鸽传书。支持离线打开、深色模式、学习进度本地保存。">
+  <title>TCP 与 UDP · 第二阶段课程包 I 模块 4</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .callout { border: 1px solid; border-radius: 12px; padding: 16px; margin: 16px 0; font-size: 14px; line-height: 1.8; }
+  .callout-title { font-weight: 700; margin-bottom: 6px; }
+  .callout.idea { border-color: #bae6fd; background: #f0f9ff; color: #0c4a6e; }
+  .callout.warn { border-color: #fecdd3; background: #fff1f2; color: #881337; }
+  .callout.key  { border-color: #ddd6fe; background: #f5f3ff; color: #4c1d95; }
+  html.dark .callout.idea { border-color: #075985; background: rgba(8,47,73,.4);  color: #bae6fd; }
+  html.dark .callout.warn { border-color: #9f1239; background: rgba(76,5,25,.4);   color: #fecdd3; }
+  html.dark .callout.key  { border-color: #6d28d9; background: rgba(46,16,101,.4); color: #ddd6fe; }
+  .grid-2 { display: grid; gap: 12px; margin: 16px 0; }
+  @media (min-width: 640px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+  .card { border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); padding: 16px; }
+  .card-label { font-size: 12px; font-weight: 700; color: var(--text-faint); margin-bottom: 6px; }
+  .card-big { font-size: 15px; font-weight: 700; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-py single-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>TCP 与 UDP · 课程包 I</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包I_网络漫游.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active" disabled>Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包I_网络漫游.html">课程包 I</a>
+    <span>/</span>
+    <span>模块 4：TCP 与 UDP</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 I · 模块 4</span>
+    <h1>TCP 与 UDP</h1>
+    <p>可靠的快递与飞鸽传书</p>
+    <a class="start-btn" href="#lesson-1">开始模块 4 第 1 小节 →</a>
+    <span class="meta">模块 4 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>TCP：可靠的快递</h2>
+    </div>
+    <div class="lesson-body">
+      <p>前面我们说过，数据要在网络上传输。但「把数据发出去」只是第一步，接收方能不能收到、收到的顺序对不对、有没有遗漏，都需要一套规则来保证。这个规则就是<strong>传输层协议</strong>，最著名的两个是 TCP 和 UDP。</p>
+      <p><strong>TCP（Transmission Control Protocol）</strong>像是一家严谨的快递公司。它会在发货前打电话确认对方在不在（三次握手），每到一个中转站都会签收（确认应答），如果包裹丢了会要求重发（超时重传），最后还会按编号把包裹重新摆好顺序（按序重组）。</p>
+      <div class="callout idea">
+        <div class="callout-title">💡 三次握手</div>
+        <p>TCP 建立连接时，客户端和服务器会交换三个包：1) 客户端「在吗？」；2) 服务器「在的，你呢？」；3) 客户端「我也在」。之后才开始正式传数据。</p>
+      </div>
+      <p>TCP 的优点是<strong>可靠、按顺序、不丢包</strong>，缺点是建立连接和确认应答都需要时间，延迟相对较高。网页、文件下载、邮件这些不能容忍丢数据的场景，基本都走 TCP。</p>
+      <p>在 Python 里，<code>socket.SOCK_STREAM</code> 就是 TCP。下面是一个最简单的 TCP 回显服务器（只监听本机）：</p>
+      <div class="code-block" data-file="tcp_server.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>tcp_server.py</div>
+        <pre>import socket
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(("127.0.0.1", 9001))
+server.listen(1)
+print("TCP 服务器已启动，等待连接...")
+
+conn, addr = server.accept()
+print(f"客户端 {addr} 已连接")
+
+while True:
+    data = conn.recv(1024)
+    if not data:
+        break
+    text = data.decode()
+    print(f"收到：{text}")
+    conn.sendall(f"服务器收到：{text}".encode())
+
+conn.close()
+server.close()</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>UDP：飞鸽传书</h2>
+    </div>
+    <div class="lesson-body">
+      <p><strong>UDP（User Datagram Protocol）</strong>和 TCP 相反，它非常「洒脱」。UDP 不建立连接，不确认收到，不保证顺序，也不重传丢包。它只管把数据包发出去，对方能不能收到它不管。</p>
+      <p>这听起来很不可靠，但正因如此，UDP 非常<strong>快</strong>。它不需要三次握手，也没有复杂的确认机制，头部开销小。直播、视频会议、在线游戏、DNS 查询这些场景常用 UDP：偶尔丢几帧画面没关系，但卡顿半秒会很明显。</p>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-label">TCP</div>
+          <div class="card-big">面向连接、可靠、按序到达、自动重传。适合网页、文件、邮件。</div>
+        </div>
+        <div class="card">
+          <div class="card-label">UDP</div>
+          <div class="card-big">无连接、不可靠、快、开销小。适合直播、游戏、语音通话。</div>
+        </div>
+      </div>
+      <p>Python 里用 <code>socket.SOCK_DGRAM</code> 创建 UDP socket。下面是一个 UDP 客户端的例子：</p>
+      <div class="code-block" data-file="udp_client.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>udp_client.py</div>
+        <pre>import socket
+
+# 创建一个 UDP socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# 发送消息到本机的 9002 端口
+message = "你好，UDP！".encode()
+sock.sendto(message, ("127.0.0.1", 9002))
+
+# 等待回复（如果对方有回复的话）
+sock.settimeout(2.0)
+try:
+    data, addr = sock.recvfrom(1024)
+    print(f"来自 {addr} 的回复：{data.decode()}")
+except socket.timeout:
+    print("两秒内没收到回复，UDP 不保证送达")
+
+sock.close()</pre>
+      </div>
+      <p>UDP 的关键字是「尽力而为」：我尽力发，但不保证到。如果你需要可靠传输，就要自己在应用层做确认和重传；如果不需要，UDP 就是更轻量的选择。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>动手：TCP 客户端给服务器发消息</h2>
+    </div>
+    <div class="lesson-body">
+      <p>有了 TCP 服务器，还需要一个 TCP 客户端去连接它。客户端和服务器的代码很像，只是客户端用 <code>connect()</code> 发起连接，然后收发数据。</p>
+      <p>运行这个练习需要<strong>两个终端</strong>：一个先运行上一节的 <code>tcp_server.py</code>，另一个运行下面的 <code>tcp_client.py</code>。客户端会连接服务器，发送一句「你好，TCP！」，然后收到服务器的回显。</p>
+      <div class="code-block" data-file="tcp_client.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>tcp_client.py</div>
+        <pre>import socket
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect(("127.0.0.1", 9001))  # 连接本机 9001 端口
+
+message = "你好，TCP！"
+client.sendall(message.encode())
+
+reply = client.recv(1024).decode()
+print(f"服务器回复：{reply}")
+
+client.close()</pre>
+      </div>
+      <p>如果先运行了服务器，再运行客户端，你会看到服务器端打印「收到：你好，TCP！」，客户端打印「服务器收到：你好，TCP！」。这就是一次完整的 TCP 请求-响应。</p>
+      <div class="callout warn">
+        <div class="callout-title">⚠️ 注意</div>
+        <p>服务器必须先启动，否则会报「ConnectionRefusedError」。TCP 客户端连接一个没人在监听的端口，就像敲一扇没人的门。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：多人聊天室雏形</h2>
+      <div class="lesson-sub">用 TCP 做一个能持续收发消息的小程序</div>
+    </div>
+    <div class="lesson-body">
+      <p>真正的聊天软件底层也是 TCP（或类似可靠协议）。下面我们把 TCP 服务器升级一下：允许一个客户端持续输入消息，服务器收到后回显。你可以开两个客户端同时连接，观察服务器怎么处理多条连接。</p>
+      <p>为了让服务器能同时服务多个客户端，我们用 <code>threading</code> 给每个连接开一个新线程。这是网络编程的经典模型之一。</p>
+      <div class="code-block" data-file="chat_server.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>chat_server.py</div>
+        <pre>import socket
+import threading
+
+def handle_client(conn, addr):
+    print(f"[连接] {addr} 已加入")
+    while True:
+        try:
+            data = conn.recv(1024)
+            if not data:
+                break
+            text = data.decode()
+            print(f"[来自 {addr}] {text}")
+            conn.sendall(f"收到：{text}".encode())
+        except Exception as e:
+            print(f"[断开] {addr} {e}")
+            break
+    conn.close()
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(("127.0.0.1", 9001))
+server.listen(5)
+print("聊天服务器已启动，在 127.0.0.1:9001 等待连接...")
+
+while True:
+    conn, addr = server.accept()
+    t = threading.Thread(target=handle_client, args=(conn, addr))
+    t.start()</pre>
+      </div>
+      <p>客户端可以复用上一节的 <code>tcp_client.py</code>，也可以把它改成循环输入、持续聊天。这个练习让你体会：</p>
+      <p>1. TCP 是<strong>持续连接</strong>的，可以多次收发。</p>
+      <p>2. 服务器用<strong>多线程</strong>同时服务多个客户端。</p>
+      <p>3. 网络程序要时刻准备处理<strong>断开连接</strong>和异常。</p>
+      <div class="callout key">
+        <div class="callout-title">🔑 模块 4 小结</div>
+        <p>TCP 像可靠快递，保证送达且按序；UDP 像飞鸽传书，快但不保证送达。Python 的 socket 模块可以同时创建 TCP（SOCK_STREAM）和 UDP（SOCK_DGRAM）程序。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：可靠的快递与飞鸽传书</p>
+      <div class="quiz" data-answer="A">
+        <h4>下列哪种协议会确保数据不丢失、按顺序到达？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。TCP" type="button">A. TCP</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。UDP 不是本题的正确答案。TCP 才是正确的。" type="button">B. UDP</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。DNS 不是本题的正确答案。TCP 才是正确的。" type="button">C. DNS</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 I · 模块 4</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgI-m4-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    操作系统是什么 · 第二阶段课程包 H 模块 1
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgH-m1-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 H 模块 1：管家的一天，资源调度。支持离线打开、深色模式、学习进度本地保存。">
+  <title>操作系统是什么 · 第二阶段课程包 H 模块 1</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>操作系统是什么 · 课程包 H</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包H_操作系统.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包H_操作系统.html">课程包 H</a>
+    <span>/</span>
+    <span>模块 1：操作系统是什么</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 H · 模块 1</span>
+    <h1>操作系统是什么</h1>
+    <p>管家的一天，资源调度</p>
+    <a class="start-btn" href="#lesson-1">开始模块 1 第 1 小节 →</a>
+    <span class="meta">模块 1 · 4 个小节 · 进度自动保存</span>
+  </div>
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>操作系统是电脑里的管家</h2>
+    </div>
+    <div class="lesson-body">
+      <p>如果你把电脑比作一栋大房子，那<strong>操作系统（Operating System，简称 OS）</strong>就是全天候待命的管家。它不负责打扫卫生，而是负责协调房子里的所有资源：厨房（CPU）、储物间（内存）、车库（硬盘）、门窗（输入输出设备）……让住在里面的程序们都能有条不紊地工作。</p>
+      <p>没有管家，程序们会为了抢资源打得头破血流；有了管家，它们就能排队、分时、共享。Windows、macOS、Linux、Android、iOS 都是常见的操作系统。</p>
+      <p>操作系统主要做三件大事：</p>
+      <ul style="margin-bottom:16px;padding-left:24px;line-height:1.9;color:var(--text-soft)">
+        <li><strong>管理硬件</strong>：让 CPU、内存、硬盘、网卡等设备各司其职。</li>
+        <li><strong>运行程序</strong>：加载程序、分配资源、调度执行。</li>
+        <li><strong>提供接口</strong>：通过系统调用或命令行，让普通程序也能请求服务。</li>
+      </ul>
+      <p>下面用一小段代码看一眼你当前的操作系统名字：</p>
+      <div class="code-block lang-py" data-file="check_os.py" data-lang="python"><div class="code-title"><span class="dot"></span>check_os.py</div><pre>import platform
+
+print("操作系统名称：", platform.system())
+print("版本：", platform.release())
+print("详细版本：", platform.version())</pre></div>
+      <div class="code-block lang-cpp" data-file="check_os.cpp" data-lang="cpp"><div class="code-title"><span class="dot"></span>check_os.cpp</div><pre>#include &lt;iostream&gt;
+
+int main() {
+#if defined(_WIN32)
+    std::cout &lt;&lt; "操作系统名称： Windows" &lt;&lt; std::endl;
+#elif defined(__APPLE__)
+    std::cout &lt;&lt; "操作系统名称： macOS" &lt;&lt; std::endl;
+#elif defined(__linux__)
+    std::cout &lt;&lt; "操作系统名称： Linux" &lt;&lt; std::endl;
+#else
+    std::cout &lt;&lt; "操作系统名称： Unknown" &lt;&lt; std::endl;
+#endif
+    return 0;
+}</pre></div>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>资源调度：CPU、内存、硬盘怎么分</h2>
+    </div>
+    <div class="lesson-body">
+      <p>电脑的资源是有限的，但想运行的程序有很多。操作系统就像一个经验丰富的管家， 回答三个问题：谁先用资源？用多久？用完了要不要给别人让座？</p>
+      <p><strong>CPU 调度</strong>：CPU 一次只能执行少量指令。操作系统把 CPU 时间切成小片，轮流分给各个进程。因为切换非常快，我们感觉就像多个任务在“同时”运行。</p>
+      <p><strong>内存分配</strong>：每个程序都需要内存来放代码和数据。操作系统负责分配、回收，并确保程序不会读到别人家的内存。</p>
+      <p><strong>磁盘 I/O 调度</strong>：硬盘比 CPU 慢得多。操作系统会把读写请求排队、合并，尽量减少机械臂（或闪存控制器）的无效移动。</p>
+      <div class="code-block lang-py" data-file="resource_sim.py" data-lang="python"><div class="code-title"><span class="dot"></span>resource_sim.py</div><pre># 模拟一个简单的资源调度器
+tasks = [("听音乐", 2), ("写代码", 5), ("下载文件", 3)]
+
+# 按“耗时短优先”来调度
+tasks.sort(key=lambda x: x[1])
+
+print("调度顺序：")
+for name, time in tasks:
+    print(f"  {name}：分配 {time} 个时间片")</pre></div>
+      <div class="code-block lang-cpp" data-file="resource_sim.cpp" data-lang="cpp"><div class="code-title"><span class="dot"></span>resource_sim.cpp</div><pre>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;algorithm&gt;
+
+int main() {
+    std::vector&lt;std::pair&lt;std::string, int&gt;&gt; tasks = {
+        {"听音乐", 2},
+        {"写代码", 5},
+        {"下载文件", 3}
+    };
+
+    std::sort(tasks.begin(), tasks.end(),
+        [](const std::pair&lt;std::string, int&gt; &amp;a,
+           const std::pair&lt;std::string, int&gt; &amp;b) {
+            return a.second &lt; b.second;
+        });
+
+    std::cout &lt;&lt; "调度顺序：" &lt;&lt; std::endl;
+    for (size_t i = 0; i &lt; tasks.size(); ++i) {
+        std::cout &lt;&lt; "  " &lt;&lt; tasks[i].first
+                  &lt;&lt; "：分配 " &lt;&lt; tasks[i].second &lt;&lt; " 个时间片" &lt;&lt; std::endl;
+    }
+    return 0;
+}</pre></div>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>内核与用户程序</h2>
+    </div>
+    <div class="lesson-body">
+      <p>操作系统内部也分“特权区”和“普通区”。<strong>内核（Kernel）</strong>是管家的核心团队，拥有最高权限，可以直接操作硬件；而普通程序（用户程序）只能待在外围，通过<strong>系统调用</strong>向内核提请求。</p>
+      <p>为什么这样设计？因为硬件太脆弱，不能谁都能乱碰。就像你不能随便进厨房改煤气管道，但你可以让专业的管道师傅帮你做。</p>
+      <p>常见的系统调用包括：创建进程、读写文件、申请内存、发送网络数据。Python 的很多标准库函数，底层都在替我们发起系统调用。</p>
+      <div class="code-block lang-py" data-file="syscall_demo.py" data-lang="python"><div class="code-title"><span class="dot"></span>syscall_demo.py</div><pre>import os
+
+# getpid 是一个典型的系统调用：向内核询问当前进程 ID
+print("当前进程 ID：", os.getpid())
+
+# getcwd 也是系统调用：询问当前工作目录
+print("当前工作目录：", os.getcwd())</pre></div>
+      <div class="code-block lang-cpp" data-file="syscall_demo.cpp" data-lang="cpp"><div class="code-title"><span class="dot"></span>syscall_demo.cpp</div><pre>#include &lt;iostream&gt;
+#ifdef _WIN32
+#include &lt;windows.h&gt;
+#include &lt;direct.h&gt;
+#else
+#include &lt;unistd.h&gt;
+#endif
+
+int main() {
+#ifdef _WIN32
+    std::cout &lt;&lt; "当前进程 ID： " &lt;&lt; GetCurrentProcessId() &lt;&lt; std::endl;
+    char cwd[1024];
+    if (_getcwd(cwd, sizeof(cwd))) {
+        std::cout &lt;&lt; "当前工作目录： " &lt;&lt; cwd &lt;&lt; std::endl;
+    }
+#else
+    std::cout &lt;&lt; "当前进程 ID： " &lt;&lt; getpid() &lt;&lt; std::endl;
+    char cwd[1024];
+    if (getcwd(cwd, sizeof(cwd))) {
+        std::cout &lt;&lt; "当前工作目录： " &lt;&lt; cwd &lt;&lt; std::endl;
+    }
+#endif
+    return 0;
+}</pre></div>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：写一个小小资源调度器</h2>
+      <div class="lesson-sub">把本模块内容用起来</div>
+    </div>
+    <div class="lesson-body">
+      <p>现在把前面的思路串起来。我们写一个极简的“任务调度器”：它接收几个任务，按优先级排序，然后假装给它们分配 CPU 时间片。这个小例子能帮你理解操作系统调度的核心——<strong>公平与效率的权衡</strong>。</p>
+      <div class="code-block lang-py" data-file="tiny_scheduler.py" data-lang="python"><div class="code-title"><span class="dot"></span>tiny_scheduler.py</div><pre>import time
+
+tasks = [
+    {"name": "浏览器", "priority": 3, "work": 4},
+    {"name": "音乐",   "priority": 1, "work": 2},
+    {"name": "游戏",   "priority": 5, "work": 6},
+]
+
+# 优先级高的先运行（数字越大越优先）
+tasks.sort(key=lambda t: t["priority"], reverse=True)
+
+for task in tasks:
+    print(f"正在运行：{task['name']}（优先级 {task['priority']}）")
+    for i in range(task["work"]):
+        print(f"  执行第 {i+1}/{task['work']} 个时间片")
+        time.sleep(0.2)
+    print(f"{task['name']} 运行完毕，释放资源\n")</pre></div>
+      <div class="code-block lang-cpp" data-file="tiny_scheduler.cpp" data-lang="cpp"><div class="code-title"><span class="dot"></span>tiny_scheduler.cpp</div><pre>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;algorithm&gt;
+#include &lt;thread&gt;
+#include &lt;chrono&gt;
+
+struct Task {
+    std::string name;
+    int priority;
+    int work;
+};
+
+int main() {
+    std::vector&lt;Task&gt; tasks = {
+        {"浏览器", 3, 4},
+        {"音乐",   1, 2},
+        {"游戏",   5, 6}
+    };
+
+    std::sort(tasks.begin(), tasks.end(),
+        [](const Task &amp;a, const Task &amp;b) {
+            return a.priority &gt; b.priority;
+        });
+
+    for (const auto &amp;task : tasks) {
+        std::cout &lt;&lt; "正在运行：" &lt;&lt; task.name
+                  &lt;&lt; "（优先级 " &lt;&lt; task.priority &lt;&lt; "）" &lt;&lt; std::endl;
+        for (int i = 0; i &lt; task.work; ++i) {
+            std::cout &lt;&lt; "  执行第 " &lt;&lt; (i + 1) &lt;&lt; "/"
+                      &lt;&lt; task.work &lt;&lt; " 个时间片" &lt;&lt; std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        }
+        std::cout &lt;&lt; task.name &lt;&lt; " 运行完毕，释放资源\n" &lt;&lt; std::endl;
+    }
+    return 0;
+}</pre></div>
+      <p>试着把 <code class="inline">priority</code> 改成一样，或者把 <code class="inline">reverse=True</code> 去掉，看看调度顺序有什么变化。真实的操作系统调度算法比这复杂得多，但基本思想是相通的。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>下面哪一项最能概括操作系统的主要工作？</p>
+      <div class="quiz" data-answer="A">
+        <h4>操作系统最主要做的是什么？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。管理硬件资源，协调程序运行" type="button">A. 管理硬件资源，协调程序运行</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。只负责显示桌面和壁纸 不是本题的正确答案。管理硬件资源，协调程序运行 才是正确的。" type="button">B. 只负责显示桌面和壁纸</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。自动替用户编写程序 不是本题的正确答案。管理硬件资源，协调程序运行 才是正确的。" type="button">C. 自动替用户编写程序</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 H · 模块 1</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgH-m1-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

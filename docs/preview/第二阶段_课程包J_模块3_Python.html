@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    Python · 第二阶段课程包 J 模块 3
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgJ-m3-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 J 模块 3：瑞士军刀，胶水语言。支持离线打开、深色模式、学习进度本地保存。">
+  <title>Python · 第二阶段课程包 J 模块 3</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>Python · 课程包 J</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/4 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包J_编程语言家谱.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包J_编程语言家谱.html">课程包 J</a>
+    <span>/</span>
+    <span>模块 3：Python</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 J · 模块 3</span>
+    <h1>Python</h1>
+    <p>瑞士军刀，胶水语言</p>
+    <a class="start-btn" href="#lesson-1">开始模块 3 第 1 小节 →</a>
+    <span class="meta">模块 3 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>Python：从圣诞假期里诞生的语言</h2>
+    </div>
+    <div class="lesson-body">
+      <p>Python 诞生于 1991 年，作者是荷兰程序员 Guido van Rossum。传说他在圣诞假期里为了打发时间，设计了一门新语言，并借了自己喜欢的英国喜剧团体 Monty Python 之名，取名为 Python。</p>
+      <p>Python 的设计哲学强调<strong>可读性</strong>和<strong>简洁性</strong>。它用缩进来表示代码块，而不是 C 风格的大括号；它内置了列表、字典等高级数据结构，让日常任务可以用很少代码完成。</p>
+      <p>这些设计让它迅速流行，如今被广泛用于：数据分析、人工智能、自动化脚本、Web 后端、科学计算、教育入门等领域。可以说 Python 是程序员口袋里的一把<strong>瑞士军刀</strong>。</p>
+      <div class="code-block" data-file="hello.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>Python</div>
+        <pre>print("Hello, Python!")</pre></div>
+      <div class="code-block" data-file="hello.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>C++</div>
+        <pre>#include &lt;iostream&gt;
+
+int main() {
+    std::cout &lt;&lt; "Hello, C++!" &lt;&lt; std::endl;
+    return 0;
+}</pre></div>
+      <p>仅这一行就能在屏幕上输出文字，不需要写 <code>main</code> 函数、不需要声明类型、不需要手动编译。Python 把一切非必要的仪式都去掉了。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>胶水语言：把不同世界粘在一起</h2>
+    </div>
+    <div class="lesson-body">
+      <p>Python 常被称为“胶水语言”，因为它最擅长的不是从零造轮子，而是<strong>把别人造好的轮子拼成一辆新车</strong>。它可以调用 C/C++ 写的高性能库，可以操作 Excel、数据库、网络接口，也能驱动深度学习框架。</p>
+      <p>比如你想处理一张图片，不需要自己写图像解码算法，直接调用 PIL/Pillow 库：</p>
+      <div class="code-block" data-file="resize.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>Python</div>
+        <pre>from PIL import Image
+
+img = Image.open("photo.jpg")
+small = img.resize((200, 200))
+small.save("thumb.jpg")</pre></div>
+      <div class="code-block" data-file="resize.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>C++</div>
+        <pre>// C++ 做同样的事需要借助第三方图像库（如 OpenCV）
+// 下面是用 OpenCV 的伪代码/思路展示：
+// #include &lt;opencv2/opencv.hpp&gt;
+// cv::Mat img = cv::imread("photo.jpg");
+// cv::Mat small;
+// cv::resize(img, small, cv::Size(200, 200));
+// cv::imwrite("thumb.jpg", small);</pre></div>
+      <p>这三行代码背后，是 Pillow 用 C 语言写好的高性能图像处理逻辑。Python 提供了友好的“门面”，让复杂工作变得简单。这正是胶水语言的魅力。</p>
+      <p>在企业里，Python 经常负责“把 A 系统的数据拿过来，处理一下，再塞给 B 系统”。它不需要速度最快，但要求写得快、读得懂、生态全。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>动手试一试：列表推导与字典</h2>
+    </div>
+    <div class="lesson-body">
+      <p>Python 有很多“内置魔法”。其中<strong>列表推导式</strong>（list comprehension）是最具 Pythonic 风格的小技巧之一：用一行代码生成一个新列表。</p>
+      <div class="code-block" data-file="list.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>Python</div>
+        <pre># 普通写法
+squares = []
+for x in range(1, 6):
+    squares.append(x * x)
+print(squares)  # [1, 4, 9, 16, 25]
+
+# 列表推导式
+squares2 = [x * x for x in range(1, 6)]
+print(squares2)  # [1, 4, 9, 16, 25]</pre></div>
+      <div class="code-block" data-file="list.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>C++</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+int main() {
+    std::vector&lt;int&gt; squares;
+    for (int x = 1; x &lt;= 5; x++) {
+        squares.push_back(x * x);
+    }
+
+    for (int v : squares) {
+        std::cout &lt;&lt; v &lt;&lt; " ";
+    }
+    std::cout &lt;&lt; std::endl;
+    return 0;
+}</pre></div>
+      <p>Python 的<strong>字典</strong>则把“键值对”做成了原生数据类型，非常适合表示现实中的映射关系：</p>
+      <div class="code-block" data-file="dict.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>Python</div>
+        <pre>student = {
+    "name": "小明",
+    "age": 18,
+    "scores": {"语文": 90, "数学": 95}
+}
+
+print(student["name"])          # 小明
+print(student["scores"]["数学"])  # 95</pre></div>
+      <div class="code-block" data-file="dict.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>C++</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;map&gt;
+#include &lt;string&gt;
+
+int main() {
+    std::map&lt;std::string, std::string&gt; student;
+    student["name"] = "小明";
+    student["age"] = "18";
+
+    std::map&lt;std::string, int&gt; scores;
+    scores["语文"] = 90;
+    scores["数学"] = 95;
+
+    std::cout &lt;&lt; student["name"] &lt;&lt; std::endl;
+    std::cout &lt;&lt; scores["数学"] &lt;&lt; std::endl;
+    return 0;
+}</pre></div>
+      <p>这些内置结构让 Python 在处理数据时非常顺手。你不需要关心内存怎么分配，只需要专注于数据本身。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：读取文件并统计词频</h2>
+      <div class="lesson-sub">感受 Python 的胶水与简洁</div>
+    </div>
+    <div class="lesson-body">
+      <p>这个实战展示 Python 如何只用几行代码完成“读取文本、清洗、统计”的完整流程。同样的功能用 C 写，会明显更冗长。</p>
+      <div class="code-block" data-file="wordcount.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>Python</div>
+        <pre>from collections import Counter
+import re
+
+# 读取文件
+with open("story.txt", "r", encoding="utf-8") as f:
+    text = f.read()
+
+# 拆成单词并统计
+words = re.findall(r"\b\w+\b", text.lower())
+counts = Counter(words)
+
+# 输出出现最多的 5 个词
+for word, times in counts.most_common(5):
+    print(f"{word}: {times}")</pre></div>
+      <p>对比 C 语言版本，C 需要自己管理文件指针、缓冲区、字符串分割、哈希表等细节。Python 则把文件、正则、计数器都封装成现成工具：</p>
+      <div class="code-block" data-file="wordcount.c" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>C</div>
+        <pre>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+// C 版本需要手动打开文件、读取缓冲区、
+// 拆分单词、维护哈希表或数组来统计。
+// 完整代码通常需要 80~150 行。</pre></div>
+      <p>这不是说 C 不好，而是两者的定位不同：C 控制底层，Python 快速易读。真正的大型项目里，它们经常一起出现——用 C 写性能核心，用 Python 写业务逻辑。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：瑞士军刀，胶水语言</p>
+      <div class="quiz" data-answer="B">
+        <h4>Python 为什么常被称为“胶水语言”？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。它只能写小游戏 的说法过于绝对。实际上它不但可以完成这些事，还可以做更多。" type="button">A. 它只能写小游戏</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。它擅长连接不同库、工具和系统，快速拼装功能" type="button">B. 它擅长连接不同库、工具和系统，快速拼装功能</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。它的语法像胶水一样黏糊难读 不是本题的正确答案。它擅长连接不同库、工具和系统，快速拼装功能 才是正确的。" type="button">C. 它的语法像胶水一样黏糊难读</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 J · 模块 3</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  if (!isDualLang) { var lt = document.getElementById("lang-toggle"); if (lt && lt.parentNode) lt.parentNode.removeChild(lt); }
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgJ-m3-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

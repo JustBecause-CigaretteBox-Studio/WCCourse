@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>重要提示 · 野鸡动画编程课</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --bg-card: #1e293b;
+    --bg-soft: #172033;
+    --text: #e2e8f0;
+    --text-soft: #cbd5e1;
+    --text-faint: #64748b;
+    --border: #334155;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --success: #22c55e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; line-height: 1.8;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .notice-card {
+    max-width: 640px; width: 100%;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 44px 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.35);
+  }
+
+  .warn-icon { font-size: 48px; text-align: center; margin-bottom: 18px; }
+
+  h1 {
+    text-align: center; font-size: 28px; font-weight: 800;
+    color: var(--warning); margin-bottom: 24px; letter-spacing: 1px;
+  }
+
+  .lead {
+    font-size: 16px; color: var(--text-soft);
+    padding: 20px 22px; margin-bottom: 24px;
+    background: rgba(245,158,11,.08); border-left: 4px solid var(--warning);
+    border-radius: 0 10px 10px 0;
+  }
+  .lead strong { color: var(--danger); }
+
+  .how {
+    background: var(--bg-soft); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 24px; margin-bottom: 32px;
+  }
+  .how h2 { font-size: 15px; color: var(--text); margin-bottom: 12px; }
+  .how ul { margin-left: 20px; }
+  .how li { font-size: 14px; color: var(--text-soft); margin: 8px 0; }
+  .how li em { font-style: normal; color: var(--warning); }
+
+  .enter-wrap { text-align: center; }
+  .enter-btn {
+    display: inline-block; padding: 15px 44px; border-radius: 12px;
+    font-size: 17px; font-weight: 700; background: var(--accent); color: #fff;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: background .15s, transform .15s;
+  }
+  .enter-btn:hover { background: var(--accent-hover); transform: translateY(-2px); text-decoration: none; }
+  .enter-hint { margin-top: 14px; font-size: 12px; color: var(--text-faint); }
+
+  .back {
+    display: block; text-align: center; margin-top: 28px;
+    font-size: 13px; color: var(--text-faint); text-decoration: none;
+  }
+  .back:hover { color: var(--text-soft); }
+
+  @media (max-width: 600px) {
+    .notice-card { padding: 32px 22px; }
+    h1 { font-size: 22px; }
+    .enter-btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="notice-card">
+  <div class="warn-icon">⚠️</div>
+
+  <h1>重要提示！</h1>
+
+  <p class="lead">
+    本教程尚未制作完成，部分内容用 <strong>AI 生成的教程</strong> 进行占位。
+    如果你在某个部分读到 <strong>AI 味十分重</strong> 的教程，
+    <strong>请不要继续学习这个部分</strong>。
+  </p>
+
+  <div class="how">
+    <h2>🔍 如何判断 AI 味</h2>
+    <ul>
+      <li><em>过度修饰</em>——形容词、副词堆得满满当当</li>
+      <li><em>强行比喻</em>——什么都要"就像……一样"</li>
+      <li><em>语气极活跃</em>——感叹号、语气词比干货还多</li>
+      <li><em>"不是……而是……"</em>——先否定再抬一手的标准句式</li>
+      <li><em>三段式排比</em>——永远三句一组，整齐得不自然</li>
+      <li><em>破折号成灾</em>——一句话里塞好几个"——"</li>
+      <li><em>空洞号召</em>——"让我们一起……"式收尾</li>
+    </ul>
+  </div>
+
+  <div class="enter-wrap">
+    <a class="enter-btn" href="./preview/index.html">进入教程 →</a>
+    <p class="enter-hint">在线版进度保存在浏览器 localStorage 中，跨页面可能无法同步。</p>
+  </div>
+
+  <a class="back" href="./index.html">← 返回下载页</a>
+</div>
+
+</body>
+</html>

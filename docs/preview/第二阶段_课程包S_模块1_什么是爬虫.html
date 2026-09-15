@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    什么是爬虫 · 第二阶段课程包 S 模块 1
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgS-m1-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 S 模块 1：礼貌地借数据，法律与道德边界。支持离线打开、深色模式、学习进度本地保存。">
+  <title>什么是爬虫 · 第二阶段课程包 S 模块 1</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .callout {
+    border: 1px solid; border-radius: 12px; padding: 16px; margin: 16px 0;
+    font-size: 14px; line-height: 1.8;
+  }
+  .callout.warn { border-color: #fecdd3; background: #fff1f2; color: #881337; }
+  .callout.idea { border-color: #bae6fd; background: #f0f9ff; color: #0c4a6e; }
+  .callout.key  { border-color: #ddd6fe; background: #f5f3ff; color: #4c1d95; }
+  html.dark .callout.warn { border-color: #9f1239; background: rgba(76,5,25,.4);   color: #fecdd3; }
+  html.dark .callout.idea { border-color: #075985; background: rgba(8,47,73,.4);  color: #bae6fd; }
+  html.dark .callout.key  { border-color: #6d28d9; background: rgba(46,16,101,.4); color: #ddd6fe; }
+  .callout-title { font-weight: 700; margin-bottom: 6px; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-py single-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>什么是爬虫 · 课程包 S</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包S_爬虫入门.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active" disabled>Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包S_爬虫入门.html">课程包 S</a>
+    <span>/</span>
+    <span>模块 1：什么是爬虫</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 S · 模块 1</span>
+    <h1>什么是爬虫</h1>
+    <p>礼貌地借数据，法律与道德边界</p>
+    <a class="start-btn" href="#lesson-1">开始模块 1 第 1 小节 →</a>
+    <span class="meta">模块 1 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>爬虫是什么</h2>
+      <div class="lesson-sub">像图书管理员一样自动收集公开信息</div>
+    </div>
+    <div class="lesson-body">
+      <p>想象一下，你想整理全校图书馆的书目：书名、作者、放在哪个书架。如果一本本手动抄，效率低得离谱。于是你派了一个<b>机器人</b>：它按照你给的规则，在书架间走动，把书名和作者自动抄下来，最后汇总成一张表格。这个机器人，就是现实世界里<strong class="hl-rose">爬虫</strong>的雏形。</p>
+
+      <p>在互联网上，网页就是书架，网页里的文字、图片、链接就是书。爬虫是一段程序，它<strong>自动访问网页</strong>，把需要的信息摘出来，存到文件或数据库里。我们这门课用 Python 来写爬虫。</p>
+
+      <div class="callout idea">
+        <div class="callout-title">💡 爬虫的本质</div>
+        <p>爬虫 = 自动化的「浏览 + 复制 + 整理」。它不会创造新信息，而是把已经公开的信息按我们需要的方式重新组织。</p>
+      </div>
+
+      <p>一个简单的 Python 爬虫长这样：先用 <code>requests</code> 把网页内容下载下来，再用 <code>BeautifulSoup</code> 解析其中的标题。</p>
+
+      <div class="code-block" data-file="first_crawl.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>first_crawl.py</div>
+        <pre>import requests
+from bs4 import BeautifulSoup
+
+url = "https://example.com"
+resp = requests.get(url)              # 向网页发出请求
+soup = BeautifulSoup(resp.text, "html.parser")
+print(soup.title.string)              # 提取网页标题</pre>
+      </div>
+
+      <p>代码虽然短，但它已经做了爬虫最核心的两件事：<strong>请求</strong>和<strong>解析</strong>。后面的模块会分别把这两件事讲透。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>法律与道德边界</h2>
+      <div class="lesson-sub">公开不等于可以随意使用</div>
+    </div>
+    <div class="lesson-body">
+      <p>爬虫能做的事很多，但<strong>不是想抓就能抓</strong>。网页虽然是公开的，里面的数据仍然受法律、网站服务条款和道德约束。写爬虫之前，先问自己三个问题：</p>
+
+      <div class="callout warn">
+        <div class="callout-title">⚠️ 三问原则</div>
+        <p>1. 这些信息允许被机器大规模抓取吗？</p>
+        <p>2. 抓取后我会不会侵犯别人的隐私或版权？</p>
+        <p>3. 我的行为会不会给目标网站造成负担？</p>
+      </div>
+
+      <p>例如，抓取天气预报、公开的课程表、公告栏信息，通常是允许的；但抓取个人隐私、付费内容、需要登录才能看到的内部数据，往往越界。很多网站会在页脚写明「使用条款」，访问即代表同意。</p>
+
+      <p>在中国，爬虫相关的法律主要有《网络安全法》《数据安全法》《个人信息保护法》等。违反robots.txt、绕过技术保护措施、抓取个人信息并出售，都可能触犯法律。初学者最容易踩的坑是：<strong>觉得「网页公开就可以随便抓」</strong>。</p>
+
+      <div class="code-block" data-file="ethics_check.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>ethics_check.py</div>
+        <pre># 抓取前先做伦理自查清单
+can_crawl = [
+    "数据是公开可见的",
+    "不涉及个人隐私",
+    "不违反网站使用条款",
+    "不会高频请求造成服务器压力",
+]
+
+for item in can_crawl:
+    print("检查：", item)</pre>
+      </div>
+
+      <p>本课程所有示例都会选择明显允许抓取的公开站点，或只在本地文件中演示解析过程。你在自己实践时，也要先确认目标是否允许被抓取。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>robots.txt：网站的「访客须知」</h2>
+      <div class="lesson-sub">学爬虫前先学会看门牌</div>
+    </div>
+    <div class="lesson-body">
+      <p>几乎所有正规网站都会在根目录放一个叫 <code>robots.txt</code> 的文件，用来告诉爬虫：<strong>哪些页面可以抓，哪些页面请不要碰</strong>。它就像图书馆门口的「访客须知」，不遵守会被请出去，严重时还会被法律追责。</p>
+
+      <p>例如，一个典型的 robots.txt 内容如下：</p>
+
+      <div class="code-block" data-file="robots.txt" data-lang="text">
+        <div class="code-title"><span class="dot"></span>robots.txt 示例</div>
+        <pre>User-agent: *
+Disallow: /admin/
+Disallow: /private/
+Allow: /public/
+Crawl-delay: 2</pre>
+      </div>
+
+      <p>含义是：所有爬虫（<code>User-agent: *</code>）不要访问 <code>/admin/</code> 和 <code>/private/</code>，可以访问 <code>/public/</code>，并且请求间隔至少 2 秒。</p>
+
+      <p>用 Python 读取 robots.txt 很简单：</p>
+
+      <div class="code-block" data-file="read_robots.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>read_robots.py</div>
+        <pre>import requests
+
+url = "https://example.com/robots.txt"
+resp = requests.get(url)
+print(resp.text)</pre>
+      </div>
+
+      <div class="callout key">
+        <div class="callout-title">🔑 本小节小结</div>
+        <p>robots.txt 不是技术障碍，而是<strong>道德与法律的边界提示</strong>。写爬虫前先读它，是合格爬虫工程师的基本素养。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战</h2>
+      <div class="lesson-sub">为指定网站写一份「抓取合规检查表」</div>
+    </div>
+    <div class="lesson-body">
+      <p>实战不需要写复杂代码。选择一个你感兴趣的公开网站（例如 Wikipedia、某个大学公告栏、或政府公开数据站），完成下面这份检查表：</p>
+
+      <div class="code-block" data-file="checklist.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>checklist.py</div>
+        <pre># 抓取合规检查表（在浏览器或 Python 中填写）
+site = "https://zh.wikipedia.org"
+
+# 1. 打开并阅读 robots.txt
+robots_url = site + "/robots.txt"
+print("robots.txt 地址：", robots_url)
+
+# 2. 检查目标页面是否在 Disallow 列表中
+print("目标页面是否允许抓取：", "需要人工检查")
+
+# 3. 确认数据是否公开、是否涉及版权或个人隐私
+print("是否公开数据：", "需要人工确认")
+
+# 4. 设定抓取间隔（秒）
+crawl_delay = 3
+print("请求间隔：", crawl_delay, "秒")</pre>
+      </div>
+
+      <p>完成后，把上面的 <code>site</code> 换成你要实践的网站，先用浏览器打开它的 robots.txt，看看目标路径有没有被 <code>Disallow</code>。如果明确被禁止，就换另一个目标。这个习惯能帮你避开 90% 的法律风险。</p>
+
+      <div class="callout key">
+        <div class="callout-title">🔑 模块 1 小结</div>
+        <p>✅ 爬虫是自动抓取公开信息的程序。</p>
+        <p>✅ 抓取前必须考虑法律、道德和网站条款。</p>
+        <p>✅ robots.txt 是判断能否抓取的第一道门。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：礼貌地借数据，法律与道德边界</p>
+      <div class="quiz" data-answer="B">
+        <h4>在抓取一个网站之前，最应该先查看什么文件来判断哪些内容允许被抓取？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。index.html 不是本题的正确答案。robots.txt 才是正确的。" type="button">A. index.html</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。robots.txt" type="button">B. robots.txt</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。sitemap.xml 不是本题的正确答案。robots.txt 才是正确的。" type="button">C. sitemap.xml</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 S · 模块 1</p>
+  <p>先学会规矩，再拿起工具。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgS-m1-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

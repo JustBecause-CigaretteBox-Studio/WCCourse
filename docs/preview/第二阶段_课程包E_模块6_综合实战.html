@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    综合实战 · 第二阶段课程包 E 模块 6
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgE-m6-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 E 模块 6：用图找最短路径（Dijkstra 入门）。支持离线打开、深色模式、学习进度本地保存。">
+  <title>综合实战 · 第二阶段课程包 E 模块 6</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  /* 图示（模块6） */
+  .diagram { border: 1px solid var(--border); border-radius: 14px; background: var(--bg-section); padding: 16px 18px; margin: 18px 0; }
+  .diagram .diagram-cap { font-size: 13px; font-weight: 700; color: var(--text-soft); margin-bottom: 10px; }
+  .diagram svg { width: 100%; max-width: 440px; margin: 0 auto; height: auto; display: block; }
+  /* 带权图的节点与边（模块6） */
+  .wg-edge { stroke: var(--text-faint); stroke-width: 2; fill: none; }
+  .wg-edge-path { stroke: #0ea5e9; stroke-width: 3.5; fill: none; }
+  .wg-node { fill: var(--bg-card); stroke: var(--text); stroke-width: 2; }
+  .wg-t { fill: var(--text); font-size: 16px; font-weight: 700; text-anchor: middle; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+  .wg-w { fill: var(--text-soft); font-size: 13px; font-weight: 700; text-anchor: middle; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+  .wg-w-path { fill: #0ea5e9; font-size: 13px; font-weight: 800; text-anchor: middle; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+  .wg-lbl { fill: var(--text-faint); font-size: 12px; text-anchor: middle; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+  .wg-arrow { fill: var(--text-faint); }
+  .wg-arrow-path { fill: #0ea5e9; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>综合实战 · 课程包 E</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包E_数据结构进阶.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包E_数据结构进阶.html">课程包 E</a>
+    <span>/</span>
+    <span>模块 6：综合实战</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 E · 模块 6</span>
+    <h1>综合实战</h1>
+    <p>用图找最短路径（Dijkstra 入门）</p>
+    <a class="start-btn" href="#lesson-1">开始模块 6 第 1 小节 →</a>
+    <span class="meta">模块 6 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>最短路径问题</h2>
+      <div class="lesson-sub">从地图导航到网络路由</div>
+    </div>
+    <div class="lesson-body">
+      <p>生活中到处都有最短路径问题：导航软件帮你找最快的路线、快递规划最省油的配送路径、网络数据包选择延迟最小的链路。这些问题都可以用图来建模。</p>
+      <p>在带权图中，每条边有一个权重（例如距离、时间、费用），我们要找的是从一个起点到终点的<strong>总权重最小</strong>的路径。</p>
+      <div class="diagram">
+        <div class="diagram-cap">图：一张带权图。边上的数字是权重（可以想象成距离、时间或费用），箭头表示只能顺着箭头方向走。蓝色加粗的边是从 0 到 3 的最短路径：0 → 2 → 1 → 3，总权重 1 + 2 + 1 = 4；看起来更直接的 0 → 1 → 3 要花 4 + 1 = 5，反而更远。第 3 小节的代码用的就是这张图。</div>
+        <svg viewBox="0 0 440 200" role="img" aria-label="带权图示例">
+          <defs>
+            <marker id="wg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto">
+              <path class="wg-arrow" d="M0 0 L10 5 L0 10 Z"/>
+            </marker>
+            <marker id="wg-arrow-path" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto">
+              <path class="wg-arrow-path" d="M0 0 L10 5 L0 10 Z"/>
+            </marker>
+          </defs>
+          <!-- 普通边 -->
+          <line class="wg-edge" x1="91" y1="127" x2="209" y2="168" marker-end="url(#wg-arrow)"/>
+          <line class="wg-edge" x1="250" y1="54" x2="370" y2="111" marker-end="url(#wg-arrow)"/>
+          <!-- 最短路径（蓝色加粗） -->
+          <line class="wg-edge-path" x1="90" y1="111" x2="210" y2="54" marker-end="url(#wg-arrow-path)"/>
+          <line class="wg-edge-path" x1="230" y1="67" x2="230" y2="153" marker-end="url(#wg-arrow-path)"/>
+          <line class="wg-edge-path" x1="251" y1="168" x2="369" y2="127" marker-end="url(#wg-arrow-path)"/>
+          <!-- 权重标注 -->
+          <text class="wg-w-path" x="144" y="73">1</text>
+          <text class="wg-w" x="145" y="166">4</text>
+          <text class="wg-w-path" x="212" y="116">2</text>
+          <text class="wg-w" x="316" y="73">5</text>
+          <text class="wg-w-path" x="315" y="166">1</text>
+          <!-- 节点 -->
+          <circle class="wg-node" cx="70" cy="120" r="22"/>
+          <text class="wg-t" x="70" y="126">0</text>
+          <circle class="wg-node" cx="230" cy="45" r="22"/>
+          <text class="wg-t" x="230" y="51">2</text>
+          <circle class="wg-node" cx="230" cy="175" r="22"/>
+          <text class="wg-t" x="230" y="181">1</text>
+          <circle class="wg-node" cx="390" cy="120" r="22"/>
+          <text class="wg-t" x="390" y="126">3</text>
+          <!-- 起终点标注 -->
+          <text class="wg-lbl" x="70" y="160">起点</text>
+          <text class="wg-lbl" x="390" y="160">终点</text>
+        </svg>
+      </div>
+      <p>解决单源最短路径问题最著名的算法之一就是 <strong>Dijkstra 算法</strong>，它的前提是所有边的权重都不能为负数。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>Dijkstra 的核心思想</h2>
+      <div class="lesson-sub">每次选当前最近的未确定点</div>
+    </div>
+    <div class="lesson-body">
+      <p>Dijkstra 算法的思路很像「贪心（每次只找最多或最少的）」：从起点开始，维护每个节点到起点的当前最短距离。每次从所有还没确定最短距离的节点中，选一个距离最小的节点，把它标记为已确定；然后用它去更新邻居的距离。</p>
+      <p>可以把它想象成往水里扔石头：水波一圈一圈向外扩散，水波最先到达某个地方的路径是最短的。</p>
+      <p>算法需要的数据结构包括：一个记录最短距离的数组 <code>dist</code>，一个记录节点是否已经确定最短距离的 <code>visited</code> 集合。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>实现 Dijkstra</h2>
+      <div class="lesson-sub">用邻接表和优先队列优化</div>
+    </div>
+    <div class="lesson-body">
+      <div class="code-block lang-py" data-file="dijkstra.py" data-lang="python">
+        
+      <p>下面是一个用 Python 实现的简化版 Dijkstra，图用邻接表表示，节点用数字编号。每次选择当前距离最小的未访问节点，并更新其邻居。</p>
+        <pre>import heapq
+
+def dijkstra(graph, start):
+    # graph[u] = [(v, weight), ...]
+    dist = {node: float('inf') for node in graph}
+    dist[start] = 0
+    heap = [(0, start)]
+
+    while heap:
+        d, u = heapq.heappop(heap)
+        if d &gt; dist[u]:
+            continue
+        for v, w in graph[u]:
+            if dist[u] + w &lt; dist[v]:
+                dist[v] = dist[u] + w
+                heapq.heappush(heap, (dist[v], v))
+    return dist
+
+graph = {
+    0: [(1, 4), (2, 1)],
+    1: [(3, 1)],
+    2: [(1, 2), (3, 5)],
+    3: []
+}
+print(dijkstra(graph, 0))   # {0: 0, 1: 3, 2: 1, 3: 4}</pre></div>
+
+      <p>下面是一个用 C++ 实现的简化版 Dijkstra，图用邻接表表示，节点用数字编号。每次选择当前距离最小的未访问节点，并更新其邻居。</p>
+      <div class="code-block lang-cpp" data-file="dijkstra.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>dijkstra.cpp</div>
+        <pre>#include &lt;vector&gt;
+#include &lt;queue&gt;
+#include &lt;limits&gt;
+#include &lt;iostream&gt;
+using namespace std;
+
+using P = pair&lt;int, int&gt;;  // (distance, node)
+
+vector&lt;int&gt; dijkstra(const vector&lt;vector&lt;pair&lt;int,int&gt;&gt;&gt;&amp; graph, int start) {
+    int n = graph.size();
+    vector&lt;int&gt; dist(n, numeric_limits&lt;int&gt;::max());
+    dist[start] = 0;
+    priority_queue&lt;P, vector&lt;P&gt;, greater&lt;P&gt;&gt; heap;
+    heap.push({0, start});
+
+    while (!heap.empty()) {
+        auto [d, u] = heap.top();
+        heap.pop();
+        if (d &gt; dist[u]) continue;
+        for (auto [v, w] : graph[u]) {
+            if (dist[u] + w &lt; dist[v]) {
+                dist[v] = dist[u] + w;
+                heap.push({dist[v], v});
+            }
+        }
+    }
+    return dist;
+}
+
+int main() {
+    vector&lt;vector&lt;pair&lt;int,int&gt;&gt;&gt; graph = {
+        {{1, 4}, {2, 1}},
+        {{3, 1}},
+        {{1, 2}, {3, 5}},
+        {}
+    };
+    auto dist = dijkstra(graph, 0);
+    for (int d : dist) cout &lt;&lt; d &lt;&lt; " ";   // 0 3 1 4
+    return 0;
+}</pre>
+      </div>
+      <p>这里用到了<strong>优先队列（堆）</strong>，它能快速取出当前距离最小的节点，让算法更高效。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：城市最短路线</h2>
+      <div class="lesson-sub">规划从家到学校的最短路径</div>
+    </div>
+    <div class="lesson-body">
+      <p>假设有几座城市和它们之间的距离，用 Dijkstra 算法找出从「家」到「学校」的最短路线。我们不仅让程序算出最短距离，还可以额外用一个 <code>prev</code> 数组记录每个节点的前驱，最后倒推得到完整路径。</p>
+      <div class="code-block lang-py" data-file="city_route.py" data-lang="python"><pre>import heapq
+
+def shortest_path(graph, start, end):
+    dist = {node: float('inf') for node in graph}
+    prev = {node: None for node in graph}
+    dist[start] = 0
+    heap = [(0, start)]
+
+    while heap:
+        d, u = heapq.heappop(heap)
+        if u == end:
+            break
+        for v, w in graph[u]:
+            if dist[u] + w &lt; dist[v]:
+                dist[v] = dist[u] + w
+                prev[v] = u
+                heapq.heappush(heap, (dist[v], v))
+
+    path = []
+    cur = end
+    while cur is not None:
+        path.append(cur)
+        cur = prev[cur]
+    path.reverse()
+    return dist[end], path
+
+graph = {
+    "家": [("路口A", 2), ("路口B", 4)],
+    "路口A": [("学校", 7)],
+    "路口B": [("路口C", 1)],
+    "路口C": [("学校", 2)],
+    "学校": []
+}
+print(shortest_path(graph, "家", "学校"))   # (7, ['家', '路口B', '路口C', '学校'])</pre></div>
+      <div class="code-block lang-cpp" data-file="city_route.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>city_route.cpp</div>
+        <pre>#include &lt;queue&gt;
+#include &lt;limits&gt;
+#include &lt;unordered_map&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+using P = pair&lt;int, string&gt;;  // (distance, node)
+
+pair&lt;int, vector&lt;string&gt;&gt; shortest_path(
+    const unordered_map&lt;string, vector&lt;pair&lt;string,int&gt;&gt;&gt;&amp; graph,
+    const string&amp; start,
+    const string&amp; end) {
+
+    unordered_map&lt;string, int&gt; dist;
+    unordered_map&lt;string, string&gt; prev;
+    for (auto&amp; [node, _] : graph) dist[node] = numeric_limits&lt;int&gt;::max();
+    dist[start] = 0;
+
+    priority_queue&lt;P, vector&lt;P&gt;, greater&lt;P&gt;&gt; heap;
+    heap.push({0, start});
+
+    while (!heap.empty()) {
+        auto [d, u] = heap.top();
+        heap.pop();
+        if (u == end) break;
+        for (auto [v, w] : graph.at(u)) {
+            if (dist[u] + w &lt; dist[v]) {
+                dist[v] = dist[u] + w;
+                prev[v] = u;
+                heap.push({dist[v], v});
+            }
+        }
+    }
+
+    vector&lt;string&gt; path;
+    string cur = end;
+    while (!cur.empty()) {
+        path.push_back(cur);
+        auto it = prev.find(cur);
+        if (it == prev.end()) break;
+        cur = it-&gt;second;
+    }
+    reverse(path.begin(), path.end());
+    return {dist[end], path};
+}
+
+int main() {
+    unordered_map&lt;string, vector&lt;pair&lt;string,int&gt;&gt;&gt; graph = {
+        {"家", {{"路口A", 2}, {"路口B", 4}}},
+        {"路口A", {{"学校", 7}}},
+        {"路口B", {{"路口C", 1}}},
+        {"路口C", {{"学校", 2}}},
+        {"学校", {}}
+    };
+    auto [d, path] = shortest_path(graph, "家", "学校");
+    cout &lt;&lt; d &lt;&lt; "\n";
+    for (auto&amp; s : path) cout &lt;&lt; s &lt;&lt; " ";
+    return 0;
+}</pre>
+      </div>
+      <p><strong>练习：</strong>在图中增加一条「路口A」到「路口C」的边，权重为 1，重新运行程序，看看最短路径是否发生变化。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>Dijkstra 算法有什么限制条件？</p>
+      <div class="quiz" data-answer="B">
+        <h4>Dijkstra 算法要求图中的边权满足什么条件？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。所有边权必须为 0 不是本题的正确答案。所有边权必须非负 才是正确的。" type="button">A. 所有边权必须为 0</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。所有边权必须非负" type="button">B. 所有边权必须非负</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。边权可以为负数 不是本题的正确答案。所有边权必须非负 才是正确的。" type="button">C. 边权可以为负数</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 E · 模块 6</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgE-m6-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

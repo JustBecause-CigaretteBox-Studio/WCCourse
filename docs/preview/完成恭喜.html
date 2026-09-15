@@ -42,7 +42,6 @@
   .btn-donate { background: linear-gradient(135deg, #f59e0b, #f97316); color: #fff; border: none; }
   .btn-update { background: #0ea5e9; color: #fff; border: none; }
   .btn-home { background: var(--bg); color: var(--text-soft); }
-  .btn-next { background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; }
   #confetti { position: fixed; inset: 0; pointer-events: none; }
 </style>
 </head>
@@ -52,12 +51,11 @@
 
 <div class="card">
   <div class="emoji">🎉</div>
-  <h1>核心课程完成！</h1>
-  <p>前五章全部通关——你已经能和电脑交朋友、写函数、摆数据、用 AI 做项目，还会自己排错。</p>
-  <p class="free">第六章「语法补完课」已解锁，补齐后面会用到的常用语法</p>
+  <h1>第一阶段完成！</h1>
+  <p>你已经能和电脑交朋友、写函数、摆数据、用 AI 做项目，还会自己排错。</p>
+  <p class="free">第二阶段「选修课程包」已开放，可以根据你的方向自由选修</p>
   <p class="donate-line">如果你喜欢这个教程，可以对野鸡动画进行捐赠</p>
   <div class="btns">
-    <a class="btn btn-next" href="编程入门教程第六章.html">开始第六章 →</a>
     <a class="btn btn-update" href="https://github.com/JustBecause-CigaretteBox-Studio/Tutorials" target="_blank" rel="noopener">🔔 获取更新信息</a>
     <a class="btn btn-donate" href="捐赠.html">❤️ 捐赠</a>
     <a class="btn btn-home" href="index.html">🏠 返回主页</a>
@@ -73,11 +71,6 @@
       document.documentElement.classList.add("dark");
     }
   } catch (e) {}
-})();
-
-/* 走到这一页意味着前五章已全部完成 → 解锁第六章 */
-(function () {
-  try { localStorage.setItem("coding-101-ch6-unlocked", "1"); } catch (e) {}
 })();
 
 /* 礼花动画：纯 Canvas，零依赖 */

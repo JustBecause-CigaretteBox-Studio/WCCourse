@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    综合实战 · 第二阶段课程包 A 模块 5
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgA-m5-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 A 模块 5：设计一个「学生管理系统」。支持离线打开、深色模式、学习进度本地保存。">
+  <title>综合实战 · 第二阶段课程包 A 模块 5</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>综合实战 · 课程包 A</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包A_类与对象.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active">Python</button>
+        <button data-lang="cpp">C++</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包A_类与对象.html">课程包 A</a>
+    <span>/</span>
+    <span>模块 5：综合实战</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 A · 模块 5</span>
+    <h1>综合实战</h1>
+    <p>设计一个「学生管理系统」</p>
+    <a class="start-btn" href="#lesson-1">开始模块 5 第 1 小节 →</a>
+    <span class="meta">模块 5 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>需求分析</h2>
+    </div>
+    <div class="lesson-body">
+      <p>我们要做一个最小的「学生管理系统」。在动手写代码之前，先想清楚两个问题：</p>
+      <ul style="margin: 12px 0 12px 20px; color: var(--text-soft);">
+        <li><strong>学生有什么信息？</strong> 比如姓名、年龄、若干科目的成绩。</li>
+        <li><strong>系统需要支持什么操作？</strong> 比如添加学生、录入成绩、查询某个学生、列出所有人。</li>
+      </ul>
+      <p>把这两个问题回答清楚，程序的结构就自然浮现出来了：每个学生可以封装成一个 <code>Student</code> 类，整个系统再用一个 <code>StudentSystem</code> 类来管理所有学生。</p>
+      <div class="code-block lang-py" data-file="plan.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>plan.py</div>
+        <pre># Student：保存单个学生的信息
+#   - 属性：name, age, scores
+#   - 方法：add_score, average_score
+
+# StudentSystem：管理多个学生
+#   - 属性：students（学生列表）
+#   - 方法：add_student, find_student, list_all</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="plan.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>plan.cpp</div>
+        <pre>// Student：保存单个学生的信息
+//   - 成员：name, age, scores
+//   - 方法：addScore, averageScore
+//
+// StudentSystem：管理多个学生
+//   - 成员：students（学生列表）
+//   - 方法：addStudent, findStudent, listAll</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>设计 Student 类</h2>
+    </div>
+    <div class="lesson-body">
+      <p>单个学生只需要关心自己的数据和行为。我们把成绩存成<span class="lang-py">列表</span><span class="lang-cpp">vector</span>，并提供添加成绩和计算平均分的方法。</p>
+      <div class="code-block lang-py" data-file="student.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>student.py</div>
+        <pre>class Student:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+        self.scores = []
+
+    def add_score(self, subject, score):
+        self.scores.append((subject, score))
+
+    def average(self):
+        if not self.scores:
+            return 0
+        total = sum(s for _, s in self.scores)
+        return total / len(self.scores)
+
+    def show(self):
+        print(self.name, self.age, "岁，平均分：", self.average())
+
+xiaoming = Student("小明", 12)
+xiaoming.add_score("数学", 90)
+xiaoming.add_score("语文", 85)
+xiaoming.show()</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="student.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>student.cpp</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+class Student {
+public:
+    string name;
+    int age;
+    vector&lt;pair&lt;string, int&gt;&gt; scores;
+
+    Student(string n, int a) {
+        name = n;
+        age = a;
+    }
+
+    void addScore(string subject, int score) {
+        scores.push_back({subject, score});
+    }
+
+    double average() {
+        if (scores.empty()) return 0;
+        int total = 0;
+        for (auto &amp;p : scores) total += p.second;
+        return (double)total / scores.size();
+    }
+
+    void show() {
+        cout &lt;&lt; name &lt;&lt; " " &lt;&lt; age &lt;&lt; " 岁，平均分：" &lt;&lt; average() &lt;&lt; endl;
+    }
+};
+
+int main() {
+    Student xiaoming("小明", 12);
+    xiaoming.addScore("数学", 90);
+    xiaoming.addScore("语文", 85);
+    xiaoming.show();
+    return 0;
+}</pre>
+      </div>
+      <p>这里 <code>scores</code> 是一个<span class="lang-py">列表，列表里每个元素是 <code>(科目, 分数)</code> 的元组</span><span class="lang-cpp"><code>vector&lt;pair&lt;string, int&gt;&gt;</code>，每个元素是一对 <code>{科目, 分数}</code></span>。这样设计的好处是：科目和分数始终成对出现，不会弄混。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>设计 StudentSystem 类</h2>
+    </div>
+    <div class="lesson-body">
+      <p>系统类的职责是管理一群学生。它不需要知道成绩的计算细节，而是调用每个 <code>Student</code> 对象自己的方法。这种「各司其职」的设计正是面向对象的优势。</p>
+      <div class="code-block lang-py" data-file="student_system.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>student_system.py</div>
+        <pre>class StudentSystem:
+    def __init__(self):
+        self.students = []
+
+    def add_student(self, student):
+        self.students.append(student)
+
+    def find(self, name):
+        for s in self.students:
+            if s.name == name:
+                return s
+        return None
+
+    def list_all(self):
+        for s in self.students:
+            s.show()
+
+sys = StudentSystem()
+sys.add_student(Student("小明", 12))
+sys.add_student(Student("小红", 11))
+
+s = sys.find("小明")
+if s:
+    s.add_score("数学", 95)
+
+sys.list_all()</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="student_system.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>student_system.cpp</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+class Student {
+public:
+    string name;
+    int age;
+    vector&lt;pair&lt;string, int&gt;&gt; scores;
+
+    Student(string n, int a) : name(n), age(a) {}
+
+    void addScore(string subject, int score) {
+        scores.push_back({subject, score});
+    }
+
+    double average() {
+        if (scores.empty()) return 0;
+        int total = 0;
+        for (auto &amp;p : scores) total += p.second;
+        return (double)total / scores.size();
+    }
+
+    void show() {
+        cout &lt;&lt; name &lt;&lt; " " &lt;&lt; age &lt;&lt; " 岁，平均分：" &lt;&lt; average() &lt;&lt; endl;
+    }
+};
+
+class StudentSystem {
+public:
+    vector&lt;Student&gt; students;
+
+    void addStudent(Student student) {
+        students.push_back(student);
+    }
+
+    Student* find(string name) {
+        for (auto &amp;s : students) {
+            if (s.name == name) return &s;
+        }
+        return nullptr;
+    }
+
+    void listAll() {
+        for (auto &amp;s : students) s.show();
+    }
+};
+
+int main() {
+    StudentSystem sys;
+    sys.addStudent(Student("小明", 12));
+    sys.addStudent(Student("小红", 11));
+
+    Student* s = sys.find("小明");
+    if (s) s-&gt;addScore("数学", 95);
+
+    sys.listAll();
+    return 0;
+}</pre>
+      </div>
+      <p>注意 <code>find</code> 方法返回的是 <code>Student</code> 对象本身。找到之后，我们可以直接在这个对象上调用 <span class="lang-py"><code>add_score</code></span><span class="lang-cpp"><code>addScore</code></span>，而不需要系统类去处理成绩细节。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：完整学生管理系统</h2>
+      <div class="lesson-sub">把本模块内容用起来</div>
+    </div>
+    <div class="lesson-body">
+      <p>把前面的小块拼起来，就得到了一个可以运行的完整示例。请你先把下面这段代码输入到本地环境运行，然后尝试完成后面的练习。</p>
+      <div class="code-block lang-py" data-file="full_system.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>full_system.py</div>
+        <pre>class Student:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+        self.scores = []
+
+    def add_score(self, subject, score):
+        self.scores.append((subject, score))
+
+    def average(self):
+        if not self.scores:
+            return 0
+        return sum(s for _, s in self.scores) / len(self.scores)
+
+    def show(self):
+        print(f"{self.name}（{self.age} 岁）平均分：{self.average():.1f}")
+
+class StudentSystem:
+    def __init__(self):
+        self.students = []
+
+    def add_student(self, name, age):
+        self.students.append(Student(name, age))
+
+    def find(self, name):
+        for s in self.students:
+            if s.name == name:
+                return s
+        return None
+
+    def list_all(self):
+        for s in self.students:
+            s.show()
+
+sys = StudentSystem()
+sys.add_student("小明", 12)
+sys.add_student("小红", 11)
+
+sys.find("小明").add_score("数学", 92)
+sys.find("小明").add_score("语文", 88)
+sys.find("小红").add_score("数学", 97)
+
+sys.list_all()</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="full_system.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>full_system.cpp</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;iomanip&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+class Student {
+public:
+    string name;
+    int age;
+    vector&lt;pair&lt;string, int&gt;&gt; scores;
+
+    Student(string n, int a) : name(n), age(a) {}
+
+    void addScore(string subject, int score) {
+        scores.push_back({subject, score});
+    }
+
+    double average() {
+        if (scores.empty()) return 0;
+        int total = 0;
+        for (auto &amp;p : scores) total += p.second;
+        return (double)total / scores.size();
+    }
+
+    void show() {
+        cout &lt;&lt; name &lt;&lt; "（" &lt;&lt; age &lt;&lt; " 岁）平均分："
+             &lt;&lt; fixed &lt;&lt; setprecision(1) &lt;&lt; average() &lt;&lt; endl;
+    }
+};
+
+class StudentSystem {
+public:
+    vector&lt;Student&gt; students;
+
+    void addStudent(string name, int age) {
+        students.push_back(Student(name, age));
+    }
+
+    Student* find(string name) {
+        for (auto &amp;s : students) {
+            if (s.name == name) return &s;
+        }
+        return nullptr;
+    }
+
+    void listAll() {
+        for (auto &amp;s : students) s.show();
+    }
+};
+
+int main() {
+    StudentSystem sys;
+    sys.addStudent("小明", 12);
+    sys.addStudent("小红", 11);
+
+    sys.find("小明")-&gt;addScore("数学", 92);
+    sys.find("小明")-&gt;addScore("语文", 88);
+    sys.find("小红")-&gt;addScore("数学", 97);
+
+    sys.listAll();
+    return 0;
+}</pre>
+      </div>
+      <p>练习建议：</p>
+      <ul style="margin: 12px 0 12px 20px; color: var(--text-soft);">
+        <li>给 <code>StudentSystem</code> 添加 <span class="lang-py"><code>remove_student(name)</code></span><span class="lang-cpp"><code>removeStudent(name)</code></span> 方法。</li>
+        <li>给 <code>Student</code> 添加 <span class="lang-py"><code>best_subject()</code></span><span class="lang-cpp"><code>bestSubject()</code></span> 方法，返回分数最高的科目。</li>
+        <li>让 <span class="lang-py"><code>add_student</code></span><span class="lang-cpp"><code>addStudent</code></span> 在添加同名学生时给出提示，避免重复。</li>
+      </ul>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：设计一个「学生管理系统」</p>
+      <div class="quiz" data-answer="A">
+        <h4>在学生管理系统里，每一个学生最适合用什么来表示？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。一个 Student 类的对象" type="button">A. 一个 Student 类的对象</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。一个单独的数字 不是本题的正确答案。一个 Student 类的对象 才是正确的。" type="button">B. 一个单独的数字</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。一段没有组织的字符串 不是本题的正确答案。一个 Student 类的对象 才是正确的。" type="button">C. 一段没有组织的字符串</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 A · 模块 5</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgA-m5-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

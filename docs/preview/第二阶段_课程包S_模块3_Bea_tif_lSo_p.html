@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    BeautifulSoup · 第二阶段课程包 S 模块 3
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgS-m3-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 S 模块 3：解剖网页，提取标题、链接、表格。支持离线打开、深色模式、学习进度本地保存。">
+  <title>BeautifulSoup · 第二阶段课程包 S 模块 3</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .callout {
+    border: 1px solid; border-radius: 12px; padding: 16px; margin: 16px 0;
+    font-size: 14px; line-height: 1.8;
+  }
+  .callout.warn { border-color: #fecdd3; background: #fff1f2; color: #881337; }
+  .callout.idea { border-color: #bae6fd; background: #f0f9ff; color: #0c4a6e; }
+  .callout.key  { border-color: #ddd6fe; background: #f5f3ff; color: #4c1d95; }
+  html.dark .callout.warn { border-color: #9f1239; background: rgba(76,5,25,.4);   color: #fecdd3; }
+  html.dark .callout.idea { border-color: #075985; background: rgba(8,47,73,.4);  color: #bae6fd; }
+  html.dark .callout.key  { border-color: #6d28d9; background: rgba(46,16,101,.4); color: #ddd6fe; }
+  .callout-title { font-weight: 700; margin-bottom: 6px; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-py single-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>BeautifulSoup · 课程包 S</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包S_爬虫入门.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active" disabled>Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包S_爬虫入门.html">课程包 S</a>
+    <span>/</span>
+    <span>模块 3：BeautifulSoup</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 S · 模块 3</span>
+    <h1>BeautifulSoup</h1>
+    <p>解剖网页，提取标题、链接、表格</p>
+    <a class="start-btn" href="#lesson-1">开始模块 3 第 1 小节 →</a>
+    <span class="meta">模块 3 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>安装与基本用法</h2>
+      <div class="lesson-sub">把 HTML 变成可以搜索的汤</div>
+    </div>
+    <div class="lesson-body">
+      <p>上一模块我们用 requests 拿到了 HTML 字符串，但它只是一大段文本。要从里面精准找到标题、链接、表格，需要一位「解剖师」——<code>BeautifulSoup</code>。</p>
+
+      <p>BeautifulSoup 会把 HTML 字符串解析成一棵结构化的树，然后让我们按标签名、CSS 类、属性来查找节点。先安装它：</p>
+
+      <div class="code-block" data-file="install_bs4.sh" data-lang="bash">
+        <div class="code-title"><span class="dot"></span>终端命令</div>
+        <pre>pip install beautifulsoup4</pre>
+      </div>
+
+      <p>最简单的用法只有四步：请求、解析、查找、输出。</p>
+
+      <div class="code-block" data-file="bs_basic.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>bs_basic.py</div>
+        <pre>import requests
+from bs4 import BeautifulSoup
+
+url = "https://example.com"
+resp = requests.get(url)
+
+soup = BeautifulSoup(resp.text, "html.parser")
+print(soup.title.string)            # 提取 title 标签里的文本</pre>
+      </div>
+
+      <p><code>BeautifulSoup(网页内容, "html.parser")</code> 会创建一个 soup 对象。然后就可以用 <code>soup.title</code>、<code>soup.h1</code>、<code>soup.find("tag")</code> 等方法查找节点。</p>
+
+      <div class="callout key">
+        <div class="callout-title">🔑 本小节小结</div>
+        <p>BeautifulSoup 负责解析 HTML；requests 负责下载 HTML。两者配合是 Python 爬虫最常见的组合。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>提取标题与所有链接</h2>
+      <div class="lesson-sub">find、find_all 与 get 方法</div>
+    </div>
+    <div class="lesson-body">
+      <p>网页里的链接都在 <code>&lt;a href="..."&gt;</code> 标签里。BeautifulSoup 的 <code>find_all</code> 可以一次性找出所有 <code>&lt;a&gt;</code> 标签，然后读取它们的 <code>href</code> 属性。</p>
+
+      <div class="code-block" data-file="extract_links.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>extract_links.py</div>
+        <pre>import requests
+from bs4 import BeautifulSoup
+
+url = "https://example.com"
+resp = requests.get(url)
+soup = BeautifulSoup(resp.text, "html.parser")
+
+# 提取标题
+title = soup.title.string if soup.title else "无标题"
+print("标题：", title)
+
+# 提取所有链接
+links = []
+for a in soup.find_all("a"):
+    href = a.get("href")
+    text = a.get_text(strip=True)
+    if href:
+        links.append((text, href))
+
+for text, href in links[:10]:       # 只打印前 10 条
+    print(f"{text} -&gt; {href}")</pre>
+      </div>
+
+      <p>这里用了几个常用方法：</p>
+      <ul style="margin:12px 0 12px 24px">
+        <li><code>soup.find_all("a")</code>：找出所有 <code>&lt;a&gt;</code> 标签。</li>
+        <li><code>a.get("href")</code>：读取 <code>href</code> 属性，不存在时返回 None。</li>
+        <li><code>a.get_text(strip=True)</code>：读取标签内的文字，并去掉首尾空白。</li>
+      </ul>
+
+      <div class="callout idea">
+        <div class="callout-title">💡 小技巧</div>
+        <p>很多链接是相对路径，例如 <code>/about</code>。如果要访问完整地址，需要拼上域名：<code>"https://example.com" + href</code>。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>提取表格数据</h2>
+      <div class="lesson-sub">把网页表格变成 Python 列表</div>
+    </div>
+    <div class="lesson-body">
+      <p>网页表格通常用 <code>&lt;table&gt;</code>、<code>&lt;tr&gt;</code>（行）、<code>&lt;td&gt;</code>（单元格）组成。BeautifulSoup 可以一层层把它们拆出来。</p>
+
+      <div class="code-block" data-file="extract_table.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>extract_table.py</div>
+        <pre>import requests
+from bs4 import BeautifulSoup
+
+html_doc = """
+&lt;table&gt;
+  &lt;tr&gt;&lt;th&gt;姓名&lt;/th&gt;&lt;th&gt;年龄&lt;/th&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;小明&lt;/td&gt;&lt;td&gt;18&lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;小红&lt;/td&gt;&lt;td&gt;19&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+"""
+
+soup = BeautifulSoup(html_doc, "html.parser")
+table = soup.find("table")
+rows = []
+
+for tr in table.find_all("tr"):
+    cells = [td.get_text(strip=True) for td in tr.find_all(["td", "th"])]
+    rows.append(cells)
+
+for row in rows:
+    print(row)</pre>
+      </div>
+
+      <p>输出结果：</p>
+
+      <div class="code-block" data-file="output.txt" data-lang="text">
+        <div class="code-title"><span class="dot"></span>运行结果</div>
+        <pre>['姓名', '年龄']
+['小明', '18']
+['小红', '19']</pre>
+      </div>
+
+      <p>拿到这个二维列表后，就可以存进 CSV、Excel 或数据库，下一模块会详细介绍。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战</h2>
+      <div class="lesson-sub">抓取文章列表页并提取标题链接</div>
+    </div>
+    <div class="lesson-body">
+      <p>假设某博客的文章列表 HTML 结构如下（实际练习时，请使用允许抓取的公开站点，或把下面 HTML 保存为本地文件解析）：</p>
+
+      <div class="code-block" data-file="blog.html" data-lang="html">
+        <div class="code-title"><span class="dot"></span>blog.html（示例片段）</div>
+        <pre>&lt;article class="post"&gt;
+  &lt;h2&gt;&lt;a href="/post/python-101"&gt;Python 入门指南&lt;/a&gt;&lt;/h2&gt;
+  &lt;span class="date"&gt;2026-08-01&lt;/span&gt;
+&lt;/article&gt;
+&lt;article class="post"&gt;
+  &lt;h2&gt;&lt;a href="/post/web-crawl"&gt;爬虫基础&lt;/a&gt;&lt;/h2&gt;
+  &lt;span class="date"&gt;2026-08-05&lt;/span&gt;
+&lt;/article&gt;</pre>
+      </div>
+
+      <p>提取所有文章标题、链接和日期的代码：</p>
+
+      <div class="code-block" data-file="blog_spider.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>blog_spider.py</div>
+        <pre>from bs4 import BeautifulSoup
+
+html_doc = """...上面那段 HTML..."""
+soup = BeautifulSoup(html_doc, "html.parser")
+
+for article in soup.find_all("article", class_="post"):
+    a = article.find("h2").find("a")
+    title = a.get_text(strip=True)
+    link = a.get("href")
+    date = article.find("span", class_="date").get_text(strip=True)
+    print(f"{date} | {title} | {link}")</pre>
+      </div>
+
+      <p>练习任务：找一个允许抓取的博客或新闻列表页，用浏览器开发者工具（F12）观察每篇文章的 HTML 结构，然后修改上面的代码，把标题和链接提取出来。</p>
+
+      <div class="callout key">
+        <div class="callout-title">🔑 模块 3 小结</div>
+        <p>✅ BeautifulSoup 把 HTML 解析成可搜索的树。</p>
+        <p>✅ <code>find</code> / <code>find_all</code> 按标签、类名查找节点。</p>
+        <p>✅ <code>get("属性名")</code> 读取属性，<code>get_text()</code> 读取文本。</p>
+        <p>✅ 表格可以按 tr / td 逐层拆成二维列表。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：解剖网页，提取标题、链接、表格</p>
+      <div class="quiz" data-answer="C">
+        <h4>BeautifulSoup 中，用来获取标签内文字的方法是？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。get(&quot;text&quot;) 不是本题的正确答案。get_text() 才是正确的。" type="button">A. get("text")</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。text() 不是本题的正确答案。get_text() 才是正确的。" type="button">B. text()</button>
+        <button class="quiz-opt" data-val="C" data-explain="正确。get_text()" type="button">C. get_text()</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 S · 模块 3</p>
+  <p>一碗汤，解剖整张网页。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgS-m3-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    综合实战 · 第二阶段课程包 G 模块 6
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgG-m6-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 G 模块 6：在《我的世界》里用红石电路从零拼出一台能算加减法的计算器，顺便看懂 CPU 里的加法器与 ALU。支持离线打开、深色模式、学习进度本地保存。">
+  <title>综合实战：在《我的世界》手搓一台计算器 · 课程包 G 模块 6</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .callout {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 16px; margin: 16px 0;
+  }
+  .callout-title { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .diagram {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-card); padding: 16px; margin: 16px 0;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    line-height: 1.6; overflow-x: auto;
+  }
+  .diagram svg { width: 100%; max-width: 560px; height: auto; margin: 0 auto; display: block; }
+  .lesson-body h3 { font-size: 17px; font-weight: 800; color: var(--text); margin: 26px 0 10px; }
+  .lesson-body h3:first-child { margin-top: 0; }
+  .lesson-body ul { margin: 0 0 12px 20px; }
+  .lesson-body li { margin-bottom: 6px; }
+  /* MC 实体连线图（拓展实践） */
+  .mc-block { fill: #7d8597; stroke: #4b5563; stroke-width: 2; }
+  .mc-dust { stroke: #ef4444; stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 0.1 7; fill: none; }
+  .mc-junc { fill: #ef4444; }
+  .mc-dev { fill: var(--bg-soft); stroke: var(--text-soft); stroke-width: 2; stroke-dasharray: 6 4; }
+  .mc-lamp { fill: #fbbf24; stroke: #b45309; stroke-width: 2; }
+  .mc-glow { fill: #f59e0b; opacity: .16; }
+  .mc-lampx { stroke: #b45309; stroke-width: 1.5; opacity: .5; }
+  .mc-stick { stroke: #92400e; stroke-width: 3.5; stroke-linecap: round; }
+  .mc-flame { fill: #ef4444; }
+  .mc-base { fill: #4b5563; }
+  .mc-rep { fill: var(--bg-card); stroke: var(--text-soft); stroke-width: 1.5; }
+  .mc-repdot { fill: #ef4444; }
+  .diagram-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 14px; text-align: center;
+  }
+  .diagram-table th,
+  .diagram-table td {
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+  }
+  .diagram-table th {
+    background: var(--bg-soft); color: var(--text);
+    font-weight: 700;
+  }
+  .diagram-table td { color: var(--text-soft); }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>综合实战 · 课程包 G</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/4 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包G_计算机解剖.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包G_计算机解剖.html">课程包 G</a>
+    <span>/</span>
+    <span>模块 6：在《我的世界》手搓一台计算器</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 G · 模块 6</span>
+    <h1>综合实战：在《我的世界》手搓一台计算器</h1>
+    <p>用红石电路从零拼出一台能算加减法的计算器，顺便看懂 CPU 里到底发生了什么。</p>
+    <a class="start-btn" href="#lesson-1">开始模块 6 第 1 小节 →</a>
+    <span class="meta">模块 6 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>红石就是电路：从拉杆到「会思考的电线」</h2>
+    </div>
+    <div class="lesson-body">
+      <p>在《我的世界》里，红石粉铺在地上就是「电线」，能传信号；拉杆一扳，线路就有电（记作 1），扳回去就没电（记作 0）。这和我们前几章讲的一样——<strong>两种状态「通电」和「断电」，就是计算机最底层的 0 和 1</strong>。</p>
+
+      <p>真正的魔法是一个叫<strong>红石火把</strong>的东西：它插在方块侧面时正常亮着（输出 1）；但如果从下面接到电，它就被「压灭」（输出 0）。这正好是一个<strong>非门（NOT）</strong>：输入有电反而输出没电，输入没电反而输出有电。</p>
+
+      <div class="callout">
+        <div class="callout-title">💡 关键一步</div>
+        <p>一个普通的开关，只能「原样」传信号；而红石火把能「翻转」信号。就靠这个「翻转」，无数个小元件按规则组合，从最朴素的开关，变成了能算数的芯片——这正是模块 1《从灯泡到芯片》里那颗 CPU 的真相。</p>
+      </div>
+
+      <p>接下来只要学会怎么把几个这样的元件拼起来，你就能做出「会做判断题」的电路，再进一步做出「会算加法」的电路。</p>
+
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>三种基本逻辑门：AND / OR / NOT</h2>
+    </div>
+    <div class="lesson-body">
+      <p>只有「翻转」还不够。计算机靠三种基本逻辑门组合出一切运算：</p>
+
+      <ul style="margin-left:20px;margin-bottom:12px">
+        <li><strong>NOT 非门</strong>：红石火把。输入 1 → 输出 0，输入 0 → 输出 1（把信号反过来）。</li>
+        <li><strong>AND 与门</strong>：两个输入<strong>都有电</strong>，输出才有电。红石里用两个火把接力实现。</li>
+        <li><strong>OR 或门</strong>：任意<strong>一个</strong>输入有电，输出就有电。把两根线并在一起即可。</li>
+      </ul>
+
+      <table class="diagram-table">
+        <thead><tr><th>A</th><th>B</th><th>AND</th><th>OR</th><th>NOT A</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+          <tr><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td></tr>
+          <tr><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+          <tr><td>1</td><td>1</td><td>1</td><td>1</td><td>0</td></tr>
+        </tbody>
+      </table>
+
+      <p>这些门，就是你在编程语言里天天写的 <code>&amp;&amp;</code>、<code>||</code>、<code>!</code>。下面把这三个门写成函数——你在《我的世界》里用红石搭的东西，在代码里就是几个返回 0/1 的小函数：</p>
+
+      <div class="code-block lang-py" data-file="gates.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>Python 实现三个逻辑门</div>
+        <pre>def not_gate(a):        return 1 - a                     # 翻转
+def and_gate(a, b):     return 1 if (a == 1 and b == 1) else 0
+def or_gate(a, b):      return 1 if (a == 1 or b == 1) else 0
+def xor_gate(a, b):     return 1 if (a != b) else 0      # 异或：不同为 1
+
+print(and_gate(1, 1))   # 1
+print(xor_gate(1, 1))   # 0  → 1+1 的本位是 0</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="gates.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>gates.cpp</div>
+        <pre>int not_gate(int a)        { return a ? 0 : 1; }
+int and_gate(int a, int b) { return (a == 1 &amp;&amp; b == 1) ? 1 : 0; }
+int or_gate(int a, int b)  { return (a == 1 || b == 1) ? 1 : 0; }
+int xor_gate(int a, int b) { return (a != b) ? 1 : 0; }   // 异或：不同为 1
+
+#include &lt;iostream&gt;
+int main() {
+    std::cout &lt;&lt; and_gate(1, 1) &lt;&lt; "\n";   // 1
+    std::cout &lt;&lt; xor_gate(1, 1) &lt;&lt; "\n";   // 0  → 1+1 的本位是 0
+    return 0;
+}</pre>
+      </div>
+
+      <p>注意 <code>xor_gate</code>（异或）：两个输入「不同」时才是 1。它看起来简单，却是后面「算加法」的关键零件。</p>
+
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>拼出「半加器」：先会算 1 + 1</h2>
+    </div>
+    <div class="lesson-body">
+      <p>二进制里，1 + 1 = 10（进位 1，本位 0）。拆开看其实是两件事：<strong>本位（Sum）</strong>和<strong>进位（Carry）</strong>。我们把四种输入列出来：</p>
+
+      <table class="diagram-table">
+        <thead><tr><th>A</th><th>B</th><th>本位 Sum</th><th>进位 Carry</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+          <tr><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+          <tr><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+          <tr><td>1</td><td>1</td><td>0</td><td>1</td></tr>
+        </tbody>
+      </table>
+
+      <p>盯着表看：<strong>本位 = A 异或 B</strong>（不同才为 1），<strong>进位 = A 与 B</strong>（同时为 1 才进位）。也就是说，一个半加器 = 一个 XOR 门 + 一个 AND 门。而 XOR 门本身又能用第 2 小节的门拼出来：<code>XOR = (A OR B) AND NOT(A AND B)</code>。</p>
+
+      <div class="diagram">
+<svg viewBox="0 0 480 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="半加器电路：两个输入 A、B 同时送进 XOR 门（输出本位 Sum）和 AND 门（输出进位 Carry）">
+  <!-- 图题 -->
+  <text x="240" y="24" fill="var(--text-soft)" font-size="13" text-anchor="middle" font-family="monospace">半加器 = XOR 门 + AND 门</text>
+
+  <!-- ===== A 输入线（上一路） ===== -->
+  <text x="14" y="78" fill="var(--text)" font-size="15" font-weight="bold" font-family="monospace">A</text>
+  <!-- A 的分支点 -->
+  <circle cx="150" cy="70" r="3.5" fill="var(--text-soft)"/>
+  <!-- A → XOR 顶部门 -->
+  <line x1="28" y1="70" x2="158" y2="70" stroke="var(--text-soft)" stroke-width="2"/>
+  <!-- A 分支下行 → AND 底部门 -->
+  <line x1="150" y1="70" x2="150" y2="180" stroke="var(--text-soft)" stroke-width="2"/>
+  <line x1="150" y1="180" x2="158" y2="180" stroke="var(--text-soft)" stroke-width="2"/>
+
+  <!-- ===== B 输入线（下一路） ===== -->
+  <text x="14" y="182" fill="var(--text)" font-size="15" font-weight="bold" font-family="monospace">B</text>
+  <!-- B 的分支点 -->
+  <circle cx="110" cy="174" r="3.5" fill="var(--text-soft)"/>
+  <!-- B → AND 底部门 -->
+  <line x1="28" y1="174" x2="158" y2="174" stroke="var(--text-soft)" stroke-width="2"/>
+  <!-- B 分支上行 → XOR 顶部门 -->
+  <line x1="110" y1="174" x2="110" y2="86" stroke="var(--text-soft)" stroke-width="2"/>
+  <line x1="110" y1="86" x2="158" y2="86" stroke="var(--text-soft)" stroke-width="2"/>
+
+  <!-- ===== XOR 门（算本位） ===== -->
+  <rect x="160" y="56" width="96" height="44" rx="8" fill="var(--bg-soft)" stroke="var(--text-soft)"/>
+  <text x="208" y="83" fill="var(--text)" font-size="14" font-weight="bold" text-anchor="middle" font-family="monospace">XOR</text>
+  <!-- XOR 输出线 -->
+  <line x1="256" y1="78" x2="400" y2="78" stroke="var(--text-soft)" stroke-width="2"/>
+  <text x="408" y="83" fill="var(--text)" font-size="14" font-weight="bold" font-family="monospace">Sum 本位</text>
+
+  <!-- ===== AND 门（算进位） ===== -->
+  <rect x="160" y="160" width="96" height="44" rx="8" fill="var(--bg-soft)" stroke="var(--text-soft)"/>
+  <text x="208" y="187" fill="var(--text)" font-size="14" font-weight="bold" text-anchor="middle" font-family="monospace">AND</text>
+  <!-- AND 输出线 -->
+  <line x1="256" y1="182" x2="400" y2="182" stroke="var(--text-soft)" stroke-width="2"/>
+  <text x="408" y="187" fill="var(--text)" font-size="14" font-weight="bold" font-family="monospace">Carry 进位</text>
+
+  <!-- ===== 门说明（对应正文的两条结论） ===== -->
+  <text x="208" y="126" fill="var(--text-faint)" font-size="11.5" text-anchor="middle" font-family="monospace">不同才为 1</text>
+  <text x="208" y="230" fill="var(--text-faint)" font-size="11.5" text-anchor="middle" font-family="monospace">都是 1 才为 1</text>
+</svg>
+      </div>
+
+      <p>在《我的世界》用红石实现：两根拉杆进去，一盏灯亮表示「本位」、另一盏灯亮表示「进位」。模块 2《CPU 电脑的大脑》里说，CPU 做加法的那个部件叫<strong>算术逻辑单元（ALU）</strong>——它最基础的零件，就是这个半加器。</p>
+
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>串成完整计算器：从全加器到 ALU</h2>
+      <div class="lesson-sub">把前面所有零件用上，做出一台能算加减法的机器</div>
+    </div>
+    <div class="lesson-body">
+      <p>半加器只能算一位、还不管「低位有没有进位」。要算多位数，需要<strong>全加器</strong>：它比半加器多一个输入——来自低位的进位 <code>Cin</code>，输出本位 <code>Sum</code> 和向高位的进位 <code>Cout</code>。拆开看，全加器 = 两个半加器 + 一个或门。</p>
+
+      <div class="diagram">
+<svg viewBox="0 0 520 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="进位链：3 个全加器首尾相连。每个全加器接收 A、B 两个输入位和来自低位的进位，输出本位 S 和向高位的进位；最低位进位为 0，最高位输出的进位就是溢出位">
+  <defs>
+    <marker id="fa-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#0ea5e9"/>
+    </marker>
+  </defs>
+
+  <!-- 图题 -->
+  <text x="260" y="20" fill="var(--text-soft)" font-size="13" text-anchor="middle" font-family="monospace">进位链：低位的 Cout 接到高位的 Cin，进位从最低位一路传到最高位</text>
+
+  <!-- ===== 每个全加器的 A、B 输入（从顶部进入） ===== -->
+  <text x="110" y="32" fill="var(--text)" font-size="12.5" font-weight="bold" text-anchor="middle" font-family="monospace">A0</text>
+  <line x1="110" y1="38" x2="110" y2="68" stroke="var(--text-soft)" stroke-width="2"/>
+  <text x="138" y="32" fill="var(--text)" font-size="12.5" font-weight="bold" text-anchor="middle" font-family="monospace">B0</text>
+  <line x1="138" y1="38" x2="138" y2="68" stroke="var(--text-soft)" stroke-width="2"/>
+
+  <text x="262" y="32" fill="var(--text)" font-size="12.5" font-weight="bold" text-anchor="middle" font-family="monospace">A1</text>
+  <line x1="262" y1="38" x2="262" y2="68" stroke="var(--text-soft)" stroke-width="2"/>
+  <text x="290" y="32" fill="var(--text)" font-size="12.5" font-weight="bold" text-anchor="middle" font-family="monospace">B1</text>
+  <line x1="290" y1="38" x2="290" y2="68" stroke="var(--text-soft)" stroke-width="2"/>
+
+  <text x="414" y="32" fill="var(--text)" font-size="12.5" font-weight="bold" text-anchor="middle" font-family="monospace">A2</text>
+  <line x1="414" y1="38" x2="414" y2="68" stroke="var(--text-soft)" stroke-width="2"/>
+  <text x="442" y="32" fill="var(--text)" font-size="12.5" font-weight="bold" text-anchor="middle" font-family="monospace">B2</text>
+  <line x1="442" y1="38" x2="442" y2="68" stroke="var(--text-soft)" stroke-width="2"/>
+
+  <!-- ===== 进位链（蓝色，本图核心） ===== -->
+  <text x="30" y="88" fill="#0ea5e9" font-size="11.5" text-anchor="middle" font-family="monospace">进位 0</text>
+  <line x1="10" y1="100" x2="68" y2="100" stroke="#0ea5e9" stroke-width="2.5" marker-end="url(#fa-arrow)"/>
+
+  <!-- 三个全加器盒子 -->
+  <rect x="72" y="70" width="104" height="60" rx="10" fill="var(--bg-soft)" stroke="var(--text-soft)"/>
+  <text x="124" y="97" fill="var(--text)" font-size="13.5" font-weight="bold" text-anchor="middle" font-family="monospace">全加器</text>
+  <text x="124" y="115" fill="var(--text-faint)" font-size="11.5" text-anchor="middle" font-family="monospace">位 0</text>
+
+  <rect x="224" y="70" width="104" height="60" rx="10" fill="var(--bg-soft)" stroke="var(--text-soft)"/>
+  <text x="276" y="97" fill="var(--text)" font-size="13.5" font-weight="bold" text-anchor="middle" font-family="monospace">全加器</text>
+  <text x="276" y="115" fill="var(--text-faint)" font-size="11.5" text-anchor="middle" font-family="monospace">位 1</text>
+
+  <rect x="376" y="70" width="104" height="60" rx="10" fill="var(--bg-soft)" stroke="var(--text-soft)"/>
+  <text x="428" y="97" fill="var(--text)" font-size="13.5" font-weight="bold" text-anchor="middle" font-family="monospace">全加器</text>
+  <text x="428" y="115" fill="var(--text-faint)" font-size="11.5" text-anchor="middle" font-family="monospace">位 2</text>
+
+  <!-- 进位向高位传递 -->
+  <line x1="176" y1="100" x2="220" y2="100" stroke="#0ea5e9" stroke-width="2.5" marker-end="url(#fa-arrow)"/>
+  <text x="198" y="88" fill="#0ea5e9" font-size="11.5" text-anchor="middle" font-family="monospace">进位</text>
+  <line x1="328" y1="100" x2="372" y2="100" stroke="#0ea5e9" stroke-width="2.5" marker-end="url(#fa-arrow)"/>
+  <text x="350" y="88" fill="#0ea5e9" font-size="11.5" text-anchor="middle" font-family="monospace">进位</text>
+  <line x1="480" y1="100" x2="508" y2="100" stroke="#0ea5e9" stroke-width="2.5" marker-end="url(#fa-arrow)"/>
+  <text x="493" y="88" fill="#0ea5e9" font-size="11.5" text-anchor="middle" font-family="monospace">溢出</text>
+
+  <!-- ===== 每个全加器的本位输出 S（从底部引出） ===== -->
+  <line x1="124" y1="132" x2="124" y2="156" stroke="var(--text-soft)" stroke-width="2"/>
+  <text x="124" y="170" fill="var(--text)" font-size="12.5" font-weight="bold" text-anchor="middle" font-family="monospace">S0</text>
+  <line x1="276" y1="132" x2="276" y2="156" stroke="var(--text-soft)" stroke-width="2"/>
+  <text x="276" y="170" fill="var(--text)" font-size="12.5" font-weight="bold" text-anchor="middle" font-family="monospace">S1</text>
+  <line x1="428" y1="132" x2="428" y2="156" stroke="var(--text-soft)" stroke-width="2"/>
+  <text x="428" y="170" fill="var(--text)" font-size="12.5" font-weight="bold" text-anchor="middle" font-family="monospace">S2</text>
+
+  <!-- 位次提示 -->
+  <text x="124" y="184" fill="var(--text-faint)" font-size="11" text-anchor="middle" font-family="monospace">最低位</text>
+  <text x="428" y="184" fill="var(--text-faint)" font-size="11" text-anchor="middle" font-family="monospace">最高位</text>
+
+  <!-- 读数提示 -->
+  <text x="260" y="202" fill="var(--text-faint)" font-size="12" text-anchor="middle" font-family="monospace">读结果（高位在左）：溢出 S2 S1 S0</text>
+</svg>
+      </div>
+
+      <p>把 n 个全加器像糖葫芦一样串起来——低位的 <code>Cout</code> 接高位的 <code>Cin</code>——就是一条「进位链」，能算 n 位加法。这就是 CPU 里加法器的骨架。再给它加上<strong>减法</strong>（用补码把减法变成加法）和<strong>显示</strong>（把二进制结果译码成七段数码管），一台计算器就成型了。</p>
+
+      <p>下面用代码模拟这个「进位链」：每个全加器还是那几个逻辑门，区别只是把上一个的进位喂给下一个。</p>
+
+      <div class="code-block lang-py" data-file="adder.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>Python 模拟进位链（4 位加法器）</div>
+        <pre>def half_adder(a, b):
+    s = 1 if (a != b) else 0                # 本位 = 异或
+    c = 1 if (a == 1 and b == 1) else 0     # 进位 = 与
+    return s, c
+
+def full_adder(a, b, cin):
+    s1, c1 = half_adder(a, b)
+    s2, c2 = half_adder(s1, cin)
+    return s2, 1 if (c1 == 1 or c2 == 1) else 0
+
+# 把两个 4 位二进制数相加（列表低位在前）
+def add4(x, y):
+    cin = 0
+    out = []
+    for i in range(4):
+        s, cin = full_adder(x[i], y[i], cin)
+        out.append(s)
+    return out, cin   # out 是结果，cin 是最高位进位（溢出）
+
+print(add4([1, 1, 0, 0], [1, 0, 0, 0]))   # 4 + 1 = 5 → [0,1,0,1], 进位 0</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="adder.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>adder.cpp</div>
+        <pre>// 半加器：s = 本位，c = 进位
+void half_adder(int a, int b, int&amp; s, int&amp; c) {
+    s = (a != b) ? 1 : 0;
+    c = (a == 1 &amp;&amp; b == 1) ? 1 : 0;
+}
+
+// 全加器：多一个低位进位 cin
+void full_adder(int a, int b, int cin, int&amp; s, int&amp; cout) {
+    int s1, c1, s2, c2;
+    half_adder(a, b, s1, c1);
+    half_adder(s1, cin, s2, c2);
+    s = s2;
+    cout = (c1 == 1 || c2 == 1) ? 1 : 0;
+}
+
+#include &lt;iostream&gt;
+int main() {
+    int s, c;
+    full_adder(1, 1, 0, s, c);     // 1 + 1 + 0
+    std::cout &lt;&lt; "本位=" &lt;&lt; s &lt;&lt; " 进位=" &lt;&lt; c &lt;&lt; "\n";
+    return 0;
+}</pre>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">🎯 回头看整个课程包</div>
+        <p>你手搓的这台计算器，把前面几章全用上了：模块 1 的灯泡与芯片（红石火把就是最底层的开关）、模块 2 的 CPU 与 ALU（加法器就是它的心脏）、模块 3 的内存（存中间结果和输入）、模块 4 的显示（七段数码管）、模块 5 的总线（在部件间搬运数字）。所谓「计算机」，就是这些零件恰到好处地拼在一起。</p>
+      </div>
+
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：用红石电路从零拼出一台能算加减法的计算器</p>
+      <div class="quiz" data-answer="B">
+        <h4>在《我的世界》红石里，半加器的「进位」输出是由哪个逻辑门产生的？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。异或门（XOR）产生的是「本位 Sum」，不是进位。" type="button">A. 异或门（XOR）</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。进位 = A 与 B，由与门（AND）产生；本位才由异或门产生。" type="button">B. 与门（AND）</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。或门（OR）用于拼接全加器里的进位，半加器的进位只用与门。" type="button">C. 或门（OR）</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="lesson" id="mc-build">
+    <div class="lesson-head">
+      <div class="lesson-no">拓展实践</div>
+      <h2>在《我的世界》里搭出这台计算器</h2>
+      <div class="lesson-sub">从三种基础门到多位进位链的完整搭建步骤</div>
+    </div>
+    <div class="lesson-body">
+
+      <h3>1. 先准备三种基础门</h3>
+      <table class="diagram-table">
+        <thead>
+          <tr><th>逻辑门</th><th>红石含义</th><th>简易做法</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>与门 (AND)</td>
+            <td>两个输入都亮，输出才亮</td>
+            <td>两路红石线共同激活一个方块，方块上插检测火把</td>
+          </tr>
+          <tr>
+            <td>或门 (OR)</td>
+            <td>任一个亮，输出就亮</td>
+            <td>两路红石线直接汇合到同一点</td>
+          </tr>
+          <tr>
+            <td>异或门 (XOR)</td>
+            <td>只有一个亮，输出才亮</td>
+            <td>两个红石火把侧向互锁（MC Wiki 搜「异或门」有标准模板）</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>异或门是加法器的灵魂，也是最占空间的门。建议先在地面上单独搭一个测试好，确认「01→亮、10→亮、00→灭、11→灭」后再复制。</p>
+
+      <h3>2. 搭一个「半加器」模块（1 位）</h3>
+      <p>对应代码里的 <code>half_adder(a, b, s, c)</code>：</p>
+      <div class="diagram">
+<svg viewBox="0 0 560 310" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="半加器的 MC 实体连线图（顶视图）：左边两根拉杆 A、B 是输入，红石线把信号分成两路送进异或门和与门装置，右边两盏红石灯分别是本位 Sum 和进位 Carry">
+  <defs>
+    <pattern id="mc-grid1" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0 L0 0 0 40" fill="none" stroke="var(--border)" stroke-width="1" opacity="0.6"/>
+    </pattern>
+  </defs>
+  <text x="280" y="20" fill="var(--text-soft)" font-size="13" text-anchor="middle" font-family="monospace">顶视图：两个拉杆进，两盏红石灯出</text>
+  <rect x="10" y="32" width="540" height="264" rx="10" fill="url(#mc-grid1)" stroke="var(--border)"/>
+
+  <!-- 拉杆 A（石头方块 + 拉杆） -->
+  <rect class="mc-block" x="36" y="60" width="44" height="44" rx="4"/>
+  <circle class="mc-base" cx="58" cy="82" r="5.5"/>
+  <line class="mc-stick" x1="58" y1="82" x2="66" y2="66"/>
+  <text x="58" y="124" fill="var(--text-faint)" font-size="11.5" text-anchor="middle" font-family="monospace">拉杆 A</text>
+
+  <!-- 拉杆 B -->
+  <rect class="mc-block" x="36" y="196" width="44" height="44" rx="4"/>
+  <circle class="mc-base" cx="58" cy="218" r="5.5"/>
+  <line class="mc-stick" x1="58" y1="218" x2="66" y2="202"/>
+  <text x="58" y="260" fill="var(--text-faint)" font-size="11.5" text-anchor="middle" font-family="monospace">拉杆 B</text>
+
+  <!-- 红石线：A 分两路（去 XOR 和 AND） -->
+  <line class="mc-dust" x1="80" y1="82" x2="196" y2="82"/>
+  <circle class="mc-junc" cx="140" cy="82" r="3.5"/>
+  <line class="mc-dust" x1="140" y1="82" x2="140" y2="206"/>
+  <line class="mc-dust" x1="140" y1="206" x2="196" y2="206"/>
+
+  <!-- 红石线：B 分两路 -->
+  <line class="mc-dust" x1="80" y1="218" x2="196" y2="218"/>
+  <circle class="mc-junc" cx="110" cy="218" r="3.5"/>
+  <line class="mc-dust" x1="110" y1="218" x2="110" y2="100"/>
+  <line class="mc-dust" x1="110" y1="100" x2="196" y2="100"/>
+
+  <!-- 异或门装置（火把互锁搭成） -->
+  <rect class="mc-dev" x="196" y="64" width="130" height="56" rx="10"/>
+  <text x="261" y="88" fill="var(--text)" font-size="13.5" font-weight="bold" text-anchor="middle" font-family="monospace">异或门 XOR</text>
+  <text x="261" y="108" fill="var(--text-faint)" font-size="11" text-anchor="middle" font-family="monospace">不同才亮</text>
+  <line class="mc-stick" x1="214" y1="96" x2="214" y2="84"/>
+  <circle class="mc-flame" cx="214" cy="82" r="3"/>
+  <line class="mc-stick" x1="308" y1="96" x2="308" y2="84"/>
+  <circle class="mc-flame" cx="308" cy="82" r="3"/>
+
+  <!-- 与门装置 -->
+  <rect class="mc-dev" x="196" y="188" width="130" height="56" rx="10"/>
+  <text x="261" y="212" fill="var(--text)" font-size="13.5" font-weight="bold" text-anchor="middle" font-family="monospace">与门 AND</text>
+  <text x="261" y="232" fill="var(--text-faint)" font-size="11" text-anchor="middle" font-family="monospace">都是 1 才亮</text>
+  <line class="mc-stick" x1="214" y1="220" x2="214" y2="208"/>
+  <circle class="mc-flame" cx="214" cy="206" r="3"/>
+  <line class="mc-stick" x1="308" y1="220" x2="308" y2="208"/>
+  <circle class="mc-flame" cx="308" cy="206" r="3"/>
+
+  <!-- Sum 红石灯 -->
+  <line class="mc-dust" x1="326" y1="92" x2="446" y2="92"/>
+  <rect class="mc-glow" x="442" y="68" width="52" height="52" rx="8"/>
+  <rect class="mc-lamp" x="446" y="72" width="44" height="44"/>
+  <line class="mc-lampx" x1="468" y1="72" x2="468" y2="116"/>
+  <line class="mc-lampx" x1="446" y1="94" x2="490" y2="94"/>
+  <text x="468" y="138" fill="var(--text)" font-size="12" font-weight="bold" text-anchor="middle" font-family="monospace">Sum 本位灯</text>
+
+  <!-- Carry 红石灯 -->
+  <line class="mc-dust" x1="326" y1="216" x2="446" y2="216"/>
+  <rect class="mc-glow" x="442" y="192" width="52" height="52" rx="8"/>
+  <rect class="mc-lamp" x="446" y="196" width="44" height="44"/>
+  <line class="mc-lampx" x1="468" y1="196" x2="468" y2="240"/>
+  <line class="mc-lampx" x1="446" y1="218" x2="490" y2="218"/>
+  <text x="468" y="262" fill="var(--text)" font-size="12" font-weight="bold" text-anchor="middle" font-family="monospace">Carry 进位灯</text>
+</svg>
+      </div>
+      <p>把它做成一个可以复制粘贴的小单元，比如 3×3 大小，两个拉杆进，两盏灯出。</p>
+
+      <h3>3. 升级成「全加器」模块（1 位，带进位）</h3>
+      <p>对应代码里的 <code>full_adder(a, b, cin, s, cout)</code>：</p>
+      <p>全加器 = 两个半加器 + 一个或门。布线如下：</p>
+      <div class="diagram">
+<svg viewBox="0 0 600 356" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="全加器的 MC 实体连线图：三根拉杆 A、B、Cin 是输入；A、B 的红石线进入半加器①，中间和 S1 与 Cin 一起进入半加器②，输出 Sum 灯；两个半加器各自的进位经或门合并，输出 Cout 灯">
+  <defs>
+    <pattern id="mc-grid2" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0 L0 0 0 40" fill="none" stroke="var(--border)" stroke-width="1" opacity="0.6"/>
+    </pattern>
+  </defs>
+  <text x="300" y="20" fill="var(--text-soft)" font-size="13" text-anchor="middle" font-family="monospace">全加器 = 两个半加器 + 一个或门（红石连线）</text>
+  <rect x="10" y="32" width="580" height="300" rx="10" fill="url(#mc-grid2)" stroke="var(--border)"/>
+
+  <!-- 拉杆 Cin（进位输入） -->
+  <rect class="mc-block" x="36" y="48" width="44" height="44" rx="4"/>
+  <circle class="mc-base" cx="58" cy="70" r="5.5"/>
+  <line class="mc-stick" x1="58" y1="70" x2="66" y2="54"/>
+  <text x="58" y="112" fill="var(--text-faint)" font-size="11.5" text-anchor="middle" font-family="monospace">拉杆 Cin</text>
+  <!-- Cin 红石线：绕到半加器②顶部进入 -->
+  <line class="mc-dust" x1="80" y1="70" x2="435" y2="70"/>
+  <line class="mc-dust" x1="435" y1="70" x2="435" y2="124"/>
+
+  <!-- 拉杆 A -->
+  <rect class="mc-block" x="36" y="120" width="44" height="44" rx="4"/>
+  <circle class="mc-base" cx="58" cy="142" r="5.5"/>
+  <line class="mc-stick" x1="58" y1="142" x2="66" y2="126"/>
+  <text x="58" y="180" fill="var(--text-faint)" font-size="11.5" text-anchor="middle" font-family="monospace">拉杆 A</text>
+  <line class="mc-dust" x1="80" y1="142" x2="170" y2="142"/>
+
+  <!-- 拉杆 B -->
+  <rect class="mc-block" x="36" y="186" width="44" height="44" rx="4"/>
+  <circle class="mc-base" cx="58" cy="208" r="5.5"/>
+  <line class="mc-stick" x1="58" y1="208" x2="66" y2="192"/>
+  <text x="58" y="246" fill="var(--text-faint)" font-size="11.5" text-anchor="middle" font-family="monospace">拉杆 B</text>
+  <!-- B 红石线：拐个弯进入半加器① -->
+  <line class="mc-dust" x1="80" y1="208" x2="130" y2="208"/>
+  <line class="mc-dust" x1="130" y1="208" x2="130" y2="178"/>
+  <line class="mc-dust" x1="130" y1="178" x2="170" y2="178"/>
+
+  <!-- 半加器① -->
+  <rect class="mc-dev" x="170" y="124" width="130" height="72" rx="10"/>
+  <text x="235" y="160" fill="var(--text)" font-size="13.5" font-weight="bold" text-anchor="middle" font-family="monospace">半加器①</text>
+  <line class="mc-stick" x1="184" y1="164" x2="184" y2="152"/>
+  <circle class="mc-flame" cx="184" cy="150" r="3"/>
+  <line class="mc-stick" x1="286" y1="164" x2="286" y2="152"/>
+  <circle class="mc-flame" cx="286" cy="150" r="3"/>
+
+  <!-- 中间和 S1 -->
+  <line class="mc-dust" x1="300" y1="142" x2="370" y2="142"/>
+  <text x="335" y="132" fill="var(--text-faint)" font-size="11" text-anchor="middle" font-family="monospace">中间和 S1</text>
+
+  <!-- 半加器② -->
+  <rect class="mc-dev" x="370" y="124" width="130" height="72" rx="10"/>
+  <text x="435" y="160" fill="var(--text)" font-size="13.5" font-weight="bold" text-anchor="middle" font-family="monospace">半加器②</text>
+  <line class="mc-stick" x1="384" y1="164" x2="384" y2="152"/>
+  <circle class="mc-flame" cx="384" cy="150" r="3"/>
+  <line class="mc-stick" x1="486" y1="164" x2="486" y2="152"/>
+  <circle class="mc-flame" cx="486" cy="150" r="3"/>
+
+  <!-- Sum 红石灯 -->
+  <line class="mc-dust" x1="500" y1="142" x2="536" y2="142"/>
+  <rect class="mc-glow" x="532" y="116" width="52" height="52" rx="8"/>
+  <rect class="mc-lamp" x="536" y="120" width="44" height="44"/>
+  <line class="mc-lampx" x1="558" y1="120" x2="558" y2="164"/>
+  <line class="mc-lampx" x1="536" y1="142" x2="580" y2="142"/>
+  <text x="558" y="184" fill="var(--text)" font-size="12" font-weight="bold" text-anchor="middle" font-family="monospace">Sum 本位灯</text>
+
+  <!-- 进位①：半加器①底部 → 或门 -->
+  <line class="mc-dust" x1="235" y1="196" x2="235" y2="286"/>
+  <line class="mc-dust" x1="235" y1="286" x2="360" y2="286"/>
+  <text x="280" y="278" fill="var(--text-faint)" font-size="11" text-anchor="middle" font-family="monospace">进位①</text>
+
+  <!-- 进位②：半加器②底部 → 或门顶部 -->
+  <line class="mc-dust" x1="435" y1="196" x2="435" y2="262"/>
+  <text x="443" y="236" fill="var(--text-faint)" font-size="11" font-family="monospace">进位②</text>
+
+  <!-- 或门 -->
+  <rect class="mc-dev" x="360" y="262" width="120" height="48" rx="10"/>
+  <text x="420" y="292" fill="var(--text)" font-size="13.5" font-weight="bold" text-anchor="middle" font-family="monospace">或门 OR</text>
+  <line class="mc-stick" x1="378" y1="296" x2="378" y2="284"/>
+  <circle class="mc-flame" cx="378" cy="282" r="3"/>
+  <line class="mc-stick" x1="462" y1="296" x2="462" y2="284"/>
+  <circle class="mc-flame" cx="462" cy="282" r="3"/>
+
+  <!-- Cout 红石灯 -->
+  <line class="mc-dust" x1="480" y1="286" x2="500" y2="286"/>
+  <rect class="mc-glow" x="496" y="260" width="52" height="52" rx="8"/>
+  <rect class="mc-lamp" x="500" y="264" width="44" height="44"/>
+  <line class="mc-lampx" x1="522" y1="264" x2="522" y2="308"/>
+  <line class="mc-lampx" x1="500" y1="286" x2="544" y2="286"/>
+  <text x="522" y="326" fill="var(--text)" font-size="12" font-weight="bold" text-anchor="middle" font-family="monospace">Cout 进位灯</text>
+
+  <text x="300" y="348" fill="var(--text-faint)" font-size="12" text-anchor="middle" font-family="monospace">两个半加器各自产生的进位（进位①、进位②），经过或门合并成 Cout</text>
+</svg>
+      </div>
+      <p>在 MC 中的实体连接：</p>
+      <ul>
+        <li>做三个输入拉杆：A、B、Cin（进位输入）</li>
+        <li>做两盏输出灯：Sum（本位和）、Cout（进位输出）</li>
+        <li>用红石线把 Cout 引到模块的右侧，方便传给下一位</li>
+      </ul>
+
+      <h3>4. 串成「进位链」（多位加法器）</h3>
+      <p>对应代码里从 位0 到 位2 的串联：把全加器像铺铁轨一样排成一列：</p>
+      <div class="diagram">
+<svg viewBox="0 0 600 262" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="进位链的 MC 实体连线图（顶视图）：三个全加器排成一列，每个上方两根拉杆、下方一盏本位灯；位与位之间用红石线加中继器传递进位，最左端是接地的进位 0，最右端是溢出灯">
+  <defs>
+    <pattern id="mc-grid3" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0 L0 0 0 40" fill="none" stroke="var(--border)" stroke-width="1" opacity="0.6"/>
+    </pattern>
+  </defs>
+  <text x="300" y="20" fill="var(--text-soft)" font-size="13" text-anchor="middle" font-family="monospace">顶视图：全加器像铺铁轨一样排成一列，进位向右传递</text>
+  <rect x="10" y="32" width="580" height="220" rx="10" fill="url(#mc-grid3)" stroke="var(--border)"/>
+
+  <!-- 位 0 的输入拉杆 -->
+  <text x="158" y="48" fill="var(--text)" font-size="11" font-weight="bold" text-anchor="middle" font-family="monospace">A0</text>
+  <rect class="mc-block" x="138" y="54" width="40" height="40" rx="4"/>
+  <circle class="mc-base" cx="158" cy="74" r="5"/>
+  <line class="mc-stick" x1="158" y1="74" x2="164" y2="62"/>
+  <line class="mc-dust" x1="158" y1="94" x2="158" y2="110"/>
+  <text x="206" y="48" fill="var(--text)" font-size="11" font-weight="bold" text-anchor="middle" font-family="monospace">B0</text>
+  <rect class="mc-block" x="186" y="54" width="40" height="40" rx="4"/>
+  <circle class="mc-base" cx="206" cy="74" r="5"/>
+  <line class="mc-stick" x1="206" y1="74" x2="212" y2="62"/>
+  <line class="mc-dust" x1="206" y1="94" x2="206" y2="110"/>
+
+  <!-- 位 1 的输入拉杆 -->
+  <text x="308" y="48" fill="var(--text)" font-size="11" font-weight="bold" text-anchor="middle" font-family="monospace">A1</text>
+  <rect class="mc-block" x="288" y="54" width="40" height="40" rx="4"/>
+  <circle class="mc-base" cx="308" cy="74" r="5"/>
+  <line class="mc-stick" x1="308" y1="74" x2="314" y2="62"/>
+  <line class="mc-dust" x1="308" y1="94" x2="308" y2="110"/>
+  <text x="356" y="48" fill="var(--text)" font-size="11" font-weight="bold" text-anchor="middle" font-family="monospace">B1</text>
+  <rect class="mc-block" x="336" y="54" width="40" height="40" rx="4"/>
+  <circle class="mc-base" cx="356" cy="74" r="5"/>
+  <line class="mc-stick" x1="356" y1="74" x2="362" y2="62"/>
+  <line class="mc-dust" x1="356" y1="94" x2="356" y2="110"/>
+
+  <!-- 位 2 的输入拉杆 -->
+  <text x="458" y="48" fill="var(--text)" font-size="11" font-weight="bold" text-anchor="middle" font-family="monospace">A2</text>
+  <rect class="mc-block" x="438" y="54" width="40" height="40" rx="4"/>
+  <circle class="mc-base" cx="458" cy="74" r="5"/>
+  <line class="mc-stick" x1="458" y1="74" x2="464" y2="62"/>
+  <line class="mc-dust" x1="458" y1="94" x2="458" y2="110"/>
+  <text x="506" y="48" fill="var(--text)" font-size="11" font-weight="bold" text-anchor="middle" font-family="monospace">B2</text>
+  <rect class="mc-block" x="486" y="54" width="40" height="40" rx="4"/>
+  <circle class="mc-base" cx="506" cy="74" r="5"/>
+  <line class="mc-stick" x1="506" y1="74" x2="512" y2="62"/>
+  <line class="mc-dust" x1="506" y1="94" x2="506" y2="110"/>
+
+  <!-- 进位 0：接地，接到位 0 -->
+  <text x="62" y="124" fill="#ef4444" font-size="10.5" text-anchor="middle" font-family="monospace">进位 0（接地）</text>
+  <line class="mc-dust" x1="30" y1="140" x2="120" y2="140"/>
+
+  <!-- 三个全加器 -->
+  <rect class="mc-dev" x="120" y="110" width="110" height="60" rx="10"/>
+  <text x="175" y="134" fill="var(--text)" font-size="13.5" font-weight="bold" text-anchor="middle" font-family="monospace">全加器</text>
+  <text x="175" y="154" fill="var(--text-faint)" font-size="11.5" text-anchor="middle" font-family="monospace">位 0</text>
+
+  <rect class="mc-dev" x="270" y="110" width="110" height="60" rx="10"/>
+  <text x="325" y="134" fill="var(--text)" font-size="13.5" font-weight="bold" text-anchor="middle" font-family="monospace">全加器</text>
+  <text x="325" y="154" fill="var(--text-faint)" font-size="11.5" text-anchor="middle" font-family="monospace">位 1</text>
+
+  <rect class="mc-dev" x="420" y="110" width="110" height="60" rx="10"/>
+  <text x="475" y="134" fill="var(--text)" font-size="13.5" font-weight="bold" text-anchor="middle" font-family="monospace">全加器</text>
+  <text x="475" y="154" fill="var(--text-faint)" font-size="11.5" text-anchor="middle" font-family="monospace">位 2</text>
+
+  <!-- 进位线 + 中继器：位 0 → 位 1 → 位 2 -->
+  <line class="mc-dust" x1="230" y1="140" x2="240" y2="140"/>
+  <rect class="mc-rep" x="240" y="132" width="20" height="16" rx="3"/>
+  <circle class="mc-repdot" cx="245" cy="140" r="2"/>
+  <circle class="mc-repdot" cx="255" cy="140" r="2"/>
+  <line class="mc-dust" x1="260" y1="140" x2="270" y2="140"/>
+  <text x="250" y="162" fill="var(--text-faint)" font-size="10.5" text-anchor="middle" font-family="monospace">中继器</text>
+
+  <line class="mc-dust" x1="380" y1="140" x2="390" y2="140"/>
+  <rect class="mc-rep" x="390" y="132" width="20" height="16" rx="3"/>
+  <circle class="mc-repdot" cx="395" cy="140" r="2"/>
+  <circle class="mc-repdot" cx="405" cy="140" r="2"/>
+  <line class="mc-dust" x1="410" y1="140" x2="420" y2="140"/>
+  <text x="400" y="162" fill="var(--text-faint)" font-size="10.5" text-anchor="middle" font-family="monospace">中继器</text>
+
+  <!-- 溢出灯 -->
+  <line class="mc-dust" x1="530" y1="140" x2="546" y2="140"/>
+  <rect class="mc-glow" x="542" y="114" width="52" height="52" rx="8"/>
+  <rect class="mc-lamp" x="546" y="118" width="44" height="44"/>
+  <line class="mc-lampx" x1="568" y1="118" x2="568" y2="162"/>
+  <line class="mc-lampx" x1="546" y1="140" x2="590" y2="140"/>
+  <text x="568" y="182" fill="var(--text)" font-size="12" font-weight="bold" text-anchor="middle" font-family="monospace">溢出灯</text>
+
+  <!-- 本位输出灯 -->
+  <line class="mc-dust" x1="175" y1="170" x2="175" y2="190"/>
+  <rect class="mc-glow" x="149" y="186" width="52" height="52" rx="8"/>
+  <rect class="mc-lamp" x="153" y="190" width="44" height="44"/>
+  <line class="mc-lampx" x1="175" y1="190" x2="175" y2="234"/>
+  <line class="mc-lampx" x1="153" y1="212" x2="197" y2="212"/>
+  <text x="203" y="216" fill="var(--text)" font-size="12" font-weight="bold" font-family="monospace">S0</text>
+
+  <line class="mc-dust" x1="325" y1="170" x2="325" y2="190"/>
+  <rect class="mc-glow" x="299" y="186" width="52" height="52" rx="8"/>
+  <rect class="mc-lamp" x="303" y="190" width="44" height="44"/>
+  <line class="mc-lampx" x1="325" y1="190" x2="325" y2="234"/>
+  <line class="mc-lampx" x1="303" y1="212" x2="347" y2="212"/>
+  <text x="353" y="216" fill="var(--text)" font-size="12" font-weight="bold" font-family="monospace">S1</text>
+
+  <line class="mc-dust" x1="475" y1="170" x2="475" y2="190"/>
+  <rect class="mc-glow" x="449" y="186" width="52" height="52" rx="8"/>
+  <rect class="mc-lamp" x="453" y="190" width="44" height="44"/>
+  <line class="mc-lampx" x1="475" y1="190" x2="475" y2="234"/>
+  <line class="mc-lampx" x1="453" y1="212" x2="497" y2="212"/>
+  <text x="503" y="216" fill="var(--text)" font-size="12" font-weight="bold" font-family="monospace">S2</text>
+
+  <!-- 位次与读数提示 -->
+  <text x="175" y="248" fill="var(--text-faint)" font-size="10.5" text-anchor="middle" font-family="monospace">最低位</text>
+  <text x="475" y="248" fill="var(--text-faint)" font-size="10.5" text-anchor="middle" font-family="monospace">最高位</text>
+  <text x="300" y="248" fill="var(--text-faint)" font-size="12" text-anchor="middle" font-family="monospace">读结果（高位在左）：溢出 S2 S1 S0</text>
+</svg>
+      </div>
+      <p>关键连线：</p>
+      <ul>
+        <li><strong>最低位（位0）的 Cin</strong>：直接接地（永远为 0）。你可以不放拉杆，或者放一个永远关闭的拉杆。</li>
+        <li><strong>进位传递</strong>：位0 的 Cout 用红石线 + 中继器连到 位1 的 Cin；位1 的 Cout 再连到 位2 的 Cin。</li>
+        <li><strong>结果读取</strong>：每位的 Sum 灯就是答案的一位。最高位的 Cout 是「溢出」标志。</li>
+      </ul>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 G · 模块 6：在《我的世界》手搓一台计算器</p>
+  <p>从红石火把到 CPU，你已经看懂计算机最底层的秘密。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgG-m6-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) {
+      btn.classList.add("completed");
+      btn.textContent = "✓ 已完成";
+    }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    综合实战 · 第二阶段课程包 Q 模块 5
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgQ-m5-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 Q 模块 5：分析自己的消费记录或微信步数，生成报告。支持离线打开、深色模式、学习进度本地保存。">
+  <title>综合实战 · 第二阶段课程包 Q 模块 5</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-py single-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>综合实战 · 课程包 Q</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包Q_数据分析.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active" disabled>Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包Q_数据分析.html">课程包 Q</a>
+    <span>/</span>
+    <span>模块 5：综合实战</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 Q · 模块 5</span>
+    <h1>综合实战</h1>
+    <p>分析自己的消费记录或微信步数，生成报告</p>
+    <a class="start-btn" href="#lesson-1">开始模块 5 第 1 小节 →</a>
+    <span class="meta">模块 5 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>从真实数据开始</h2>
+      <div class="lesson-sub">消费记录或步数都可以</div>
+    </div>
+    <div class="lesson-body">
+      <p>前面四个模块都在用虚拟数据。这一模块，我们来处理你自己的数据。最方便拿到的两类数据是：<strong>手机里的微信/支付宝账单</strong>，或者<strong>健康 App 里的每日步数</strong>。它们本质上都是表格：一行代表一条记录，列代表日期、金额、类别等信息。</p>
+      <p>如果暂时没有真实数据，也没关系。下面会用一份模拟账单做示范，你可以照葫芦画瓢，把自己的 CSV 文件替换进去。</p>
+
+      <div class="code-block" data-file="bills.csv" data-lang="text">
+        <div class="code-title"><span class="dot"></span>bills.csv</div>
+        <pre>日期,类别,金额,备注
+2026-08-01,餐饮,35,午餐
+2026-08-01,交通,8,地铁
+2026-08-02,购物,129,耳机线
+2026-08-03,餐饮,58,聚餐
+2026-08-04,娱乐,45,电影票
+2026-08-05,餐饮,22,早餐
+2026-08-06,交通,12,打车</pre>
+      </div>
+
+      <div class="code-block" data-file="load_bills.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>load_bills.py</div>
+        <pre>import pandas as pd
+
+df = pd.read_csv("bills.csv")
+print(df.head())         # 只看前 5 行
+print(df.shape)          # 看看一共多少条</pre>
+      </div>
+
+      <p>读取真实数据时，第一件事情永远是「看一眼」：用 <code class="code-inline">.head()</code> 看前几行、用 <code class="code-inline">.shape</code> 看规模、用 <code class="code-inline">.dtypes</code> 看每列类型。确认数据长什么样之后，再决定下一步分析。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>三步快速分析</h2>
+      <div class="lesson-sub">分类汇总、趋势统计、异常检查</div>
+    </div>
+    <div class="lesson-body">
+      <p>拿到账单后，通常会问三个问题：钱主要花在哪些类别上？每天花了多少钱？有没有哪天特别离谱？这三个问题正好对应 Pandas 的三种操作：分组聚合、按日期统计、异常值识别。</p>
+
+      <div class="code-block" data-file="spending_analysis.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>spending_analysis.py</div>
+        <pre>import pandas as pd
+
+df = pd.read_csv("bills.csv")
+
+# 1. 按类别汇总
+print("=== 各类别总支出 ===")
+print(df.groupby("类别")["金额"].sum().sort_values(ascending=False))
+
+# 2. 按日期汇总
+df["日期"] = pd.to_datetime(df["日期"])    # 把日期列转成日期类型
+daily = df.groupby("日期")["金额"].sum()
+print("\n=== 每日支出 ===")
+print(daily)
+
+# 3. 异常检查：找出单日支出超过平均值两倍的天
+mean_daily = daily.mean()
+print("\n=== 异常高消费日期 ===")
+print(daily[daily &gt; mean_daily * 2])</pre>
+      </div>
+
+      <p>注意 <code class="code-inline">pd.to_datetime()</code> 这一步很重要。如果不转换，日期只是一串文字，无法按时间顺序分组或排序。转换成日期类型后，Pandas 就能识别「前后」「同一天」这些关系。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>动手：我的消费画像</h2>
+      <div class="lesson-sub">清洗、统计、输出文字结论</div>
+    </div>
+    <div class="lesson-body">
+      <p>现在把分析结果整理成一份「消费画像」：总支出、最花钱的类别、最花钱的一天、平均每天花多少。这些数字可以直接复制到日记、报告或朋友圈里。</p>
+
+      <div class="code-block" data-file="my_profile.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>my_profile.py</div>
+        <pre>import pandas as pd
+
+df = pd.read_csv("bills.csv")
+
+total = df["金额"].sum()
+category_max = df.groupby("类别")["金额"].sum().idxmax()
+daily_mean = df.groupby("日期")["金额"].sum().mean()
+max_day = df.groupby("日期")["金额"].sum().idxmax()
+
+print(f"这段时期总支出：{total} 元")
+print(f"最花钱的类别：{category_max}")
+print(f"平均每天支出：{daily_mean:.2f} 元")
+print(f"花钱最多的一天：{max_day}")</pre>
+      </div>
+
+      <p>这段代码里没有新函数，只是把学过的 <code class="code-inline">groupby()</code>、<code class="code-inline">sum()</code>、<code class="code-inline">mean()</code>、<code class="code-inline">idxmax()</code> 组合起来。<code class="code-inline">idxmax()</code> 的作用是「返回最大值所在的索引」，在这里就是「最花钱的类别/日期叫什么名字」。</p>
+      <p>如果你用的是步数数据，思路完全一样：把「金额」换成「步数」，把「类别」换成「日期/星期」，就能分析自己哪一天最活跃、哪段时间最懒。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：生成一份完整的消费报告</h2>
+      <div class="lesson-sub">读 CSV、做统计、画图、写结论</div>
+    </div>
+    <div class="lesson-body">
+      <p>最后一节，把前面所有技能打包成一个完整项目：读取账单 CSV，清洗并统计，画出类别饼图和每日支出折线图，最后把关键结论输出到控制台。这就是一份最小可用的数据分析报告。</p>
+
+      <div class="code-block" data-file="full_report.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>full_report.py</div>
+        <pre>import pandas as pd
+import matplotlib.pyplot as plt
+
+# 1. 读取数据
+df = pd.read_csv("bills.csv")
+
+# 2. 转换日期类型
+df["日期"] = pd.to_datetime(df["日期"])
+
+# 3. 统计
+category_total = df.groupby("类别")["金额"].sum()
+daily_total = df.groupby("日期")["金额"].sum()
+
+# 4. 画饼图：各类别支出占比
+plt.figure(figsize=(6, 6))
+plt.pie(category_total, labels=category_total.index, autopct="%1.1f%%")
+plt.title("支出类别占比")
+plt.savefig("spending_pie.png")
+
+# 5. 画折线图：每日支出趋势
+plt.figure(figsize=(8, 4))
+plt.plot(daily_total.index, daily_total.values, marker="o")
+plt.title("每日支出趋势")
+plt.xlabel("日期")
+plt.ylabel("金额（元）")
+plt.xticks(rotation=30)
+plt.tight_layout()
+plt.savefig("spending_trend.png")
+
+# 6. 输出文字结论
+print("=== 消费报告 ===")
+print(f"总支出：{df['金额'].sum()} 元")
+print(f"最花钱类别：{category_total.idxmax()}")
+print(f"单日最高支出：{daily_total.max()} 元（{daily_total.idxmax().date()}）")
+print("图表已保存：spending_pie.png, spending_trend.png")</pre>
+      </div>
+
+      <p>运行这个项目后，你会得到两张图片和一段文字结论。试着把自己的真实账单导出成 CSV，把文件名替换进去，再跑一遍——恭喜你，这就是你的第一份 Python 数据分析报告。</p>
+      <p><strong>进阶挑战</strong>：给每日支出折线图添加一条「平均线」，让哪天超支、哪天省钱一目了然。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：如何处理时间数据以便按日期分组？</p>
+      <div class="quiz" data-answer="B">
+        <h4>要把 CSV 中的「日期」列转换为真正的日期类型，应该用什么方法？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。df[&quot;日期&quot;] = df[&quot;日期&quot;].to_date() 不是本题的正确答案。df[&quot;日期&quot;] = pd.to_datetime(df[&quot;日期&quot;]) 才是正确的。" type="button">A. df["日期"] = df["日期"].to_date()</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。df[&quot;日期&quot;] = pd.to_datetime(df[&quot;日期&quot;])" type="button">B. df["日期"] = pd.to_datetime(df["日期"])</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。df[&quot;日期&quot;] = int(df[&quot;日期&quot;]) 不是本题的正确答案。df[&quot;日期&quot;] = pd.to_datetime(df[&quot;日期&quot;]) 才是正确的。" type="button">C. df["日期"] = int(df["日期"])</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 Q · 模块 5</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgQ-m5-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

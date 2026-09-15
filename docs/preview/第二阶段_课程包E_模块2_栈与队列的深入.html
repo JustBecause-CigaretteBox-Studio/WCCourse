@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    栈与队列的深入 · 第二阶段课程包 E 模块 2
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgE-m2-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 E 模块 2：括号匹配、任务调度、BFS 队列。支持离线打开、深色模式、学习进度本地保存。">
+  <title>栈与队列的深入 · 第二阶段课程包 E 模块 2</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  /* 图示 + BFS 图示 */
+  .diagram { border: 1px solid var(--border); border-radius: 14px; background: var(--bg-section); padding: 16px 18px; margin: 18px 0; }
+  .diagram .diagram-cap { font-size: 13px; font-weight: 700; color: var(--text-soft); margin-bottom: 10px; }
+  .diagram svg { width: 100%; height: auto; display: block; }
+  .bfs-edge { stroke: var(--border); stroke-width: 2; }
+  .bfs-n0 { fill: #60a5fa; }
+  .bfs-n1 { fill: #3b82f6; }
+  .bfs-n2 { fill: #2563eb; }
+  .bfs-n3 { fill: #1d4ed8; }
+  .bfs-t { fill: #fff; font-size: 16px; font-weight: 700; text-anchor: middle; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+  .bfs-layer { fill: var(--text-faint); font-size: 13px; text-anchor: middle; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+  .bfs-order { fill: var(--text-soft); font-size: 14px; font-weight: 700; text-anchor: middle; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>栈与队列的深入 · 课程包 E</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/4 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包E_数据结构进阶.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包E_数据结构进阶.html">课程包 E</a>
+    <span>/</span>
+    <span>模块 2：栈与队列的深入</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 E · 模块 2</span>
+    <h1>栈与队列的深入</h1>
+    <p>括号匹配、任务调度、BFS 队列</p>
+    <a class="start-btn" href="#lesson-1">开始模块 2 第 1 小节 →</a>
+    <span class="meta">模块 2 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>栈与括号匹配</h2>
+      <div class="lesson-sub">后进先出的妙用</div>
+    </div>
+    <div class="lesson-body">
+      <p><strong>什么是括号匹配问题？</strong> 给你一个只由括号组成的字符串，比如 <code>({[]})</code> 或 <code>(a+b)*[c/d]</code> 里抽出来的括号部分，要判断它们「配不配对」：每一个左括号 <code>(</code> <code>[</code> <code>{</code> 都要有一个同类型的右括号 <code>)</code> <code>]</code> <code>}</code> 与之对应，而且必须是「先开的后闭」——就像剥洋葱，最后套上去的那层要先剥掉。</p>
+      <p>合法的例子：<code>({[]})</code> —— 开 <code>(</code>、开 <code>{</code>、开 <code>[</code>，然后闭 <code>]</code> 配 <code>[</code>、闭 <code>}</code> 配 <code>{</code>、闭 <code>)</code> 配 <code>(</code>，层层抵消。非法的例子：<code>(]</code> —— 开了 <code>(</code> 却用 <code>]</code> 来闭，类型不对；<code>((</code> —— 开了两个却一个都没闭；<code>())</code> —— 第一个 <code>)</code> 闭掉之后，又多出一个 <code>)</code> 没有左括号可配。</p>
+      <p><strong>为什么用栈？</strong> 括号「最后打开、最先闭合」的顺序，正好就是栈「后进先出（LIFO）」的特点。所以我们用一个栈来记住「当前还没被闭合的左括号」：</p>
+      <ul style="margin: 12px 0 12px 20px; color: var(--text-soft); line-height: 1.9;">
+        <li>从左到右扫描每个字符；</li>
+        <li>遇到<strong>左括号</strong>，把它压入栈顶（记下「我现在在等它的右半边」）；</li>
+        <li>遇到<strong>右括号</strong>，先看栈是不是空的——空说明没有左括号可配，直接判非法；不空就弹出栈顶，检查它和这个右括号是不是「一家人」（<code>(</code> 配 <code>)</code> 等），不是就非法；</li>
+        <li>扫完所有字符后，栈必须是<strong>空的</strong>才算合法（所有左括号都被闭合了）。</li>
+      </ul>
+      <p>拿 <code>({[]})</code> 走一遍：压入 <code>(</code> → 压入 <code>{</code> → 压入 <code>[</code> → 遇 <code>]</code> 弹出 <code>[</code> 配对成功 → 遇 <code>}</code> 弹出 <code>{</code> 成功 → 遇 <code>)</code> 弹出 <code>(</code> 成功 → 栈空，合法。整个过程栈里始终装着「还没闭合的左括号」，非常直观。</p>
+      <div class="code-block lang-py" data-file="bracket_match.py" data-lang="python"><pre>def is_valid(s):
+    stack = []
+    pairs = {')': '(', ']': '[', '}': '{'}
+    for ch in s:
+        if ch in '([{':
+            stack.append(ch)
+        elif ch in ')]}':
+            if not stack or stack[-1] != pairs[ch]:
+                return False
+            stack.pop()
+    return len(stack) == 0
+
+print(is_valid("({[]})"))   # True
+print(is_valid("(]"))       # False</pre></div>
+      <div class="code-block lang-cpp" data-file="bracket_match.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>bracket_match.cpp</div>
+        <pre>bool isValid(string s) {
+    stack&lt;char&gt; st;
+    for (char ch : s) {
+        if (ch == '(' || ch == '[' || ch == '{') st.push(ch);
+        else {
+            if (st.empty()) return false;
+            char top = st.top();
+            if ((ch == ')' &amp;&amp; top != '(') ||
+                (ch == ']' &amp;&amp; top != '[') ||
+                (ch == '}' &amp;&amp; top != '{')) return false;
+            st.pop();
+        }
+    }
+    return st.empty();
+}</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>队列与任务调度</h2>
+      <div class="lesson-sub">先来先服务</div>
+    </div>
+    <div class="lesson-body">
+      <p>队列（Queue）是「先进先出」的结构：先进入队列的元素先被处理，就像排队买票，先到的人先服务。</p>
+      <p>在程序里，队列常用于任务调度：打印机依次处理打印任务、CPU 调度进程、网络请求排队等。队列的特点是<strong>只能从一端加入、从另一端取出</strong>，所以「先到先得」，不会出现后来者插队的情况。</p>
+      <div class="code-block lang-py" data-file="queue_task.py" data-lang="python"><pre>from collections import deque
+
+queue = deque()
+queue.append("打印报告")
+queue.append("下载文件")
+queue.append("发送邮件")
+
+while queue:
+    task = queue.popleft()   # 从左端取出，保证先进先出
+    print("处理任务：", task)</pre></div>
+      <div class="code-block lang-cpp" data-file="queue_task.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>queue_task.cpp</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;queue&gt;
+#include &lt;string&gt;
+using namespace std;
+
+int main() {
+    queue&lt;string&gt; q;
+    q.push("打印报告");
+    q.push("下载文件");
+    q.push("发送邮件");
+
+    while (!q.empty()) {
+        cout &lt;&lt; "处理任务：" &lt;&lt; q.front() &lt;&lt; endl;
+        q.pop();
+    }
+    return 0;
+}</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>BFS 与队列</h2>
+      <div class="lesson-sub">一层一层往外探索</div>
+    </div>
+    <div class="lesson-body">
+      <p>广度优先搜索（BFS）常借助队列实现。思路是：从起点出发，先把起点的所有邻居入队；处理完这一层后，再把下一层邻居入队。这样能保证离起点越近的节点越先被访问。</p>
+      <p>例如在一个迷宫里找最短路径，BFS 每次向四个方向扩展，第一次到达终点时走的步数就是最少步数。</p>
+      <div class="diagram">
+        <div class="diagram-cap">图：BFS 从起点 A 出发，按「层」向外扩展（颜色越深，离起点越远）</div>
+        <svg viewBox="0 0 640 300">
+          <line class="bfs-edge" x1="90" y1="150" x2="260" y2="70"/>
+          <line class="bfs-edge" x1="90" y1="150" x2="260" y2="230"/>
+          <line class="bfs-edge" x1="260" y1="70" x2="420" y2="70"/>
+          <line class="bfs-edge" x1="260" y1="230" x2="420" y2="70"/>
+          <line class="bfs-edge" x1="260" y1="230" x2="420" y2="230"/>
+          <line class="bfs-edge" x1="420" y1="70" x2="580" y2="150"/>
+          <line class="bfs-edge" x1="420" y1="230" x2="580" y2="150"/>
+          <circle class="bfs-n0" cx="90" cy="150" r="26"/>
+          <text class="bfs-t" x="90" y="156">A</text>
+          <circle class="bfs-n1" cx="260" cy="70" r="26"/>
+          <text class="bfs-t" x="260" y="76">B</text>
+          <circle class="bfs-n1" cx="260" cy="230" r="26"/>
+          <text class="bfs-t" x="260" y="236">C</text>
+          <circle class="bfs-n2" cx="420" cy="70" r="26"/>
+          <text class="bfs-t" x="420" y="76">D</text>
+          <circle class="bfs-n2" cx="420" cy="230" r="26"/>
+          <text class="bfs-t" x="420" y="236">E</text>
+          <circle class="bfs-n3" cx="580" cy="150" r="26"/>
+          <text class="bfs-t" x="580" y="156">F</text>
+          <text class="bfs-layer" x="90" y="196">第 0 层</text>
+          <text class="bfs-layer" x="260" y="286">第 1 层</text>
+          <text class="bfs-layer" x="420" y="286">第 2 层</text>
+          <text class="bfs-layer" x="580" y="196">第 3 层</text>
+          <text class="bfs-order" x="335" y="26">访问顺序：A → B → C → D → E → F</text>
+        </svg>
+      </div>
+      <p>看图：BFS 先把起点 A 的所有邻居（B、C）入队，再处理 B、C 的邻居（D、E），最后到 F。同一层的节点一定比下一层更早被访问——所以第一次碰到终点时，走的一定是最短路径。队列在这里的作用，就是保证「先入队的先处理」，从而严格地一层一层往外推。</p>
+      <div class="code-block lang-py" data-file="bfs.py" data-lang="python"><pre>from collections import deque
+
+# graph: 邻接表表示的简单图
+graph = {
+    'A': ['B', 'C'],
+    'B': ['A', 'D'],
+    'C': ['A', 'D'],
+    'D': ['B', 'C']
+}
+
+def bfs(start):
+    visited = set([start])
+    queue = deque([start])
+    while queue:
+        node = queue.popleft()
+        print(node, end=' ')
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+
+bfs('A')   # 输出类似 A B C D</pre></div>
+      <div class="code-block lang-cpp" data-file="bfs.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>bfs.cpp</div>
+        <pre>#include &lt;queue&gt;
+#include &lt;set&gt;
+#include &lt;iostream&gt;
+#include &lt;map&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+map&lt;char, vector&lt;char&gt;&gt; graph = {
+    {'A', {'B', 'C'}},
+    {'B', {'A', 'D'}},
+    {'C', {'A', 'D'}},
+    {'D', {'B', 'C'}}
+};
+
+void bfs(char start) {
+    set&lt;char&gt; visited;
+    queue&lt;char&gt; q;
+    visited.insert(start);
+    q.push(start);
+    while (!q.empty()) {
+        char node = q.front();
+        q.pop();
+        cout &lt;&lt; node &lt;&lt; " ";
+        for (char neighbor : graph[node]) {
+            if (!visited.count(neighbor)) {
+                visited.insert(neighbor);
+                q.push(neighbor);
+            }
+        }
+    }
+}
+
+int main() {
+    bfs('A');   // 输出类似 A B C D
+    return 0;
+}</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：判断回文字符串</h2>
+      <div class="lesson-sub">用栈辅助验证正读反读相同</div>
+    </div>
+    <div class="lesson-body">
+      <p>回文字符串是指正着读和反着读一样的字符串，比如 <code>level</code>、<code>abcba</code>。利用栈的「后进先出」特性，可以轻松把字符串后半段反转，再与前半段比较。</p>
+      <p>更简单的做法是：遍历字符串，把每个字符压入栈，然后依次弹出，弹出的顺序就是原字符串的逆序。如果和原字符串相同，就是回文。</p>
+      <div class="code-block lang-py" data-file="palindrome.py" data-lang="python"><pre>def is_palindrome(s):
+    stack = []
+    for ch in s:
+        stack.append(ch)
+    reversed_s = ""
+    while stack:
+        reversed_s += stack.pop()
+    return s == reversed_s
+
+print(is_palindrome("level"))   # True
+print(is_palindrome("hello"))   # False</pre></div>
+      <div class="code-block lang-cpp" data-file="palindrome.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>palindrome.cpp</div>
+        <pre>bool isPalindrome(string s) {
+    stack&lt;char&gt; st;
+    for (char ch : s) st.push(ch);
+    string rev;
+    while (!st.empty()) {
+        rev += st.top();
+        st.pop();
+    }
+    return s == rev;
+}</pre>
+      </div>
+      <p><strong>练习：</strong>尝试用队列实现同样的功能，观察栈和队列在「反转」这件事上的不同表现。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>下面关于栈和队列的描述，哪一项是正确的？</p>
+      <div class="quiz" data-answer="C">
+        <h4>栈与队列的核心区别是什么？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。栈只能存数字，队列只能存字符串 的说法过于绝对。实际上它不但可以完成这些事，还可以做更多。" type="button">A. 栈只能存数字，队列只能存字符串</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。栈是先进先出，队列是后进先出 不是本题的正确答案。栈是后进先出，队列是先进先出 才是正确的。" type="button">B. 栈是先进先出，队列是后进先出</button>
+        <button class="quiz-opt" data-val="C" data-explain="正确。栈是后进先出，队列是先进先出" type="button">C. 栈是后进先出，队列是先进先出</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 E · 模块 2</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgE-m2-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

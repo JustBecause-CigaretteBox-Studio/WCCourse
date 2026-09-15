@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    树 · 第二阶段课程包 E 模块 3
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgE-m3-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 E 模块 3：像家谱一样的数据，二叉树遍历。支持离线打开、深色模式、学习进度本地保存。">
+  <title>树 · 第二阶段课程包 E 模块 3</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  /* 二叉树图示 */
+  .diagram { border: 1px solid var(--border); border-radius: 14px; background: var(--bg-section); padding: 16px 18px; margin: 18px 0; }
+  .diagram .diagram-cap { font-size: 13px; font-weight: 700; color: var(--text-soft); margin-bottom: 10px; }
+  .diagram svg { width: 100%; height: auto; display: block; }
+  .tree-edge { stroke: var(--text-faint); stroke-width: 2; fill: none; }
+  .tree-node { fill: var(--bg-card); stroke: var(--text); stroke-width: 2; }
+  .tree-node-root { fill: #0ea5e9; stroke: var(--text); }
+  .tree-t { fill: var(--text); font-size: 16px; font-weight: 700; text-anchor: middle; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+  .tree-t-root { fill: #ffffff; }
+  .tree-lbl { fill: var(--text-faint); font-size: 12px; text-anchor: middle; font-style: italic; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>树 · 课程包 E</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包E_数据结构进阶.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包E_数据结构进阶.html">课程包 E</a>
+    <span>/</span>
+    <span>模块 3：树</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 E · 模块 3</span>
+    <h1>树</h1>
+    <p>像家谱一样的数据，二叉树遍历</p>
+    <a class="start-btn" href="#lesson-1">开始模块 3 第 1 小节 →</a>
+    <span class="meta">模块 3 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>认识树</h2>
+      <div class="lesson-sub">像家谱一样的分层数据</div>
+    </div>
+    <div class="lesson-body">
+      <p>树是一种分层结构：最上面有一个根节点，根下面分出若干子节点，子节点下面又可有子节点。它很像家谱——爷爷奶奶在根，父母是孩子，你又是父母的孩子。</p>
+      <p>计算机里的文件夹、HTML 标签的嵌套关系、组织架构图，都可以用树来表示。树中的节点之间没有环，任意两个节点之间只有一条路径。</p>
+      <p>最常用的一种树是<strong>二叉树</strong>：每个节点最多只有两个子节点，分别叫左孩子和右孩子。</p>
+      <div class="diagram">
+        <div class="diagram-cap">图：一棵简单的二叉树（A 是根节点；B、C 是 A 的左右孩子；D、E 是 B 的左右孩子）</div>
+        <svg viewBox="0 0 480 250" role="img" aria-label="二叉树示例">
+          <line class="tree-edge" x1="240" y1="60" x2="140" y2="160"/>
+          <line class="tree-edge" x1="240" y1="60" x2="340" y2="160"/>
+          <line class="tree-edge" x1="140" y1="180" x2="80" y2="220"/>
+          <line class="tree-edge" x1="140" y1="180" x2="200" y2="220"/>
+          <circle class="tree-node tree-node-root" cx="240" cy="40" r="22"/>
+          <text class="tree-t tree-t-root" x="240" y="46">A</text>
+          <circle class="tree-node" cx="140" cy="150" r="22"/>
+          <text class="tree-t" x="140" y="156">B</text>
+          <circle class="tree-node" cx="340" cy="150" r="22"/>
+          <text class="tree-t" x="340" y="156">C</text>
+          <circle class="tree-node" cx="80" cy="220" r="22"/>
+          <text class="tree-t" x="80" y="226">D</text>
+          <circle class="tree-node" cx="200" cy="220" r="22"/>
+          <text class="tree-t" x="200" y="226">E</text>
+          <text class="tree-lbl" x="180" y="115">left</text>
+          <text class="tree-lbl" x="290" y="115">right</text>
+          <text class="tree-lbl" x="100" y="200">left</text>
+          <text class="tree-lbl" x="160" y="200">right</text>
+        </svg>
+      </div>
+      <div class="code-block lang-py" data-file="tree_node.py" data-lang="python"><pre>class TreeNode:
+    def __init__(self, value):
+        self.value = value
+        self.left = None
+        self.right = None
+
+# 手动搭建一棵简单二叉树
+root = TreeNode("A")
+root.left = TreeNode("B")
+root.right = TreeNode("C")
+root.left.left = TreeNode("D")
+root.left.right = TreeNode("E")</pre></div>
+      <div class="code-block lang-cpp" data-file="tree_node.cpp" data-lang="cpp"><pre>struct TreeNode {
+    char value;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(char v) : value(v), left(nullptr), right(nullptr) {}
+};
+
+// 手动搭建一棵简单二叉树
+TreeNode* root = new TreeNode('A');
+root-&gt;left = new TreeNode('B');
+root-&gt;right = new TreeNode('C');
+root-&gt;left-&gt;left = new TreeNode('D');
+root-&gt;left-&gt;right = new TreeNode('E');</pre></div>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>二叉树的三种遍历</h2>
+      <div class="lesson-sub">前序、中序、后序</div>
+    </div>
+    <div class="lesson-body">
+      <p>遍历树就是按某种顺序访问所有节点。二叉树最常见的三种遍历方式取决于「什么时候访问根节点」：</p>
+      <ul style="margin: 0 0 12px 20px; line-height: 1.9;">
+        <li><strong>前序遍历</strong>：根 → 左子树 → 右子树</li>
+        <li><strong>中序遍历</strong>：左子树 → 根 → 右子树</li>
+        <li><strong>后序遍历</strong>：左子树 → 右子树 → 根</li>
+      </ul>
+      <p>如果把二叉搜索树按中序遍历，得到的结果会是有序的，这是二叉树很实用的性质。</p>
+      <div class="code-block lang-py" data-file="traversal.py" data-lang="python"><pre>def preorder(node):     # 前序
+    if node:
+        print(node.value, end=' ')
+        preorder(node.left)
+        preorder(node.right)
+
+def inorder(node):      # 中序
+    if node:
+        inorder(node.left)
+        print(node.value, end=' ')
+        inorder(node.right)
+
+def postorder(node):    # 后序
+    if node:
+        postorder(node.left)
+        postorder(node.right)
+        print(node.value, end=' ')
+
+preorder(root)   # A B D E C</pre></div>
+      <div class="code-block lang-cpp" data-file="traversal.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>traversal.cpp</div>
+        <pre>void preorder(TreeNode* node) {     // 前序
+    if (node) {
+        cout &lt;&lt; node-&gt;value &lt;&lt; " ";
+        preorder(node-&gt;left);
+        preorder(node-&gt;right);
+    }
+}
+
+void inorder(TreeNode* node) {      // 中序
+    if (node) {
+        inorder(node-&gt;left);
+        cout &lt;&lt; node-&gt;value &lt;&lt; " ";
+        inorder(node-&gt;right);
+    }
+}
+
+void postorder(TreeNode* node) {    // 后序
+    if (node) {
+        postorder(node-&gt;left);
+        postorder(node-&gt;right);
+        cout &lt;&lt; node-&gt;value &lt;&lt; " ";
+    }
+}
+
+preorder(root);   // A B D E C</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>递归与树</h2>
+      <div class="lesson-sub">树是天然的递归结构</div>
+    </div>
+    <div class="lesson-body">
+      <p>树的定义本身就是递归的：一棵树的子树还是树。所以处理树的问题时，递归通常是最直观的写法。</p>
+      <p>比如想求一棵二叉树的高度，可以这样想：如果树为空，高度是 0；否则高度等于左右子树中较高的那个加 1。</p>
+      <div class="code-block lang-py" data-file="tree_height.py" data-lang="python"><pre>def height(node):
+    if node is None:
+        return 0
+    return 1 + max(height(node.left), height(node.right))
+
+print(height(root))   # 上面那棵树的高度是 3</pre></div>
+      <div class="code-block lang-cpp" data-file="tree_height.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>tree_height.cpp</div>
+        <pre>int height(TreeNode* node) {
+    if (node == nullptr) return 0;
+    return 1 + max(height(node-&gt;left), height(node-&gt;right));
+}
+
+cout &lt;&lt; height(root);   // 上面那棵树的高度是 3</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：统计叶子节点</h2>
+      <div class="lesson-sub">没有孩子的节点有多少个</div>
+    </div>
+    <div class="lesson-body">
+      <p>叶子节点是指没有左孩子也没有右孩子的节点，就像家谱里最小的一代。统计叶子节点可以帮我们理解递归在树上的应用。</p>
+      <p>思路：如果当前节点为空，返回 0；如果当前节点没有左右孩子，返回 1；否则返回左右子树叶子节点数之和。</p>
+      <div class="code-block lang-py" data-file="count_leaves.py" data-lang="python"><pre>def count_leaves(node):
+    if node is None:
+        return 0
+    if node.left is None and node.right is None:
+        return 1
+    return count_leaves(node.left) + count_leaves(node.right)
+
+print("叶子节点数：", count_leaves(root))   # 3</pre></div>
+      <div class="code-block lang-cpp" data-file="count_leaves.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>count_leaves.cpp</div>
+        <pre>int countLeaves(TreeNode* node) {
+    if (node == nullptr) return 0;
+    if (node-&gt;left == nullptr &amp;&amp; node-&gt;right == nullptr) return 1;
+    return countLeaves(node-&gt;left) + countLeaves(node-&gt;right);
+}
+
+cout &lt;&lt; "叶子节点数：" &lt;&lt; countLeaves(root);   // 3</pre>
+      </div>
+      <p><strong>练习：</strong>修改上面的代码，统计二叉树中所有节点的总数。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>对于一棵二叉搜索树，哪种遍历能得到升序结果？</p>
+      <div class="quiz" data-answer="B">
+        <h4>二叉搜索树按什么顺序遍历会得到升序序列？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。前序遍历 不是本题的正确答案。中序遍历 才是正确的。" type="button">A. 前序遍历</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。中序遍历" type="button">B. 中序遍历</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。后序遍历 不是本题的正确答案。中序遍历 才是正确的。" type="button">C. 后序遍历</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 E · 模块 3</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgE-m3-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

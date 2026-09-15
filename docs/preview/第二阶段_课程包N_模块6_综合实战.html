@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    综合实战 · 第二阶段课程包 N 模块 6
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgN-m6-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 N 模块 6：用 AI 从零搭建一个完整网站并部署。支持离线打开、深色模式、学习进度本地保存。">
+  <title>综合实战 · 第二阶段课程包 N 模块 6</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>综合实战 · 课程包 N</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包N_Vibe_Coding_高阶.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包N_Vibe_Coding_高阶.html">课程包 N</a>
+    <span>/</span>
+    <span>模块 6：综合实战</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 N · 模块 6</span>
+    <h1>综合实战</h1>
+    <p>用 AI 从零搭建一个完整网站并部署</p>
+    <a class="start-btn" href="#lesson-1">开始模块 6 第 1 小节 →</a>
+    <span class="meta">模块 6 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>选题与需求定义</h2>
+      <div class="lesson-sub">做一个小而完整的网站</div>
+    </div>
+    <div class="lesson-body">
+      <p>
+        本模块的实战目标是：用 AI 帮你从零搭建一个完整的小网站，并部署到互联网上。
+        为了可控，我们选择做一个功能简单但五脏俱全的项目。
+      </p>
+      <p><strong>推荐选题：个人作品集主页</strong></p>
+      <p>
+        原因：不需要后端，只要 HTML + CSS + JS 就能完成；
+        而且完成后可以直接作为自己的主页展示。
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>项目需求（MVP）</div>
+        <pre>个人作品集主页：
+- 顶部导航：首页、作品、关于、联系
+- 首页：一句简介 + 个人头像/占位图
+- 作品页：3 个项目卡片，每个包含标题、简介、链接
+- 关于页：一段自我介绍
+- 联系页：邮箱和社交链接
+- 响应式布局，适配手机
+- 深色/浅色主题切换（可选）</pre>
+      </div>
+      <p>
+        把需求写成一份完整的 prompt，发给 AI。参考结构：
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>初始 prompt 模板</div>
+        <pre>角色：你是一名熟悉原生 HTML/CSS/JS 的前端工程师。
+
+目标：帮我做一个个人作品集主页网站。
+
+功能需求：
+1. 顶部固定导航，包含首页、作品、关于、联系四个入口
+2. 点击导航切换内容，页面不刷新
+3. 作品页至少展示 3 个项目卡片
+4. 联系页展示邮箱和 GitHub 链接
+5. 适配手机浏览
+
+约束：
+- 单文件 HTML（把所有 CSS 和 JS 写在同一个文件里）
+- 不使用外部框架
+- 代码注释用中文
+- 风格简洁现代
+
+请输出完整可运行的 HTML 代码。</pre>
+      </div>
+      <p>
+        拿到第一版代码后，先保存为 <code>index.html</code>，双击看看效果。
+        接下来我们会通过多轮对话迭代优化。
+      </p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+<section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>生成与迭代</h2>
+      <div class="lesson-sub">把第一版改成可用的样子</div>
+    </div>
+    <div class="lesson-body">
+      <p>
+        第一版代码通常有这些问题：颜色搭配奇怪、手机上看太挤、内容用了太多占位符。
+        不要灰心，这正是多轮对话发挥作用的时候。
+      </p>
+      <p><strong>建议的迭代顺序：</strong></p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>迭代计划</div>
+        <pre>第 1 轮：修 bug
+- 导航切换是否正常？
+- 手机上有没有横向滚动条？
+- 图片是否能正常显示？
+
+第 2 轮：改内容
+- 把占位文字换成你自己的真实信息
+- 把示例项目换成你自己的项目或练习作品
+
+第 3 轮：调样式
+- 统一配色（可以用在线工具如 coolors.co）
+- 调整间距和字体大小
+- 增加 hover 效果和过渡动画
+
+第 4 轮：加小功能
+- 深色/浅色主题切换
+- 返回顶部按钮
+- 简单的表单验证</pre>
+      </div>
+      <p>
+        每轮只聚焦一个主题。例如：
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>迭代 prompt 示例</div>
+        <pre>请修改当前代码，实现深色/浅色主题切换：
+1. 在右上角添加一个切换按钮（太阳/月亮图标或文字）
+2. 点击后切换深色和浅色两套 CSS 变量
+3. 刷新页面后记住用户的选择（用 localStorage）
+4. 默认跟随系统主题
+
+注意：只改样式相关代码，不要动页面结构和导航逻辑。</pre>
+      </div>
+      <p>
+        迭代过程中记得勤保存。每得到一版满意的代码，就复制一份备份，
+        文件名用 <code>index_v1.html</code>、<code>index_v2.html</code> 这样区分。
+      </p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+<section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>本地验证与常见部署方式</h2>
+      <div class="lesson-sub">让全世界都能访问你的网站</div>
+    </div>
+    <div class="lesson-body">
+      <p>
+        代码改到满意后，先在本机做最后一轮检查，再部署上线。
+      </p>
+      <p>如果你实在不懂如何操作，可以暂时跳过这一小节</p>
+      <p><strong>本地验证清单：</strong></p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>上线前检查</div>
+        <pre>□ 在 Chrome、Edge、Firefox 中打开是否正常？
+□ 按 F12 打开开发者工具，Console 有没有红色报错？
+□ 手机模式下（浏览器 DevTools 的设备模拟）是否显示正常？
+□ 所有链接是否都能点击？
+□ 图片和资源路径是否正确？</pre>
+      </div>
+      <p><strong>常见部署方式：</strong></p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>部署选项</div>
+        <pre>1. GitHub Pages（免费，适合静态网站）
+   - 把代码推到 GitHub 仓库
+   - 在仓库 Settings → Pages 里启用
+   - 获得一个 xxx.github.io 的网址
+
+2. CloudStudio / CloudBase（国内访问快）
+   - 上传文件到静态网站托管
+   - 自动生成访问链接
+
+3. Vercel / Netlify（国外平台，功能强大）
+   - 连接 GitHub 仓库自动部署
+   - 支持自定义域名</pre>
+      </div>
+      <p>
+        对于我们的个人作品集主页，<strong>GitHub Pages 是最简单免费的选择</strong>。
+        如果你已经有 GitHub 账号，整个过程大概 10 分钟。
+      </p>
+      <p>
+        如果你不想用 GitHub，也可以把 <code>index.html</code> 上传到任何静态托管服务。
+        只要服务器能返回 HTML 文件，你的网站就能被访问。
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>部署前的小提示</div>
+        <pre>1. 删除所有测试用的 console.log
+2. 检查文件路径是相对路径（./style.css）还是绝对路径（/style.css）
+3. 所有图片最好放在项目文件夹里，不要引用可能失效的外部链接
+4. 给网页加上 title 和 meta description，搜索引擎更容易找到</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：发布你的个人作品集主页</h2>
+      <div class="lesson-sub">从 0 到 1，让网站上线</div>
+    </div>
+    <div class="lesson-body">
+      <p>
+        现在把前面所有模块的内容串起来，完成一个真正的项目：
+        用 AI 生成、迭代、审查，最后部署一个个人作品集主页。
+      </p>
+      <p><strong>项目时间表（建议）：</strong></p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>开发计划</div>
+        <pre>第 1 步：写初始 prompt（模块 1 + 模块 2）
+- 明确角色、目标、约束
+- 让 AI 生成第一版单文件 HTML
+
+第 2 步：多轮迭代（模块 4）
+- 修 bug
+- 改内容
+- 调样式
+- 加主题切换
+
+第 3 步：审代码（模块 3）
+- 检查 Console 报错
+- 让 AI 审查自己的代码
+- 测试手机和不同浏览器
+
+第 4 步：整理文件结构（模块 5）
+- 虽然现在单文件也能跑，但可以练习拆成 css/style.css 和 js/main.js
+- 写一份 README.md
+
+第 5 步：部署上线
+- 上传到 GitHub Pages 或其他静态托管
+- 把链接分享给朋友</pre>
+      </div>
+      <p><strong>验收标准：</strong></p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>完成检查</div>
+        <pre>□ 网站可以通过一个公开链接访问
+□ 手机打开显示正常
+□ 导航切换流畅
+□ 没有明显的拼写错误和占位内容
+□ 源代码有基本注释
+□ 你自己能向别人解释网站的每个部分是怎么来的</pre>
+      </div>
+      <p>
+        完成这个项目后，你就体验了一次完整的 Vibe Coding 高阶流程：
+        不是让 AI 替你写，而是让 AI 在你的导演下，一起完成一个作品。
+      </p>
+      <p>
+        把最后的发布链接记录下来，它是你学习成果的最好证明。
+      </p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：用 AI 从零搭建一个完整网站并部署</p>
+      <div class="quiz" data-answer="B">
+        <h4>对于纯 HTML/CSS/JS 的个人作品集主页，最适合的免费部署方式是？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。购买一台服务器并安装数据库 不是本题的正确答案。GitHub Pages 等静态网站托管服务 才是正确的。" type="button">A. 购买一台服务器并安装数据库</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。GitHub Pages 等静态网站托管服务" type="button">B. GitHub Pages 等静态网站托管服务</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。把网页文件发给每个访客 不是本题的正确答案。GitHub Pages 等静态网站托管服务 才是正确的。" type="button">C. 把网页文件发给每个访客</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 N · 模块 6</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgN-m6-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

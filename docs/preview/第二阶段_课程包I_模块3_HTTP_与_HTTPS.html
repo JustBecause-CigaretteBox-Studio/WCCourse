@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    HTTP 与 HTTPS · 第二阶段课程包 I 模块 3
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgI-m3-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 I 模块 3：浏览器里的秘密，请求与响应。支持离线打开、深色模式、学习进度本地保存。">
+  <title>HTTP 与 HTTPS · 第二阶段课程包 I 模块 3</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .callout { border: 1px solid; border-radius: 12px; padding: 16px; margin: 16px 0; font-size: 14px; line-height: 1.8; }
+  .callout-title { font-weight: 700; margin-bottom: 6px; }
+  .callout.idea { border-color: #bae6fd; background: #f0f9ff; color: #0c4a6e; }
+  .callout.warn { border-color: #fecdd3; background: #fff1f2; color: #881337; }
+  .callout.key  { border-color: #ddd6fe; background: #f5f3ff; color: #4c1d95; }
+  html.dark .callout.idea { border-color: #075985; background: rgba(8,47,73,.4);  color: #bae6fd; }
+  html.dark .callout.warn { border-color: #9f1239; background: rgba(76,5,25,.4);   color: #fecdd3; }
+  html.dark .callout.key  { border-color: #6d28d9; background: rgba(46,16,101,.4); color: #ddd6fe; }
+  .grid-2 { display: grid; gap: 12px; margin: 16px 0; }
+  @media (min-width: 640px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+  .card { border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); padding: 16px; }
+  .card-label { font-size: 12px; font-weight: 700; color: var(--text-faint); margin-bottom: 6px; }
+  .card-big { font-size: 15px; font-weight: 700; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-py single-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>HTTP 与 HTTPS · 课程包 I</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包I_网络漫游.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active" disabled>Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包I_网络漫游.html">课程包 I</a>
+    <span>/</span>
+    <span>模块 3：HTTP 与 HTTPS</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 I · 模块 3</span>
+    <h1>HTTP 与 HTTPS</h1>
+    <p>浏览器里的秘密，请求与响应</p>
+    <a class="start-btn" href="#lesson-1">开始模块 3 第 1 小节 →</a>
+    <span class="meta">模块 3 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>HTTP：浏览器和服务器之间的对话</h2>
+    </div>
+    <div class="lesson-body">
+      <p>当你在浏览器输入一个网址并按下回车，浏览器会向服务器发送一条 <strong>HTTP 请求（Request）</strong>；服务器收到后，返回一条 <strong>HTTP 响应（Response）</strong>。浏览器根据响应内容把网页渲染出来。整个过程就像你去餐厅点餐：你说「我要一份牛肉面」（请求），服务员把面端上来（响应）。</p>
+      <p>HTTP 请求里最重要的几个部分是：<strong>方法（Method）</strong>、<strong>路径（Path）</strong>、<strong>请求头（Headers）</strong>和<strong>请求体（Body）</strong>。最常用的两个方法是 <code>GET</code> 和 <code>POST</code>：<code>GET</code> 用来「获取」资源，<code>POST</code> 用来「提交」数据。</p>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-label">GET</div>
+          <div class="card-big">向服务器要东西。参数放在 URL 后面，比如 /search?q=python。</div>
+        </div>
+        <div class="card">
+          <div class="card-label">POST</div>
+          <div class="card-big">向服务器提交东西。参数放在请求体里，比如登录表单、发表评论。</div>
+        </div>
+      </div>
+      <p>下面用 Python 标准库的 <code>urllib.request</code> 发起一次简单的 GET 请求。注意：这段代码需要联网。</p>
+      <div class="code-block" data-file="simple_get.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>simple_get.py</div>
+        <pre>from urllib.request import urlopen
+
+# 向 example.com 发送 GET 请求
+url = "https://www.example.com"
+response = urlopen(url)
+
+print("状态码：", response.status)          # 200 表示成功
+print("内容类型：", response.headers.get("Content-Type"))
+print("\n网页前 300 字符：")
+print(response.read(300).decode("utf-8"))</pre>
+      </div>
+      <p>如果网络正常，你会看到状态码 <code>200</code>，以及网页的 HTML 开头。<code>200</code> 是 HTTP 状态码的一种，表示「一切正常」。后面我们会见到更多状态码。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>状态码、响应头与响应体</h2>
+    </div>
+    <div class="lesson-body">
+      <p>HTTP 响应也分成三部分：<strong>状态行</strong>（协议版本 + 状态码 + 状态文本）、<strong>响应头</strong>（描述响应的元数据）和<strong>响应体</strong>（真正的内容，比如 HTML、图片、JSON）。</p>
+      <p>状态码是三位数字，按首位分成几类：</p>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-label">2xx 成功</div>
+          <div class="card-big">200 OK 最常见；201 Created 表示新建成功。</div>
+        </div>
+        <div class="card">
+          <div class="card-label">3xx 重定向</div>
+          <div class="card-big">301/302 表示资源搬家了，浏览器要跳转到新地址。</div>
+        </div>
+        <div class="card">
+          <div class="card-label">4xx 客户端错误</div>
+          <div class="card-big">404 Not Found 最常见；400 Bad Request 是请求格式不对。</div>
+        </div>
+        <div class="card">
+          <div class="card-label">5xx 服务器错误</div>
+          <div class="card-big">500 Internal Server Error；503 Service Unavailable。</div>
+        </div>
+      </div>
+      <p>响应头里有很多有用信息。比如 <code>Content-Type</code> 告诉你响应体是 HTML、JSON 还是图片；<code>Content-Length</code> 告诉你内容有多长；<code>Set-Cookie</code> 让服务器在浏览器里留下小纸条，下次访问时带回去。</p>
+      <div class="code-block" data-file="check_status.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>check_status.py</div>
+        <pre>from urllib.request import urlopen
+from urllib.error import HTTPError, URLError
+
+urls = [
+    "https://www.example.com",
+    "https://www.example.com/404",  # 这个页面不存在
+    "https://this-domain-is-not-real-12345.com"
+]
+
+for url in urls:
+    print(f"\n→ 请求 {url}")
+    try:
+        with urlopen(url, timeout=5) as resp:
+            print(f"  状态码：{resp.status}")
+            print(f"  Content-Type：{resp.headers.get('Content-Type')}")
+    except HTTPError as e:
+        print(f"  HTTP 错误：{e.code} {e.reason}")
+    except URLError as e:
+        print(f"  网络/解析错误：{e.reason}")</pre>
+      </div>
+      <p>这段代码展示了网络编程的另一条铁律：<strong>永远要处理异常</strong>。网络请求可能因为断网、DNS 失败、服务器 500 错误而失败，程序必须优雅地处理这些情况。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>HTTPS：给快递箱加把锁</h2>
+    </div>
+    <div class="lesson-body">
+      <p>HTTP 有一个明显的问题：数据是<strong>明文</strong>传输的。如果有人在公共 Wi-Fi 里监听，就能看到你输入的账号密码、搜索内容。为了解决这个问题，出现了 <strong>HTTPS</strong>：在 HTTP 下面加了一层 TLS/SSL 加密。</p>
+      <p>你可以把 HTTPS 想象成「给快递箱加锁」：发件人和收件人各有一把钥匙，中间经过的任何人即使截获了包裹，也打不开。这把钥匙就是<strong>对称加密密钥</strong>，而钥匙怎么安全地送到对方手里，则由<strong>非对称加密</strong>和<strong>数字证书</strong>来保证。</p>
+      <div class="callout idea">
+        <div class="callout-title">💡 关键概念</div>
+        <p>HTTPS = HTTP + TLS/SSL。TLS 负责加密和身份验证；数字证书由受信任的机构（CA）颁发，证明「这个网站确实是它宣称的那个网站」。</p>
+      </div>
+      <p>在浏览器里，地址栏出现小锁图标就说明当前网页用了 HTTPS。点击小锁通常能看到证书信息：颁发者、有效期、域名等。</p>
+      <p>Python 的 <code>urllib</code> 默认会验证 HTTPS 证书。如果你访问一个证书无效的网站，程序会报错。这是好事，说明它在帮你识别假冒网站。下面这段代码展示如何安全地访问 HTTPS 站点：</p>
+      <div class="code-block" data-file="https_safe.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>https_safe.py</div>
+        <pre>from urllib.request import urlopen
+from urllib.error import URLError
+
+url = "https://www.python.org"
+try:
+    with urlopen(url, timeout=5) as resp:
+        print("状态码：", resp.status)
+        print("URL：", resp.url)  # 如果发生重定向，这里会显示最终地址
+        print("\n网页标题附近内容：")
+        text = resp.read(500).decode("utf-8")
+        print(text)
+except URLError as e:
+    print("请求失败：", e.reason)</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：网页状态检查器</h2>
+      <div class="lesson-sub">批量检查一组网址是否能正常访问</div>
+    </div>
+    <div class="lesson-body">
+      <p>运维和测试工作中经常需要检查一堆网址是否 alive。下面这个 Python 小工具会批量请求一组 URL，输出它们的状态码、响应时间和内容类型。你可以把它扩展成定时运行、发送告警邮件。</p>
+      <div class="code-block" data-file="url_health_checker.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>url_health_checker.py</div>
+        <pre>from urllib.request import urlopen
+from urllib.error import HTTPError, URLError
+import time
+
+urls = [
+    "https://www.example.com",
+    "https://www.python.org",
+    "https://httpbin.org/status/500",  # 服务器会返回 500
+    "https://httpbin.org/status/404"   # 服务器会返回 404
+]
+
+for url in urls:
+    start = time.time()
+    try:
+        with urlopen(url, timeout=5) as resp:
+            elapsed = (time.time() - start) * 1000
+            print(f"✅ {url}")
+            print(f"   状态码：{resp.status}，耗时：{elapsed:.1f}ms")
+            print(f"   Content-Type：{resp.headers.get('Content-Type')}")
+    except HTTPError as e:
+        print(f"⚠️  {url} -&gt; HTTP {e.code} {e.reason}")
+    except URLError as e:
+        print(f"❌ {url} -&gt; 网络错误：{e.reason}")
+    print()</pre>
+      </div>
+      <p>这个练习把模块 3 的核心知识点都用上了：</p>
+      <p>1. <strong>GET 请求</strong>：用 <code>urlopen</code> 向服务器要资源。</p>
+      <p>2. <strong>状态码</strong>：根据状态码判断请求是否成功。</p>
+      <p>3. <strong>HTTPS</strong>：<code>urlopen</code> 自动处理 TLS 加密和证书验证。</p>
+      <p>4. <strong>异常处理</strong>：<code>HTTPError</code> 和 <code>URLError</code> 分别对应 HTTP 错误和网络/解析错误。</p>
+      <div class="callout key">
+        <div class="callout-title">🔑 模块 3 小结</div>
+        <p>HTTP 是浏览器和服务器之间的请求/响应协议；状态码告诉我们结果；HTTPS 在 HTTP 基础上加密，保护数据不被窃听和篡改。Python 的 <code>urllib.request</code> 足以完成大多数基础网络请求。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：浏览器里的秘密，请求与响应</p>
+      <div class="quiz" data-answer="C">
+        <h4>下列哪一项最主要的作用是加密浏览器和服务器之间的通信，防止数据被窃听？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。HTTP 不是本题的正确答案。HTTPS 才是正确的。" type="button">A. HTTP</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。DNS 不是本题的正确答案。HTTPS 才是正确的。" type="button">B. DNS</button>
+        <button class="quiz-opt" data-val="C" data-explain="正确。HTTPS" type="button">C. HTTPS</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 I · 模块 3</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgI-m3-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

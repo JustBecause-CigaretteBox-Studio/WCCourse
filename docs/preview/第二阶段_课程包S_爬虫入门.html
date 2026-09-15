@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    爬虫入门 · 第二阶段课程包 S
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    点击模块卡片进入对应教程页面，模块进度从浏览器本地存储读取。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 S：网上抓点数据。选择模块开始学习，进度自动保存在浏览器本地存储中。">
+  <title>爬虫入门 · 第二阶段课程包 S</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .hero .meta { margin-top: 20px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .module-grid { display: grid; gap: 16px; }
+  @media (min-width: 640px) { .module-grid { grid-template-columns: repeat(2, 1fr); } }
+  .module-card {
+    display: flex; flex-direction: column;
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 24px;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    text-decoration: none; color: inherit;
+  }
+  .module-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(15,23,42,.12); }
+  html.dark .module-card:hover { border-color: #3b4260; }
+  .module-card.coming { opacity: .7; cursor: default; }
+  .module-card.coming:hover { transform: none; box-shadow: none; border-color: var(--border); }
+  .module-no {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #0284c7;
+  }
+  html.dark .module-no { color: #38bdf8; }
+  .module-card h3 { font-size: 18px; font-weight: 800; margin-top: 8px; }
+  .module-card p { font-size: 14px; line-height: 1.8; color: var(--text-soft); margin-top: 8px; flex: 1; }
+  .module-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .module-tags span {
+    font-size: 12px; color: var(--text-faint);
+    background: var(--bg-soft); padding: 3px 8px; border-radius: 99px;
+  }
+  .card-progress { margin-top: 16px; }
+  .card-progress .meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-faint); margin-bottom: 6px; }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .module-actions { margin-top: 16px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; padding: 10px 16px; border-radius: 10px;
+    background: #0ea5e9; color: #fff; font-size: 14px; font-weight: 700;
+    text-decoration: none; border: 0; cursor: pointer;
+  }
+  .btn:hover { background: #0284c7; }
+  .btn.done { background: #10b981; }
+  .btn.done:hover { background: #059669; }
+  .btn[aria-disabled="true"] {
+    background: var(--bg-soft); color: var(--text-faint); cursor: not-allowed;
+  }
+  .soon-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 100%; padding: 10px 16px; border-radius: 10px;
+    background: var(--bg-soft); color: var(--text-faint); font-size: 14px; font-weight: 700;
+  }
+  .pkg-progress-card {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 24px; margin-bottom: 32px;
+  }
+  .pkg-progress-card .label { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-soft); margin-bottom: 10px; }
+  .pkg-progress-card .label strong { color: var(--text); }
+  .note {
+    margin-top: 32px; padding: 16px 20px; border-radius: 12px;
+    border: 1px dashed var(--border); background: var(--bg-section);
+    color: var(--text-soft); font-size: 13px; line-height: 1.9;
+  }
+  .note strong { color: var(--text); }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="logo">&lt;/&gt;</span>
+      <span>野鸡动画编程课</span>
+    </a>
+    <div class="header-right">
+      <a class="icon-btn" href="index.html">返回主页</a>
+      <button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="index.html" onclick="goStage2();return false;">第二阶段</a>
+    <span>/</span>
+    <span>课程包 S：爬虫入门</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">🎒 第二阶段 · 课程包 S</span>
+    <h1>爬虫入门</h1>
+    <p>网上抓点数据</p>
+    <div class="meta">共 6 个模块 · 全部已上线</div>
+  </div>
+
+  <div class="pkg-progress-card">
+    <div class="label">
+      <span>课程包 S 整体进度</span>
+      <strong id="pkg-progress-text">0/0 小节</strong>
+    </div>
+    <div class="bar"><i id="pkg-progress-bar"></i></div>
+  </div>
+
+  <h2 class="section-title">选择模块</h2>
+
+  <div class="module-grid" id="modules"></div>
+
+  <div class="note">
+    <strong>💡 关于课程包</strong><br>
+    第二阶段不再规定学习顺序。你可以按推荐方向选修，也可以自由挑选感兴趣的课程包。
+    本课程包所有模块均为单文件离线网页，进度保存在浏览器 localStorage 中。
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段课程包 S</p>
+  <p>打开新世界的大门，让代码替你干更多活。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  var MODULES = [{"no": 1, "title": "什么是爬虫", "subtitle": "礼貌地借数据，法律与道德边界", "file": "第二阶段_课程包S_模块1_什么是爬虫.html", "lessons": [1, 2, 3, 4], "key": "coding-101-pkgS-m1-progress", "tags": ["爬虫概念", "robots.txt", "法律伦理"], "available": true}, {"no": 2, "title": "HTTP 请求与 HTML 解析", "subtitle": "requests 拿到网页，结构分析", "file": "第二阶段_课程包S_模块2_HTTP_请求与_HTML_解析.html", "lessons": [1, 2, 3, 4], "key": "coding-101-pkgS-m2-progress", "tags": ["requests", "HTTP", "HTML"], "available": true}, {"no": 3, "title": "BeautifulSoup", "subtitle": "解剖网页，提取标题、链接、表格", "file": "第二阶段_课程包S_模块3_Bea_tif_lSo_p.html", "lessons": [1, 2, 3, 4], "key": "coding-101-pkgS-m3-progress", "tags": ["BeautifulSoup", "解析", "链接"], "available": true}, {"no": 4, "title": "保存数据", "subtitle": "从网页到 Excel / CSV / 数据库", "file": "第二阶段_课程包S_模块4_保存数据.html", "lessons": [1, 2, 3, 4], "key": "coding-101-pkgS-m4-progress", "tags": ["CSV", "Excel", "SQLite"], "available": true}, {"no": 5, "title": "爬虫的规矩", "subtitle": "robots.txt、反爬、请求频率控制", "file": "第二阶段_课程包S_模块5_爬虫的规矩.html", "lessons": [1, 2, 3, 4], "key": "coding-101-pkgS-m5-progress", "tags": ["robots.txt", "反爬", "频率控制"], "available": true}, {"no": 6, "title": "综合实战", "subtitle": "抓取天气 / 新闻 / 歌词，做成每日简报", "file": "第二阶段_课程包S_模块6_综合实战.html", "lessons": [1, 2, 3, 4], "key": "coding-101-pkgS-m6-progress", "tags": ["每日简报", "综合项目"], "available": true}];
+
+  function progressFor(key, total, legacyKey) {
+    var raw = read(key);
+    var fromLegacy = false;
+    if (!raw && legacyKey) {
+      raw = read(legacyKey);
+      fromLegacy = !!raw;
+    }
+    var data = {};
+    try { data = JSON.parse(raw || "{}"); } catch (e) {}
+    // 只统计属于本模块的合法 lesson-1..lesson-total key
+    var validCount = 0;
+    var cleaned = {};
+    for (var k in data) {
+      if (data[k] && /^lesson-\d+$/.test(k)) {
+        var n = parseInt(k.replace("lesson-", ""), 10);
+        if (n >= 1 && n <= total) {
+          validCount++;
+          cleaned[k] = data[k];
+        }
+      }
+    }
+    // 清理脏数据：写回 cleaned；迁移 legacy -> new key 后删旧 key
+    if (raw) {
+      if (fromLegacy) {
+        store(key, JSON.stringify(cleaned));
+        try { localStorage.removeItem(legacyKey); } catch (e) {}
+      } else if (Object.keys(cleaned).length !== Object.keys(data).length) {
+        store(key, JSON.stringify(cleaned));
+      }
+    }
+    return { done: validCount, total: total, pct: total ? Math.min(100, Math.round(validCount / total * 100)) : 0 };
+  }
+
+  var grid = $("#modules");
+  var overallDone = 0, overallTotal = 0;
+
+  MODULES.forEach(function (m) {
+    var p = m.available ? progressFor(m.key, m.lessons.length) : { done: 0, total: 0, pct: 0 };
+    if (m.available) { overallDone += p.done; overallTotal += p.total; }
+
+    var card = document.createElement(m.available ? "a" : "div");
+    card.className = "module-card" + (m.available ? "" : " coming");
+    if (m.available) { card.href = m.file; }
+    else { card.setAttribute("aria-disabled", "true"); }
+
+    var tagsHtml = m.tags.map(function (t) { return "<span>" + t + "</span>"; }).join("");
+    var progressHtml = m.available && p.total
+      ? '<div class="card-progress">' +
+          '<div class="meta"><span>学习进度</span><span>' + p.done + "/" + p.total + ' 小节</span></div>' +
+          '<div class="bar"><i style="width:' + p.pct + '%"></i></div>' +
+        '</div>'
+      : '';
+
+    var actionHtml;
+    if (!m.available) {
+      actionHtml = '<span class="soon-badge">敬请期待</span>';
+    } else if (p.pct === 100) {
+      actionHtml = '<span class="btn done">✓ 已完成 · 复习</span>';
+    } else if (p.pct > 0) {
+      actionHtml = '<span class="btn">继续学习 →</span>';
+    } else {
+      actionHtml = '<span class="btn">开始学习 →</span>';
+    }
+
+    card.innerHTML =
+      '<div class="module-no">模块 ' + m.no + '</div>' +
+      '<h3>' + m.title + '</h3>' +
+      '<p>' + m.subtitle + '</p>' +
+      '<div class="module-tags">' + tagsHtml + '</div>' +
+      progressHtml +
+      '<div class="module-actions">' + actionHtml + '</div>';
+
+    grid.appendChild(card);
+  });
+
+  var overallPct = overallTotal ? Math.round(overallDone / overallTotal * 100) : 0;
+  $("#pkg-progress-text").textContent = overallDone + "/" + overallTotal + " 小节";
+  $("#pkg-progress-bar").style.width = overallPct + "%";
+
+  window.goStage2 = function () {
+    try { localStorage.setItem("coding-101-stage", "2"); } catch (e) {}
+  };
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

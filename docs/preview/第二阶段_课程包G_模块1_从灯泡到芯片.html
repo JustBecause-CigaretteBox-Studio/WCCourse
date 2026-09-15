@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    从灯泡到芯片 · 第二阶段课程包 G 模块 1
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgG-m1-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 G 模块 1：二进制、逻辑门、加法器。支持离线打开、深色模式、学习进度本地保存。">
+  <title>从灯泡到芯片 · 第二阶段课程包 G 模块 1</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .callout {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 16px; margin: 16px 0;
+  }
+  .callout-title { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .diagram {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-card); padding: 16px; margin: 16px 0;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    line-height: 1.6; overflow-x: auto;
+  }
+  .gate-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .gate-card {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-card); padding: 14px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .gate-card h4 {
+    font-size: 15px; color: var(--text); margin-bottom: 10px;
+  }
+  .gate-card svg {
+    width: 130px; height: 70px; margin-bottom: 10px;
+  }
+  .gate-card svg path,
+  .gate-card svg polygon,
+  .gate-card svg circle,
+  .gate-card svg line {
+    stroke: var(--text-soft);
+    stroke-width: 2;
+    fill: none;
+  }
+  .diagram-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 14px; text-align: center;
+  }
+  .diagram-table th,
+  .diagram-table td {
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+  }
+  .diagram-table th {
+    background: var(--bg-soft); color: var(--text);
+    font-weight: 700;
+  }
+  .diagram-table td { color: var(--text-soft); }
+  .gate-card svg text {
+    fill: var(--text-soft);
+    font-size: 11px;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    stroke: none;
+  }
+  .truth-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 13px; text-align: center;
+  }
+  .truth-table th,
+  .truth-table td {
+    border: 1px solid var(--border);
+    padding: 6px 8px;
+  }
+  .truth-table th {
+    background: var(--bg-soft); color: var(--text);
+    font-weight: 700;
+  }
+  .truth-table td { color: var(--text-soft); }
+  .truth-table td.high { color: #0ea5e9; font-weight: 700; }
+  html.dark .truth-table td.high { color: #38bdf8; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>从灯泡到芯片 · 课程包 G</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/4 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包G_计算机解剖.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包G_计算机解剖.html">课程包 G</a>
+    <span>/</span>
+    <span>模块 1：从灯泡到芯片</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 G · 模块 1</span>
+    <h1>从灯泡到芯片</h1>
+    <p>二进制、逻辑门、加法器</p>
+    <a class="start-btn" href="#lesson-1">开始模块 1 第 1 小节 →</a>
+    <span class="meta">模块 1 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">📚 学前提示</div>
+    <p>本模块会用到第 6 章「语法补完课」的知识：逻辑运算符（and / or / not、&amp;&amp; / || / !）和三元表达式（?:）。如果还没学，可以先返回主页学习第 6 章。</p>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>二进制：只有 0 和 1 的世界</h2>
+    </div>
+    <div class="lesson-body">
+      <p>计算机内部并不认识「A」「中」「3.14」这些符号，它只认识两种状态：<strong>通电</strong> 和 <strong>断电</strong>。我们把通电记作 <code>1</code>，断电记作 <code>0</code>。这就是二进制——整个世界只有 0 和 1。</p>
+
+      <p>你可以把一根电线想象成一个灯泡开关：</p>
+      <table class="diagram-table">
+        <thead><tr><th>开关</th><th>二进制</th><th>灯泡</th></tr></thead>
+        <tbody>
+          <tr><td>OFF</td><td>0</td><td>灭</td></tr>
+          <tr><td>ON</td><td>1</td><td>亮</td></tr>
+        </tbody>
+      </table>
+
+      <p>一个 0 或 1 叫做 1 个 <strong>比特（bit）</strong>。8 个比特组成 1 个 <strong>字节（byte）</strong>，可以表示 0～255 之间的数字。</p>
+
+      <div class="code-block lang-py" data-file="binary_demo.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>用 Python 观察二进制</div>
+        <pre># 把十进制转成二进制
+print(bin(5))     # 0b101，问问AI,bin()有什么作用，输出前面为什么有个0b
+print(bin(13))    # 0b1101
+
+# 把二进制转回十进制
+print(int("0b1010", 2))  # 10
+
+# 1 字节是 8 个比特，能表示的最大值 = 8 个 2 相乘再减 1
+print(2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 - 1)  # 255</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="binary_demo.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>binary_demo.cpp</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+// 把一个十进制数转成二进制并打印出来
+void print_binary(int n) {
+    int bits[8];              // 最多看 8 位
+    int count = 0;
+    while (n &gt; 0) {
+        bits[count] = n % 2;  // 除以 2 的余数就是当前这一位
+        n = n / 2;
+        count = count + 1;
+    }
+    // 倒着输出，才是正确的二进制顺序
+    for (int i = count - 1; i &gt;= 0; i--) {
+        cout &lt;&lt; bits[i];
+    }
+    cout &lt;&lt; endl;
+}
+
+int main() {
+    // 把十进制转成二进制
+    print_binary(5);    // 101
+    print_binary(13);   // 1101
+
+    // 1 字节能表示的最大值：8 个 2 相乘再减 1
+    cout &lt;&lt; 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 - 1 &lt;&lt; endl;  // 255
+    return 0;
+}</pre>
+      </div>
+
+      <p>二进制的位数越多，能表示的信息就越多。32 位可以表示约 42 亿个数，64 位则能表示一个天文数字。CPU、内存、硬盘里的所有数据，最终都是一长串 0 和 1。</p>
+      <p>不难想到，计算机显然需要巨量的0和1。要让物理世界承载这两个数字，最自然的办法就是用电的两种状态：通电代表 1，断电代表 0。</p>
+      <p>CPU 里塞进了上百亿个晶体管（可以想成开关）。每个开关都在以每秒几十亿次的频率翻转：通、断、通、断……对应着 1、0、1、0……目前只有半导体能在纳米尺度上实现这种极速、可控、可逆的通断，同时还不至于把电脑烧成电磁炉。</p>
+
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>逻辑门：芯片里的开关电路</h2>
+    </div>
+    <div class="lesson-body">
+      <p>如果只有一根电线，我们只能表示「有电/没电」。但把几根电线连起来，就可以做判断。芯片里最基本的判断单元叫做<strong>逻辑门</strong>，它根据输入的 0/1 决定输出什么。</p>
+
+      <p>最常见的三个逻辑门：</p>
+      <ul style="margin-left:20px;margin-bottom:12px">
+        <li><strong>与门 AND</strong>：两个输入都为 1，输出才为 1。</li>
+        <li><strong>或门 OR</strong>：只要有一个输入为 1，输出就为 1。</li>
+        <li><strong>非门 NOT</strong>：输入是 1 就输出 0，输入是 0 就输出 1。</li>
+      </ul>
+
+      <div class="gate-grid">
+        <div class="gate-card">
+          <h4>与门 AND</h4>
+          <svg viewBox="0 0 130 70" aria-label="与门符号">
+            <line x1="10" y1="25" x2="36" y2="25"/>
+            <line x1="10" y1="45" x2="36" y2="45"/>
+            <line x1="80" y1="35" x2="96" y2="35"/>
+            <path d="M36 13 L56 13 Q80 13 80 35 Q80 57 56 57 L36 57 Z"/>
+            <text x="1" y="29">A</text>
+            <text x="1" y="49">B</text>
+            <text x="98" y="39">输出</text>
+          </svg>
+          <table class="truth-table">
+            <thead><tr><th>A</th><th>B</th><th>输出</th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td>0</td><td>0</td></tr>
+              <tr><td>0</td><td class="high">1</td><td>0</td></tr>
+              <tr><td class="high">1</td><td>0</td><td>0</td></tr>
+              <tr><td class="high">1</td><td class="high">1</td><td class="high">1</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="gate-card">
+          <h4>或门 OR</h4>
+          <svg viewBox="0 0 130 70" aria-label="或门符号">
+            <line x1="10" y1="25" x2="38" y2="25"/>
+            <line x1="10" y1="45" x2="38" y2="45"/>
+            <line x1="80" y1="35" x2="96" y2="35"/>
+            <path d="M32 13 Q46 35 32 57 Q60 57 80 35 Q60 13 32 13 Z"/>
+            <text x="1" y="29">A</text>
+            <text x="1" y="49">B</text>
+            <text x="98" y="39">输出</text>
+          </svg>
+          <table class="truth-table">
+            <thead><tr><th>A</th><th>B</th><th>输出</th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td>0</td><td>0</td></tr>
+              <tr><td>0</td><td class="high">1</td><td class="high">1</td></tr>
+              <tr><td class="high">1</td><td>0</td><td class="high">1</td></tr>
+              <tr><td class="high">1</td><td class="high">1</td><td class="high">1</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="gate-card">
+          <h4>非门 NOT</h4>
+          <svg viewBox="0 0 130 70" aria-label="非门符号">
+            <line x1="10" y1="35" x2="40" y2="35"/>
+            <line x1="83" y1="35" x2="96" y2="35"/>
+            <path d="M40 15 L40 55 L72 35 Z"/>
+            <circle cx="78" cy="35" r="5"/>
+            <text x="1" y="39">A</text>
+            <text x="98" y="39">输出</text>
+          </svg>
+          <table class="truth-table">
+            <thead><tr><th>A</th><th>输出</th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td class="high">1</td></tr>
+              <tr><td class="high">1</td><td>0</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p>这些门电路本质上是用晶体管搭出来的。晶体管就像一个电控开关：给控制端加电，开关就闭合；不加电，开关就断开。现代 CPU 里有几十亿到上百亿个晶体管，它们组合成更复杂的门，再组合成加法器、寄存器、控制器。</p>
+
+      <div class="code-block lang-py" data-file="logic_gates.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>用 Python 模拟逻辑门</div>
+        <pre>def AND(a, b):
+    return 1 if a == 1 and b == 1 else 0
+
+def OR(a, b):
+    return 1 if a == 1 or b == 1 else 0
+
+def NOT(a):
+    return 0 if a == 1 else 1
+
+# 测试
+print("AND(1, 0) =", AND(1, 0))  # 0
+print("OR(1, 0)  =", OR(1, 0))   # 1
+print("NOT(1)    =", NOT(1))     # 0</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="logic_gates.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>logic_gates.cpp</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+int AND(int a, int b) {
+    return (a == 1 &amp;&amp; b == 1) ? 1 : 0;
+}
+
+int OR(int a, int b) {
+    return (a == 1 || b == 1) ? 1 : 0;
+}
+
+int NOT(int a) {
+    return (a == 1) ? 0 : 1;
+}
+
+int main() {
+    cout &lt;&lt; "AND(1, 0) = " &lt;&lt; AND(1, 0) &lt;&lt; endl;  // 0
+    cout &lt;&lt; "OR(1, 0)  = " &lt;&lt; OR(1, 0) &lt;&lt; endl;   // 1
+    cout &lt;&lt; "NOT(1)    = " &lt;&lt; NOT(1) &lt;&lt; endl;     // 0
+    return 0;
+}</pre>
+      </div>
+
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>加法器：用门电路做加减法</h2>
+    </div>
+    <div class="lesson-body">
+      <p>计算机不会做我们熟悉的「1+1=2」这种十进制加法，它只做二进制加法。而二进制加法规则非常简单：</p>
+      <table class="diagram-table">
+        <thead><tr><th>算式</th><th>结果</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>0 + 0</td><td>0</td><td>根本不用说明</td></tr>
+          <tr><td>0 + 1</td><td>1</td><td>根本不用说明</td></tr>
+          <tr><td>1 + 0</td><td>1</td><td>根本不用说明</td></tr>
+          <tr><td>1 + 1</td><td>10</td><td>写 0，向高位进 1</td></tr>
+        </tbody>
+      </table>
+
+      <p>只做两个 1 位二进制数相加的电路叫<strong>半加器</strong>。它有两个输出：一个叫「和（sum）」，一个叫「进位（carry）」。例如 1+1，sum=0，carry=1。</p>
+
+      <p>如果还要考虑来自低位的进位，就需要<strong>全加器</strong>。把很多个全加器串起来，就能做 8 位、16 位、32 位甚至 64 位的加法。这就是 CPU 里 <strong>ALU（算术逻辑单元）</strong> 的雏形。</p>
+
+      <div class="code-block lang-py" data-file="half_adder.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>用 Python 模拟半加器</div>
+        <pre># 上一小节的逻辑门函数，直接拿来用
+def AND(a, b):
+    return 1 if a == 1 and b == 1 else 0
+
+def OR(a, b):
+    return 1 if a == 1 or b == 1 else 0
+
+def XOR(a, b):
+    # 异或：两个输入「不一样」时输出 1
+    return 1 if a != b else 0
+
+def half_adder(a, b):
+    sum_bit = XOR(a, b)   # 和：只有一位是 1 时为 1
+    carry = AND(a, b)     # 进位：两位都是 1 时为 1
+    print(a, "+", b, "= 和", sum_bit, ", 进位", carry)
+
+for a in [0, 1]:
+    for b in [0, 1]:
+        half_adder(a, b)</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="half_adder.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>half_adder.cpp</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+// 上一小节的逻辑门函数，直接拿来用
+int AND(int a, int b) {
+    return (a == 1 &amp;&amp; b == 1) ? 1 : 0;
+}
+
+int XOR(int a, int b) {
+    // 异或：两个输入「不一样」时输出 1
+    return (a != b) ? 1 : 0;
+}
+
+void half_adder(int a, int b) {
+    int sum_bit = XOR(a, b);   // 和：只有一位是 1 时为 1
+    int carry = AND(a, b);     // 进位：两位都是 1 时为 1
+    cout &lt;&lt; a &lt;&lt; " + " &lt;&lt; b &lt;&lt; " = 和 " &lt;&lt; sum_bit &lt;&lt; ", 进位 " &lt;&lt; carry &lt;&lt; endl;
+}
+
+int main() {
+    int inputs[2] = {0, 1};
+    for (int i = 0; i &lt; 2; i++) {
+        for (int j = 0; j &lt; 2; j++) {
+            half_adder(inputs[i], inputs[j]);
+        }
+    }
+    return 0;
+}</pre>
+      </div>
+
+      <p>现代 CPU 里的 ALU 不仅能做加法，还能做减法（补码）、比较大小、位运算等。所有这些复杂操作，拆开看都是由 AND、OR、NOT 这样的简单门一层层组合出来的。</p>
+
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：做一个 1 位全加器模拟器</h2>
+      <div class="lesson-sub">用代码把二进制、逻辑门、加法器串起来</div>
+    </div>
+    <div class="lesson-body">
+      <p>前面我们分别学了二进制、逻辑门和半加器。现在把它们合起来，写一个真正的 <strong>1 位全加器</strong>：输入三个比特（a、b 和来自低位的进位 c_in），输出两个比特（和 s、向高位的进位 c_out）。</p>
+
+      <p>全加器的逻辑可以这样拆：</p>
+      <ul style="margin-left:20px;margin-bottom:12px">
+        <li>先用一个半加器算 a + b，得到中间和 s1 和中间进位 c1。</li>
+        <li>再用一个半加器算 s1 + c_in，得到最终和 s 和进位 c2。</li>
+        <li>最终向高位的进位 c_out = c1 OR c2。</li>
+      </ul>
+
+      <div class="code-block lang-py" data-file="full_adder.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>1 位全加器 Python 实现</div>
+        <pre># 前面小节的逻辑门函数
+def AND(a, b):
+    return 1 if a == 1 and b == 1 else 0
+
+def OR(a, b):
+    return 1 if a == 1 or b == 1 else 0
+
+def XOR(a, b):
+    return 1 if a != b else 0
+
+# 半加器拆成「和」与「进位」两个小函数
+def half_sum(a, b):
+    return XOR(a, b)
+
+def half_carry(a, b):
+    return AND(a, b)
+
+def full_sum(a, b, c_in):
+    # 先算 a + b 的中间和，再和低位进位相加
+    return half_sum(half_sum(a, b), c_in)
+
+def full_carry(a, b, c_in):
+    c1 = half_carry(a, b)                  # 第一步产生的进位
+    c2 = half_carry(half_sum(a, b), c_in)  # 第二步产生的进位
+    return OR(c1, c2)                      # 任意一步有进位，就向高位进位
+
+# 验证所有 8 种输入组合
+print("a b c_in | sum carry")
+for a in [0, 1]:
+    for b in [0, 1]:
+        for c_in in [0, 1]:
+            print(a, b, " ", c_in, " |  ", full_sum(a, b, c_in), "    ", full_carry(a, b, c_in))</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="full_adder.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>full_adder.cpp</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+// 前面小节的逻辑门函数
+int AND(int a, int b) {
+    return (a == 1 &amp;&amp; b == 1) ? 1 : 0;
+}
+
+int OR(int a, int b) {
+    return (a == 1 || b == 1) ? 1 : 0;
+}
+
+int XOR(int a, int b) {
+    return (a != b) ? 1 : 0;
+}
+
+// 半加器拆成「和」与「进位」两个小函数
+int half_sum(int a, int b) {
+    return XOR(a, b);
+}
+
+int half_carry(int a, int b) {
+    return AND(a, b);
+}
+
+int full_sum(int a, int b, int c_in) {
+    // 先算 a + b 的中间和，再和低位进位相加
+    return half_sum(half_sum(a, b), c_in);
+}
+
+int full_carry(int a, int b, int c_in) {
+    int c1 = half_carry(a, b);                  // 第一步产生的进位
+    int c2 = half_carry(half_sum(a, b), c_in);  // 第二步产生的进位
+    return OR(c1, c2);                          // 任意一步有进位，就向高位进位
+}
+
+int main() {
+    cout &lt;&lt; "a b c_in | sum carry" &lt;&lt; endl;
+    int inputs[2] = {0, 1};
+    for (int i = 0; i &lt; 2; i++) {
+        for (int j = 0; j &lt; 2; j++) {
+            for (int k = 0; k &lt; 2; k++) {
+                int a = inputs[i];
+                int b = inputs[j];
+                int c_in = inputs[k];
+                cout &lt;&lt; a &lt;&lt; " " &lt;&lt; b &lt;&lt; "   " &lt;&lt; c_in
+                     &lt;&lt; "   |  " &lt;&lt; full_sum(a, b, c_in)
+                     &lt;&lt; "     " &lt;&lt; full_carry(a, b, c_in) &lt;&lt; endl;
+            }
+        }
+    }
+    return 0;
+}</pre>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">💡 扩展挑战</div>
+        <p>试着把 8 个全加器串起来，做一个 8 位加法器。提示：把第一个全加器的 c_in 固定为 0，它的 c_out 接到下一个全加器的 c_in，依次类推。这样你就能模拟 CPU 做整数加法的第一步了。</p>
+      </div>
+
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：二进制、逻辑门、加法器</p>
+      <div class="quiz" data-answer="A">
+        <h4>哪种逻辑门只有在两个输入都为 1 时，输出才为 1？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。与门 AND" type="button">A. 与门 AND</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。或门 OR 不是本题的正确答案。与门 AND 才是正确的。" type="button">B. 或门 OR</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。非门 NOT 不是本题的正确答案。与门 AND 才是正确的。" type="button">C. 非门 NOT</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 G · 模块 1</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgG-m1-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) {
+      btn.classList.add("completed");
+      btn.textContent = "✓ 已完成";
+    }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

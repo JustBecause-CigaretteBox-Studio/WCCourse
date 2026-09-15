@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    保存数据 · 第二阶段课程包 S 模块 4
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgS-m4-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 S 模块 4：从网页到 Excel / CSV / 数据库。支持离线打开、深色模式、学习进度本地保存。">
+  <title>保存数据 · 第二阶段课程包 S 模块 4</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .callout {
+    border: 1px solid; border-radius: 12px; padding: 16px; margin: 16px 0;
+    font-size: 14px; line-height: 1.8;
+  }
+  .callout.warn { border-color: #fecdd3; background: #fff1f2; color: #881337; }
+  .callout.idea { border-color: #bae6fd; background: #f0f9ff; color: #0c4a6e; }
+  .callout.key  { border-color: #ddd6fe; background: #f5f3ff; color: #4c1d95; }
+  html.dark .callout.warn { border-color: #9f1239; background: rgba(76,5,25,.4);   color: #fecdd3; }
+  html.dark .callout.idea { border-color: #075985; background: rgba(8,47,73,.4);  color: #bae6fd; }
+  html.dark .callout.key  { border-color: #6d28d9; background: rgba(46,16,101,.4); color: #ddd6fe; }
+  .callout-title { font-weight: 700; margin-bottom: 6px; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-py single-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>保存数据 · 课程包 S</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包S_爬虫入门.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active" disabled>Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包S_爬虫入门.html">课程包 S</a>
+    <span>/</span>
+    <span>模块 4：保存数据</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 S · 模块 4</span>
+    <h1>保存数据</h1>
+    <p>从网页到 Excel / CSV / 数据库</p>
+    <a class="start-btn" href="#lesson-1">开始模块 4 第 1 小节 →</a>
+    <span class="meta">模块 4 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>为什么要保存数据</h2>
+      <div class="lesson-sub">抓到的内容要落盘才有意义</div>
+    </div>
+    <div class="lesson-body">
+      <p>爬虫如果只是把结果打印在屏幕上，关掉终端就全没了。真正的价值在于把数据<strong>持久化</strong>——存进文件、表格或数据库，方便后续分析、统计或可视化。</p>
+
+      <p>新手阶段最常用的三种格式：</p>
+      <ul style="margin:12px 0 12px 24px">
+        <li><strong>CSV</strong>：纯文本表格，用逗号分隔，Excel 和 Python 都能直接打开。</li>
+        <li><strong>Excel（.xlsx）</strong>：适合需要格式化、多工作表的场景。</li>
+        <li><strong>SQLite 数据库</strong>：轻量级本地数据库，适合数据量大或需要查询的场景。</li>
+      </ul>
+
+      <div class="callout idea">
+        <div class="callout-title">💡 选择建议</div>
+        <p>如果只是做练习，CSV 最简单；如果需要给非技术人员查看，Excel 更友好；如果要长期积累或做条件查询，用 SQLite。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>保存到 CSV</h2>
+      <div class="lesson-sub">标准库 csv 模块一行一行写</div>
+    </div>
+    <div class="lesson-body">
+      <p>Python 标准库里的 <code>csv</code> 模块，不需要额外安装，就能读写 CSV 文件。</p>
+
+      <div class="code-block" data-file="save_csv.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>save_csv.py</div>
+        <pre>import csv
+
+# 假设已经从网页中提取到这些数据
+rows = [
+    ["标题", "链接", "日期"],
+    ["Python 入门", "https://example.com/python", "2026-08-01"],
+    ["爬虫基础", "https://example.com/crawl", "2026-08-05"],
+]
+
+with open("articles.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerows(rows)
+
+print("已保存到 articles.csv")</pre>
+      </div>
+
+      <p>关键点：</p>
+      <ul style="margin:12px 0 12px 24px">
+        <li><code>newline=""</code>：避免 Windows 下出现多余的空行。</li>
+        <li><code>encoding="utf-8"</code>：确保中文正常保存。</li>
+        <li><code>writer.writerows(rows)</code>：一次性写入多行。</li>
+      </ul>
+
+      <div class="callout warn">
+        <div class="callout-title">⚠️ 中文乱码</div>
+        <p>如果 Excel 打开 CSV 显示乱码，通常是因为编码不是 UTF-8。保存时显式指定 <code>encoding="utf-8-sig"</code> 可以让 Excel 正确识别。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>保存到 Excel 与 SQLite</h2>
+      <div class="lesson-sub">更正式的两种持久化方案</div>
+    </div>
+    <div class="lesson-body">
+      <p>如果目标读者习惯看 Excel，可以用 <code>openpyxl</code>：</p>
+
+      <div class="code-block" data-file="save_excel.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>save_excel.py</div>
+        <pre># pip install openpyxl
+from openpyxl import Workbook
+
+wb = Workbook()
+ws = wb.active
+ws.title = "文章"
+
+rows = [
+    ["标题", "链接", "日期"],
+    ["Python 入门", "https://example.com/python", "2026-08-01"],
+]
+
+for row in rows:
+    ws.append(row)
+
+wb.save("articles.xlsx")
+print("已保存到 articles.xlsx")</pre>
+      </div>
+
+      <p>如果数据需要查询、去重、长期积累，SQLite 是更好的选择：</p>
+
+      <div class="code-block" data-file="save_sqlite.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>save_sqlite.py</div>
+        <pre>import sqlite3
+
+conn = sqlite3.connect("articles.db")
+c = conn.cursor()
+
+# 创建表
+c.execute("""
+    CREATE TABLE IF NOT EXISTS articles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        url TEXT,
+        date TEXT
+    )
+""")
+
+# 插入数据
+c.execute(
+    "INSERT INTO articles (title, url, date) VALUES (?, ?, ?)",
+    ("Python 入门", "https://example.com/python", "2026-08-01")
+)
+
+conn.commit()
+conn.close()
+print("已保存到 articles.db")</pre>
+      </div>
+
+      <div class="callout key">
+        <div class="callout-title">🔑 本小节小结</div>
+        <p>CSV 适合简单练习，Excel 适合展示，SQLite 适合管理和查询。根据场景选择即可。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战</h2>
+      <div class="lesson-sub">抓取文章标题并保存为 CSV</div>
+    </div>
+    <div class="lesson-body">
+      <p>把前面模块的内容串起来：用 requests 请求、BeautifulSoup 解析、csv 保存。下面是一个完整的示例框架：</p>
+
+      <div class="code-block" data-file="full_pipeline.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>full_pipeline.py</div>
+        <pre>import csv
+import requests
+from bs4 import BeautifulSoup
+
+# 1. 请求（请换成允许抓取的公开网址，或在本地用 html_doc 练习）
+url = "https://example.com"
+resp = requests.get(url)
+
+# 2. 解析
+soup = BeautifulSoup(resp.text, "html.parser")
+articles = []
+for a in soup.find_all("a"):
+    title = a.get_text(strip=True)
+    link = a.get("href")
+    if title and link:
+        articles.append([title, link])
+
+# 3. 保存
+with open("articles.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerow(["标题", "链接"])
+    writer.writerows(articles)
+
+print(f"已保存 {len(articles)} 篇文章")</pre>
+      </div>
+
+      <p>练习任务：把 <code>url</code> 换成一个允许抓取的博客或新闻列表页，用浏览器开发者工具找到文章标题和链接所在的标签，修改解析逻辑，把结果保存到 CSV。完成后用 Excel 或文本编辑器打开 CSV 检查。</p>
+
+      <div class="callout key">
+        <div class="callout-title">🔑 模块 4 小结</div>
+        <p>✅ CSV 是最简单、最通用的保存方式。</p>
+        <p>✅ Excel 适合给人看，SQLite 适合管理和查询。</p>
+        <p>✅ 保存时注意编码和换行符问题。</p>
+        <p>✅ 完整流程：请求 → 解析 → 保存。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：从网页到 Excel / CSV / 数据库</p>
+      <div class="quiz" data-answer="B">
+        <h4>在 Python 中，把二维数据保存为纯文本表格文件，最简单的方式是？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。用 openpyxl 写 .xlsx 不是本题的正确答案。用标准库 csv 写 .csv 才是正确的。" type="button">A. 用 openpyxl 写 .xlsx</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。用标准库 csv 写 .csv" type="button">B. 用标准库 csv 写 .csv</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。用 SQLite 建数据库 不是本题的正确答案。用标准库 csv 写 .csv 才是正确的。" type="button">C. 用 SQLite 建数据库</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 S · 模块 4</p>
+  <p>抓到数据不算本事，存好数据才算。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgS-m4-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

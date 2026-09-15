@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    什么是动态规划 · 第二阶段课程包 F 模块 1
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgF-m1-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 F 模块 1：不重复造轮子，把答案记下来。支持离线打开、深色模式、学习进度本地保存。">
+  <title>什么是动态规划 · 第二阶段课程包 F 模块 1</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>什么是动态规划 · 课程包 F</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包F_动态规划.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包F_动态规划.html">课程包 F</a>
+    <span>/</span>
+    <span>模块 1：什么是动态规划</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 F · 模块 1</span>
+    <h1>什么是动态规划</h1>
+    <p>不再暴力，把答案记下来</p>
+    <a class="start-btn" href="#lesson-1">开始模块 1 第 1 小节 →</a>
+    <span class="meta">模块 1 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>动态规划是什么</h2>
+    </div>
+    <div class="lesson-body">
+      <p>你放学回家，学校（A）到家(D)之间是一张密密麻麻的街道网。你想找一条最短的路线。</p>
+      <p>一种暴力的办法：站在学校门口，逐个枚举所有可能的路线。然而，不同路线经常会在某个路口"撞车"——例如路线 A-C-B-D 和路线 A-E-B-D 中，两条路线在 B"撞车"后，接下来的问题一模一样："从 B 这个路口到家（D），怎么走最近？"但暴力算法不管这些，有多少条在 B"撞车"的路线，它就把这个路口（B）之后的所有可能性，分别重新计算多少次。</p>
+      <p>这时候你发现了两个事情：</p>
+      <p><strong>第一个事情叫"重叠子问题"。</strong>"从学校到家"这个大问题，其实是由无数个小问题拼成的："从 B 路口到家""从 C 路口到家"……而且这些小问题会反复出现。站在 A 路口时，要算"A 到家"；站在 B 路口时，某条路线也可能绕回 A 路口，于是又要算一遍"A 到家"。这些子问题不断堆叠、重复。</p>
+      <p><strong>第二个事情叫"最优子结构"。</strong>假设你已经知道了"从 A 路口到家最短是 2 公里"。那么当你站在 A 路口的邻居——B 路口时，如果 B 到 A 只有 300 米，你立刻就能确定：所有 B 到家且经过 A 的条路线一定不少于 2.3 公里。A 路口的最优解，直接成为了 B 路口最优解的一块积木。换句话说，大问题最优解的其中一块，一定是某个小问题的最优解。</p>
+      <p><strong>所以聪明的做法是：</strong>你带了一叠便利贴，从家反向往外走。每到一个新路口，你算出它到家的最短距离，写在便利贴上，贴在路牌背后。下次只要你又站到了这个路口，看一眼便利贴就能知道答案。</p>
+      <p>这些便利贴上的数字，就是<strong>状态</strong>。你填便利贴的顺序，就是<strong>状态转移</strong>。而"从家反向推"这个思路，就是<strong>递推</strong>。在编程里，"写便利贴"通常用数组或字典实现，称为<strong>记忆化</strong>或<strong>填表</strong>。动态规划不是某种具体的算法，而是一种解题思想：把大问题拆成相似的小问题，把小问题的答案存起来，避免重复计算。</p>
+      <div class="code-block lang-py" data-file="dp_idea.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>dp_idea.py</div>
+        <pre># 动态规划的核心：先算小问题，再拼大问题
+# 例如：计算 1+2+3+...+n
+# 我们记下 "前 i 项的和"，而不是每次都从 1 开始加
+
+def sum_dp(n):
+    dp = [0] * (n + 1)      # dp[i] 表示 1 到 i 的和
+    for i in range(1, n + 1):
+        dp[i] = dp[i - 1] + i  # 小答案拼成大答案
+    return dp[n]
+
+print(sum_dp(10))  # 55</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="dp_idea.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>dp_idea.cpp</div>
+        <pre>// 动态规划的核心：先算小问题，再拼大问题
+// 例如：计算 1+2+3+...+n
+// 我们记下 "前 i 项的和"，而不是每次都从 1 开始加
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+int sum_dp(int n) {
+    vector&lt;int&gt; dp(n + 1, 0);   // dp[i] 表示 1 到 i 的和
+    for (int i = 1; i &lt;= n; ++i) {
+        dp[i] = dp[i - 1] + i;  // 小答案拼成大答案
+    }
+    return dp[n];
+}
+
+int main() {
+    cout &lt;&lt; sum_dp(10) &lt;&lt; endl;  // 55
+    return 0;
+}</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>能用 DP 解决的问题长什么样</h2>
+    </div>
+    <div class="lesson-body">
+      <p>不是所有问题都能用动态规划解决。一个题目适合用 DP，通常具备下面两个特征：</p>
+      <p><strong>1. 重叠子问题（Overlapping Subproblems）</strong>：大问题拆成的小问题会反复出现。比如算斐波那契数列时，fib(5) 需要 fib(4) 和 fib(3)，而 fib(4) 又需要 fib(3)。如果不记下来，fib(3) 会被算很多次。</p>
+      <p><strong>2. 最优子结构（Optimal Substructure）</strong>：大问题的最优解可以由小问题的最优解组合得到。比如"从学校到家的最短路线"，一定是从学校到某个邻居路口的最短路线再加上那个路口到家的最短路线，或者直接从学校到家的路线。</p>
+      <p>换个生活化的类比：做一道复杂的菜时，如果每切一种配料都重新洗刀、洗菜板，就很慢；DP 就像先把所有配料洗好切好装在小碗里，炒菜时直接拿。只要配料（子问题）会被多次用到，先准备好就能省很多时间。</p>
+      <div class="code-block lang-py" data-file="fib_naive.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>fib_naive.py</div>
+        <pre># 普通递归：大量重复计算
+# 计算 fib(5) 时，fib(2) 会被计算 3 次
+
+def fib(n):
+    if n &lt;= 1:
+        return n
+    return fib(n - 1) + fib(n - 2)
+
+print(fib(5))   # 5
+print(fib(30))  # 832040（已经有点慢了）</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="fib_naive.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>fib_naive.cpp</div>
+        <pre>// 普通递归：大量重复计算
+// 计算 fib(5) 时，fib(2) 会被计算 3 次
+#include &lt;iostream&gt;
+using namespace std;
+
+int fib(int n) {
+    if (n &lt;= 1) return n;
+    return fib(n - 1) + fib(n - 2);
+}
+
+int main() {
+    cout &lt;&lt; fib(5) &lt;&lt; endl;   // 5
+    cout &lt;&lt; fib(30) &lt;&lt; endl;  // 832040（已经有点慢了）
+    return 0;
+}</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>把答案记下来：记忆化入门</h2>
+    </div>
+    <div class="lesson-body">
+      <p>解决重叠子问题最直接的办法，就是加一个"备忘录"。<span class="lang-py">在 Python 里，可以用字典或列表当备忘录；</span><span class="lang-cpp">在 C++ 里，可以用数组或 unordered_map 当备忘录；</span>计算某个子问题之前先查表，算完之后把结果写进表。</p>
+      <p>下面用 <code>fib_memo</code> 演示：第一次调用 fib(10) 时，会把 fib(0) 到 fib(10) 全部算一遍并保存；之后再访问已经算过的值，直接返回，几乎是瞬间完成。当 n 达到 50 甚至 1000 时，这种差别会极其明显。</p>
+      <div class="code-block lang-py" data-file="fib_memo.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>fib_memo.py</div>
+        <pre># 记忆化递归：把算过的结果存起来
+memo = {}
+
+def fib_memo(n):
+    if n in memo:
+        return memo[n]
+    if n &lt;= 1:
+        return n
+    memo[n] = fib_memo(n - 1) + fib_memo(n - 2)
+    return memo[n]
+
+print(fib_memo(50))   # 12586269025（普通递归会卡很久）
+print(fib_memo(100))  # 354224848179261915075</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="fib_memo.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>fib_memo.cpp</div>
+        <pre>// 记忆化递归：把算过的结果存起来
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+vector&lt;long long&gt; memo;
+
+long long fib_memo(int n) {
+    if (memo[n] != -1) return memo[n];
+    if (n &lt;= 1) return n;
+    memo[n] = fib_memo(n - 1) + fib_memo(n - 2);
+    return memo[n];
+}
+
+int main() {
+    memo.assign(101, -1);
+    cout &lt;&lt; fib_memo(50) &lt;&lt; endl;   // 12586269025（普通递归会卡很久）
+    cout &lt;&lt; fib_memo(100) &lt;&lt; endl;  // 354224848179261915075
+    return 0;
+}</pre>
+      </div>
+      <p>观察上面的代码：<code>memo</code> 就是那张"便利贴"。每次进入函数，先看便利贴上有没有答案；没有才算，算完贴上去。这个模式在 DP 里会反复出现，建议你把它记熟。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：青蛙跳台阶</h2>
+      <div class="lesson-sub">从递归到记忆化</div>
+    </div>
+    <div class="lesson-body">
+      <p>一只青蛙站在第 0 级台阶上，每次可以跳 1 级或 2 级。问到第 n 级台阶有多少种不同的跳法？</p>
+      <p>先想递归思路：要到第 n 级，最后一步要么从第 n-1 级跳上来，要么从第 n-2 级跳上来。所以 <code>ways(n) = ways(n-1) + ways(n-2)</code>。边界是 <code>ways(0)=1</code>（原地不动算一种），<code>ways(1)=1</code>。</p>
+      <p>这个关系和斐波那契几乎一样，也有大量重叠子问题。<span class="lang-py">我们用字典（哈希表）做记忆化，</span><span class="lang-cpp">我们用数组或 unordered_map 做记忆化，</span>把它改写成高效的版本。你也可以尝试改成自底向上循环的版本，体会"填表"的感觉。</p>
+      <div class="code-block lang-py" data-file="frog_jump.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>frog_jump.py</div>
+        <pre># 青蛙跳台阶：记忆化递归版
+cache = {}
+
+def ways(n):
+    if n in cache:
+        return cache[n]
+    if n == 0 or n == 1:
+        return 1
+    cache[n] = ways(n - 1) + ways(n - 2)
+    return cache[n]
+
+n = int(input("请输入台阶数 n："))
+print(f"跳到第 {n} 级共有 {ways(n)} 种方法")
+
+# 挑战：你能把它改成不用递归、直接用循环填表的版本吗？
+# 提示：创建一个 dp 数组，dp[i] 表示跳到第 i 级的方法数</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="frog_jump.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>frog_jump.cpp</div>
+        <pre>// 青蛙跳台阶：记忆化递归版
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+vector&lt;long long&gt; cache;
+
+long long ways(int n) {
+    if (cache[n] != -1) return cache[n];
+    if (n == 0 || n == 1) return 1;
+    cache[n] = ways(n - 1) + ways(n - 2);
+    return cache[n];
+}
+
+int main() {
+    int n;
+    cout &lt;&lt; "请输入台阶数 n：";
+    cin &gt;&gt; n;
+    cache.assign(n + 1, -1);
+    cout &lt;&lt; "跳到第 " &lt;&lt; n &lt;&lt; " 级共有 " &lt;&lt; ways(n) &lt;&lt; " 种方法" &lt;&lt; endl;
+
+    // 挑战：你能把它改成不用递归、直接用循环填表的版本吗？
+    // 提示：创建一个 dp 数组，dp[i] 表示跳到第 i 级的方法数
+    return 0;
+}</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：不重复造轮子，把答案记下来</p>
+      <div class="quiz" data-answer="B">
+        <h4>动态规划最核心的思想是什么？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。把所有可能的答案都枚举一遍，然后选最优 不是本题的正确答案。把大问题拆成小问题，把小问题的答案存起来避免重复计算 才是正确的。" type="button">A. 把所有可能的答案都枚举一遍，然后选最优</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。把大问题拆成小问题，把小问题的答案存起来避免重复计算" type="button">B. 把大问题拆成小问题，把小问题的答案存起来避免重复计算</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。性能取决于具体实现，不能一概而论。" type="button">C. 用更快的编程语言重写代码</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 F · 模块 1</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgF-m1-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    递归 · 第二阶段课程包 D 模块 5
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgD-m5-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 D 模块 5：函数自己调用自己，把大问题拆成小问题。支持离线打开、深色模式、学习进度本地保存。">
+  <title>递归 · 第二阶段课程包 D 模块 5</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .compare-table {
+    width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px;
+  }
+  .compare-table th, .compare-table td {
+    border: 1px solid var(--border); padding: 10px 12px; text-align: left;
+  }
+  .compare-table th { background: var(--bg-soft); color: var(--text); }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button {
+    border: 0; border-radius: 6px; padding: 4px 10px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    background: transparent; color: var(--text-faint);
+  }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  body.lang-cpp .lang-py { display: none !important; }
+  body.lang-py .lang-cpp { display: none !important; }
+    .diagram { border: 1px solid var(--border); border-radius: 14px; background: var(--bg-section); padding: 16px 18px; margin: 18px 0; }
+  .diagram .diagram-cap { font-size: 13px; font-weight: 700; color: var(--text-soft); margin-bottom: 10px; }
+  .diagram svg { width: 100%; height: auto; display: block; }
+  .dnode-fill { fill: var(--bg-card); stroke: var(--border); stroke-width: 1.5; }
+  .dnode-text { fill: var(--text); font-size: 13px; font-weight: 700; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+  .dnode-sub  { fill: var(--text-faint); font-size: 11px; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+  .dnode-accent .dnode-fill { fill: rgba(16,185,129,.14); stroke: #10b981; }
+  .dnode-accent .dnode-text { fill: #10b981; }
+  .dnode-repeat .dnode-fill { fill: rgba(239,68,68,.12); stroke: #ef4444; }
+  .dnode-repeat .dnode-text { fill: #ef4444; }
+  .dedge { stroke: var(--text-faint); stroke-width: 1.5; }
+  .darrow { stroke: var(--text-soft); stroke-width: 2; }
+  .darrow-head { fill: var(--text-soft); stroke: none; }
+  .dnote { fill: var(--text-soft); font-size: 12px; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+
+</style>
+</head>
+<body class="lang-cpp">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>递归 · 课程包 D</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/4 节</span>
+      </div>
+      <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active" type="button">C++</button>
+        <button data-lang="python" type="button">Python</button>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包D_算法入门.html">返回课程包</a>
+      <button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包D_算法入门.html">课程包 D</a>
+    <span>/</span>
+    <span>模块 5：递归</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 D · 模块 5</span>
+    <h1>递归</h1>
+    <p>函数自己调用自己，把大问题拆成小问题</p>
+    <a class="start-btn" href="#lesson-1">开始模块 5 第 1 小节 →</a>
+    <span class="meta">模块 5 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>函数自己调用自己</h2>
+    </div>
+    <div class="lesson-body">
+      <p>递归看起来就像俄罗斯套娃，最经典的例子是:从前有座山，山上有座庙，庙里有个老和尚在给小和尚讲故事，老和尚讲：“从前有座山，山上有座庙……”</p>
+      <p>再例如，计算阶乘：5! = 5 × 4 × 3 × 2 × 1。如果我们知道 4! 是多少，5! 就是 5 × 4!；而 4! 又是 4 × 3!……一直拆到 1! = 1。</p>
+      <p>也就是说，<strong>一个函数在解决问题时，调用了同一个函数来处理更小的子问题</strong>，这就是递归。</p>
+      <div class="code-block lang-py" data-file="factorial.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>Python 阶乘</div>
+        <pre>def factorial(n):
+    if n == 1:
+        return 1
+    return n * factorial(n - 1)
+
+print(factorial(5))  # 120</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="factorial.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>C++ 阶乘</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+int factorial(int n) {
+    if (n == 1) return 1;
+    return n * factorial(n - 1);
+}
+
+int main() {
+    cout &lt;&lt; factorial(5) &lt;&lt; endl;  // 120
+    return 0;
+}</pre>
+      </div>
+  <div class="diagram">
+    <div class="diagram-cap">图示 · 阶乘的递归过程：先一层层“调用进去”，再一层层“返回出来”</div>
+    <svg viewBox="0 0 680 380" role="img" aria-label="阶乘递归调用与返回示意图">
+      <defs>
+        <marker id="arrRight" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto" markerUnits="userSpaceOnUse">
+          <path class="darrow-head" d="M0,0 L12,6 L0,12 Z"/>
+        </marker>
+      </defs>
+
+      <!-- 调用框（左） -->
+      <g>
+        <rect class="dnode-fill" x="24" y="40" width="280" height="44" rx="9"/>
+        <text class="dnode-text" x="164" y="60" text-anchor="middle">factorial(5)</text>
+        <text class="dnode-sub" x="164" y="78" text-anchor="middle">= 5 × factorial(4)</text>
+
+        <rect class="dnode-fill" x="36" y="96" width="280" height="44" rx="9"/>
+        <text class="dnode-text" x="176" y="116" text-anchor="middle">factorial(4)</text>
+        <text class="dnode-sub" x="176" y="134" text-anchor="middle">= 4 × factorial(3)</text>
+
+        <rect class="dnode-fill" x="48" y="152" width="280" height="44" rx="9"/>
+        <text class="dnode-text" x="188" y="172" text-anchor="middle">factorial(3)</text>
+        <text class="dnode-sub" x="188" y="190" text-anchor="middle">= 3 × factorial(2)</text>
+
+        <rect class="dnode-fill" x="60" y="208" width="280" height="44" rx="9"/>
+        <text class="dnode-text" x="200" y="228" text-anchor="middle">factorial(2)</text>
+        <text class="dnode-sub" x="200" y="246" text-anchor="middle">= 2 × factorial(1)</text>
+
+        <g class="dnode-accent">
+          <rect class="dnode-fill" x="68" y="264" width="280" height="44" rx="9"/>
+          <text class="dnode-text" x="208" y="284" text-anchor="middle">factorial(1)</text>
+          <text class="dnode-sub" x="208" y="302" text-anchor="middle">= 1（终止条件）</text>
+        </g>
+      </g>
+
+      <!-- 返回框（右） -->
+      <g>
+        <g class="dnode-accent">
+          <rect class="dnode-fill" x="372" y="40" width="276" height="44" rx="9"/>
+          <text class="dnode-text" x="510" y="60" text-anchor="middle">= 120</text>
+          <text class="dnode-sub" x="510" y="78" text-anchor="middle">5 × 24（最终结果）</text>
+        </g>
+        <rect class="dnode-fill" x="352" y="96" width="276" height="44" rx="9"/>
+        <text class="dnode-text" x="490" y="116" text-anchor="middle">= 24</text>
+        <text class="dnode-sub" x="490" y="134" text-anchor="middle">4 × 6</text>
+
+        <rect class="dnode-fill" x="360" y="152" width="276" height="44" rx="9"/>
+        <text class="dnode-text" x="498" y="172" text-anchor="middle">= 6</text>
+        <text class="dnode-sub" x="498" y="190" text-anchor="middle">3 × 2</text>
+
+        <rect class="dnode-fill" x="368" y="208" width="276" height="44" rx="9"/>
+        <text class="dnode-text" x="506" y="228" text-anchor="middle">= 2</text>
+        <text class="dnode-sub" x="506" y="246" text-anchor="middle">2 × 1</text>
+      </g>
+
+      <!-- 调用阶段：每层展开为 n × factorial(n-1)（虚线） -->
+      <line class="dedge" x1="304" y1="62" x2="372" y2="62" stroke-dasharray="4 4"/>
+      <line class="dedge" x1="316" y1="118" x2="352" y2="118" stroke-dasharray="4 4"/>
+      <line class="dedge" x1="328" y1="174" x2="360" y2="174" stroke-dasharray="4 4"/>
+      <line class="dedge" x1="340" y1="230" x2="368" y2="230" stroke-dasharray="4 4"/>
+
+      <!-- 返回阶段：factorial(n) 的返回值带入上一层，算出 = (n+1)! -->
+      <line class="darrow" x1="348" y1="286" x2="366" y2="230" marker-end="url(#arrRight)"/>
+      <line class="darrow" x1="340" y1="230" x2="358" y2="174" marker-end="url(#arrRight)"/>
+      <line class="darrow" x1="328" y1="174" x2="350" y2="118" marker-end="url(#arrRight)"/>
+      <line class="darrow" x1="316" y1="118" x2="370" y2="62" marker-end="url(#arrRight)"/>
+
+      <text class="dnote" x="22" y="364">返回阶段：factorial(1)=1 逐层带回，算出 2、6、24，最终 factorial(5) = 120</text>
+    </svg>
+  </div>
+      <p>注意 <code>factorial(5)</code> 会调用 <code>factorial(4)</code>，后者再调用 <code>factorial(3)</code>，直到 <code>factorial(1)</code> 直接返回 1，然后一层一层返回结果。也就是说factorial(1)是最先被知道的，然后是factorial(2)、factorial(3)……。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>递归的两个关键</h2>
+    </div>
+    <div class="lesson-body">
+      <p>写递归时，一定要想清楚两件事，缺一不可：</p>
+      <ul style="margin: 12px 0 12px 20px; color: var(--text-soft);">
+        <li><strong>终止条件</strong>：什么时候不用再拆下去了？阶乘里就是 n == 1。</li>
+        <li><strong>递推关系</strong>：怎么把大问题变成小问题？阶乘里就是 n! = n × (n-1)!。</li>
+      </ul>
+      <p>如果忘了终止条件，函数会永远调用自己，直到程序崩溃，俗称“栈溢出”。开头那个“从前有座山……”的故事就是一个没有终止条件的递归。</p>
+      <p>再看一个例子：斐波那契数列，第 n 个数等于前两个数之和。</p>
+      <div class="code-block lang-py" data-file="fibonacci.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>Python 斐波那契</div>
+        <pre>def fib(n):
+    if n &lt;= 1:
+        return n
+    return fib(n - 1) + fib(n - 2)
+
+for i in range(8):
+    print(fib(i), end=" ")
+# 0 1 1 2 3 5 8 13</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="fibonacci.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>C++ 斐波那契</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+int fib(int n) {
+    if (n &lt;= 1) return n;
+    return fib(n - 1) + fib(n - 2);
+}
+
+int main() {
+    for (int i = 0; i &lt; 8; i++)
+        cout &lt;&lt; fib(i) &lt;&lt; " ";
+    // 0 1 1 2 3 5 8 13
+    return 0;
+}</pre>
+      </div>
+  <div class="diagram">
+    <div class="diagram-cap">图示 · 斐波那契的递归调用树：同一个子问题被反复计算</div>
+    <svg viewBox="0 0 680 360" role="img" aria-label="斐波那契递归调用树示意图">
+      <!-- 连线 -->
+      <g class="dedge">
+        <line x1="340" y1="39" x2="190" y2="79"/>
+        <line x1="340" y1="39" x2="490" y2="79"/>
+        <line x1="190" y1="105" x2="120" y2="145"/>
+        <line x1="190" y1="105" x2="260" y2="145"/>
+        <line x1="490" y1="105" x2="420" y2="145"/>
+        <line x1="490" y1="105" x2="560" y2="145"/>
+        <line x1="120" y1="171" x2="70" y2="211"/>
+        <line x1="120" y1="171" x2="170" y2="211"/>
+        <line x1="260" y1="171" x2="230" y2="211"/>
+        <line x1="260" y1="171" x2="290" y2="211"/>
+        <line x1="420" y1="171" x2="390" y2="211"/>
+        <line x1="420" y1="171" x2="450" y2="211"/>
+        <line x1="70" y1="237" x2="40" y2="287"/>
+        <line x1="70" y1="237" x2="100" y2="287"/>
+      </g>
+      <!-- 节点 -->
+      <g>
+        <g><rect class="dnode-fill" x="311" y="13" width="58" height="26" rx="8"/><text class="dnode-text" x="340" y="31" text-anchor="middle">fib(5)</text></g>
+        <g><rect class="dnode-fill" x="161" y="79" width="58" height="26" rx="8"/><text class="dnode-text" x="190" y="97" text-anchor="middle">fib(4)</text></g>
+        <g><rect class="dnode-fill" x="461" y="79" width="58" height="26" rx="8"/><text class="dnode-text" x="490" y="97" text-anchor="middle">fib(3)</text></g>
+        <g><rect class="dnode-fill" x="91" y="145" width="58" height="26" rx="8"/><text class="dnode-text" x="120" y="163" text-anchor="middle">fib(3)</text></g>
+        <g class="dnode-repeat"><rect class="dnode-fill" x="231" y="145" width="58" height="26" rx="8"/><text class="dnode-text" x="260" y="163" text-anchor="middle">fib(2)</text></g>
+        <g class="dnode-repeat"><rect class="dnode-fill" x="391" y="145" width="58" height="26" rx="8"/><text class="dnode-text" x="420" y="163" text-anchor="middle">fib(2)</text></g>
+        <g><rect class="dnode-fill" x="531" y="145" width="58" height="26" rx="8"/><text class="dnode-text" x="560" y="163" text-anchor="middle">fib(1)</text></g>
+        <g class="dnode-repeat"><rect class="dnode-fill" x="41" y="211" width="58" height="26" rx="8"/><text class="dnode-text" x="70" y="229" text-anchor="middle">fib(2)</text></g>
+        <g><rect class="dnode-fill" x="141" y="211" width="58" height="26" rx="8"/><text class="dnode-text" x="170" y="229" text-anchor="middle">fib(1)</text></g>
+        <g><rect class="dnode-fill" x="201" y="211" width="58" height="26" rx="8"/><text class="dnode-text" x="230" y="229" text-anchor="middle">fib(1)</text></g>
+        <g><rect class="dnode-fill" x="261" y="211" width="58" height="26" rx="8"/><text class="dnode-text" x="290" y="229" text-anchor="middle">fib(0)</text></g>
+        <g><rect class="dnode-fill" x="361" y="211" width="58" height="26" rx="8"/><text class="dnode-text" x="390" y="229" text-anchor="middle">fib(1)</text></g>
+        <g><rect class="dnode-fill" x="421" y="211" width="58" height="26" rx="8"/><text class="dnode-text" x="450" y="229" text-anchor="middle">fib(0)</text></g>
+        <g><rect class="dnode-fill" x="11" y="287" width="58" height="26" rx="8"/><text class="dnode-text" x="40" y="305" text-anchor="middle">fib(1)</text></g>
+        <g><rect class="dnode-fill" x="71" y="287" width="58" height="26" rx="8"/><text class="dnode-text" x="100" y="305" text-anchor="middle">fib(0)</text></g>
+      </g>
+
+      <text class="dnote" x="22" y="350">红色 = 被重复计算的子问题（fib(2) 出现 3 次、fib(1) 出现 5 次）。</text>
+    </svg>
+  </div>
+      <p>同一份子问题反复计算，就是朴素递归的代价（模块 6 会讲怎么优化）。</p>
+      <p>这里有两个终止条件：fib(0)=0 和 fib(1)=1。少了任意一个，递归就会一直算到负数。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>递归和循环可以互换</h2>
+    </div>
+    <div class="lesson-body">
+      <p>很多能用循环解决的问题，也能用递归解决，只是表达角度不同。循环更像“我要重复做 n 次”，递归更像“这个问题和更小的同类问题有关”。</p>
+      <p>比如计算 1 到 n 的和，循环版本是从 1 一路加过去，递归版本是“n 加上 1 到 n-1 的和”。</p>
+      <div class="code-block lang-py" data-file="sum_recursive.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>递归求和</div>
+        <pre>def sum_recursive(n):
+    if n == 1:
+        return 1
+    return n + sum_recursive(n - 1)
+
+print(sum_recursive(10))  # 55</pre>
+      </div><div class="code-block lang-cpp" data-file="sum_recursive.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>sum_recursive.cpp</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+int sum_recursive(int n) {
+    if (n == 1) return 1;
+    return n + sum_recursive(n - 1);
+}
+
+int main() {
+    cout &lt;&lt; sum_recursive(10) &lt;&lt; endl;  // 55
+    return 0;
+}</pre>
+      </div>
+      <p>递归并不是在所有地方都比循环好。它的优点是代码更贴近问题本身，缺点是调用层级太深会消耗更多内存。实际使用时，如果问题天然适合拆分，就用递归；否则用循环更稳妥。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：爬楼梯</h2>
+      <div class="lesson-sub">用递归解决经典的爬楼梯问题</div>
+    </div>
+    <div class="lesson-body">
+      <p>问题：你每次可以走 1 级或 2 级台阶，问爬 n 级楼梯一共有多少种不同的走法？</p>
+      <p>这个问题天然适合递归：最后一步要么是从 n-1 级跨 1 级上来，要么是从 n-2 级跨 2 级上来。所以 f(n) = f(n-1) + f(n-2)，是不是很眼熟？这其实和斐波那契数列是同一个结构。</p>
+      <div class="code-block lang-py" data-file="climb_stairs.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>Python 爬楼梯</div>
+        <pre>def climb(n):
+    if n == 1:
+        return 1
+    if n == 2:
+        return 2
+    return climb(n - 1) + climb(n - 2)
+
+for i in range(1, 8):
+    print(f"爬 {i} 级有 {climb(i)} 种走法")
+
+# 爬 1 级有 1 种走法
+# 爬 2 级有 2 种走法
+# 爬 3 级有 3 种走法
+# 爬 4 级有 5 种走法
+# ...</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="climb_stairs.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>C++ 爬楼梯</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+int climb(int n) {
+    if (n == 1) return 1;
+    if (n == 2) return 2;
+    return climb(n - 1) + climb(n - 2);
+}
+
+int main() {
+    for (int i = 1; i &lt;= 7; i++)
+        cout &lt;&lt; "爬 " &lt;&lt; i &lt;&lt; " 级有 " &lt;&lt; climb(i) &lt;&lt; " 种走法" &lt;&lt; endl;
+    return 0;
+}</pre>
+      </div>
+      <p>动手把 n 改成 10、15、20，观察程序运行时间的变化。你会发现这个版本的递归会重复计算很多子问题，这正是下一模块“综合实战”要升级的方向。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：递归</p>
+      <div class="quiz" data-answer="A">
+        <h4>写递归函数时，最关键的部分是什么？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。终止条件" type="button">A. 终止条件</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。循环变量 不是本题的正确答案。终止条件 才是正确的。" type="button">B. 循环变量</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。打印调试语句 不是本题的正确答案。终止条件 才是正确的。" type="button">C. 打印调试语句</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 D · 模块 5</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* ── 语言切换 ── */
+  var LANG_KEY = "coding-101-language";
+  var langBtns = $$('#lang-toggle button');
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    langBtns.forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-lang") === lang); });
+  }
+  applyLang(read(LANG_KEY) === "python" ? "python" : "cpp");
+  langBtns.forEach(function (b) {
+    b.addEventListener("click", function () {
+      var lang = b.getAttribute("data-lang");
+      applyLang(lang);
+      store(LANG_KEY, lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgD-m5-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    综合实战 · 第二阶段课程包 D 模块 6
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgD-m6-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 D 模块 6：用递归解决汉诺塔或走迷宫。支持离线打开、深色模式、学习进度本地保存。">
+  <title>综合实战 · 第二阶段课程包 D 模块 6</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button {
+    border: 0; border-radius: 6px; padding: 4px 10px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    background: transparent; color: var(--text-faint);
+  }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  body.lang-cpp .lang-py { display: none !important; }
+  body.lang-py .lang-cpp { display: none !important; }
+  /* 汉诺塔 / 递归示意图 */
+  .diagram { border: 1px solid var(--border); border-radius: 14px; background: var(--bg-section); padding: 16px 18px; margin: 18px 0; }
+  .diagram .diagram-cap { font-size: 13px; font-weight: 700; color: var(--text-soft); margin-bottom: 10px; }
+  .diagram svg { width: 100%; height: auto; display: block; }
+  .hpillar { stroke: var(--text-faint); stroke-width: 6; stroke-linecap: round; }
+  .hdisk { fill: var(--bg-card); stroke: var(--border); stroke-width: 1.5; }
+  .hdisk-big { fill: rgba(16,185,129,.16); stroke: #10b981; }
+  .htext { fill: var(--text-soft); font-size: 12px; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+  .hlabel { fill: var(--text-faint); font-size: 13px; font-weight: 700; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; text-anchor: middle; }
+  .darrow { stroke: var(--text-soft); stroke-width: 2; }
+  .darrow-head { fill: var(--text-soft); stroke: none; }
+  .dnote { fill: var(--text-soft); font-size: 12px; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+  .maze-cell { fill: var(--bg-card); stroke: var(--border); stroke-width: 1.5; }
+  .maze-wall { fill: var(--text-faint); stroke: var(--border); stroke-width: 1.5; }
+  .maze-path { fill: rgba(16,185,129,.22); stroke: #10b981; stroke-width: 1.5; }
+  .maze-route { fill: none; stroke: #10b981; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .maze-mark { fill: var(--text); font-size: 15px; font-weight: 700; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; text-anchor: middle; }
+  </style>
+</head>
+<body class="lang-cpp">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>综合实战 · 课程包 D</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/4 节</span>
+      </div>
+      <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active" type="button">C++</button>
+        <button data-lang="python" type="button">Python</button>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包D_算法入门.html">返回课程包</a>
+      <button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包D_算法入门.html">课程包 D</a>
+    <span>/</span>
+    <span>模块 6：综合实战</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 D · 模块 6</span>
+    <h1>综合实战</h1>
+    <p>用递归解决汉诺塔或走迷宫</p>
+    <a class="start-btn" href="#lesson-1">开始模块 6 第 1 小节 →</a>
+    <span class="meta">模块 6 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>汉诺塔：一个经典递归游戏</h2>
+    </div>
+    <div class="lesson-body">
+      <p>汉诺塔由三根柱子和若干个大小不同的圆盘组成。一开始所有圆盘都叠在第一根柱子上，大的在下、小的在上。目标是把所有圆盘移到第三根柱子上，规则只有两条：</p>
+      <ul style="margin: 12px 0 12px 20px; color: var(--text-soft);">
+        <li>每次只能移动一个圆盘。</li>
+        <li>任何时候都不能把大圆盘放在小圆盘上面。</li>
+      </ul>
+      <p>传说一位僧侣如果按照这个规则移动 64 个圆盘，世界就会毁灭——因为 2⁶⁴ 步实在太多了，太阳都烧完了也搬不完。</p>
+      <p>虽然听起来复杂，但汉诺塔有一个非常漂亮的递归结构。下一小节我们就来拆穿它的秘密。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>递归思路：三步走</h2>
+    </div>
+    <div class="lesson-body">
+            <p>假设要把 n 个圆盘从柱子 A 移到柱子 C，可以借助柱子 B。关键思想是：<strong>把最底下的那个大盘子“露出来”</strong>。怎么做？先把压在它上面的 n-1 个盘挪到别处，大盘子就露出来了，可以直接搬到目标柱。</p>
+      <p>这里有个特别聪明的念头：<strong>把上面 n-1 个盘当成“一摞整体”</strong>。你不用关心这一摞内部怎么搬，只要能把这整摞从一根柱子移到另一根就行——而这恰好就是“搬 n-1 个盘”的同一个问题。</p>
+      <p>为什么想得到“搬 n-1 个盘”的思路呢？既然已知最终目标是把n个盘子从A全部移到C，那么“把n个盘子整摞从一根柱子移到另一根”这件事情是可行的。既然n个盘子可行，n-1个盘子当然也是可行的。于是“搬 n 个盘”可以拆成三步：</p>
+      <ul style="margin: 12px 0 12px 20px; color: var(--text-soft);">
+        <li><strong>第 1 步：</strong>把上面 n-1 个圆盘从 A 移到 B（借助 C）。—— 这是一个“搬 n-1 个盘”的子问题。</li>
+        <li><strong>第 2 步：</strong>把剩下的最大圆盘（第 n 个）从 A 直接移到 C。—— 唯一一次搬“大盘子”本身。</li>
+        <li><strong>第 3 步：</strong>再把那 n-1 个圆盘从 B 移到 C（借助 A）。—— 又是一次“搬 n-1 个盘”的子问题。</li>
+      </ul>
+      <p>第 1 步和第 3 步是<strong>同一个问题，只是规模小了一号</strong>。函数写好“搬 n 个盘”的逻辑后，遇到 n-1 时只要再调用自己即可——这就是递归：<em>自己调用自己，但每次规模都减一</em>。</p>
+
+      <div class="diagram">
+        <div class="diagram-cap">图：n = 3 时“三步走”的柱子状态（绿色为最大的盘 3）</div>
+                              <svg viewBox="0 0 500 370">
+          <text class="hlabel" x="124" y="50">初始：全在 A</text>
+          <line class="hpillar" x1="44" y1="75" x2="44" y2="175"/>
+          <line class="hpillar" x1="22" y1="175" x2="66" y2="175"/>
+          <text class="hlabel" x="44" y="193">A</text>
+          <line class="hpillar" x1="124" y1="75" x2="124" y2="175"/>
+          <line class="hpillar" x1="102" y1="175" x2="146" y2="175"/>
+          <text class="hlabel" x="124" y="193">B</text>
+          <line class="hpillar" x1="204" y1="75" x2="204" y2="175"/>
+          <line class="hpillar" x1="182" y1="175" x2="226" y2="175"/>
+          <text class="hlabel" x="204" y="193">C</text>
+          <rect class="hdisk-big" x="7" y="157" width="74" height="16" rx="6"/>
+          <text class="htext" x="44" y="169" text-anchor="middle">3</text>
+          <rect class="hdisk" x="17" y="139" width="54" height="16" rx="6"/>
+          <text class="htext" x="44" y="151" text-anchor="middle">2</text>
+          <rect class="hdisk" x="27" y="121" width="34" height="16" rx="6"/>
+          <text class="htext" x="44" y="133" text-anchor="middle">1</text>
+          <text class="hlabel" x="379" y="50">① 盘1、2 A→B</text>
+          <line class="hpillar" x1="299" y1="75" x2="299" y2="175"/>
+          <line class="hpillar" x1="277" y1="175" x2="321" y2="175"/>
+          <text class="hlabel" x="299" y="193">A</text>
+          <line class="hpillar" x1="379" y1="75" x2="379" y2="175"/>
+          <line class="hpillar" x1="357" y1="175" x2="401" y2="175"/>
+          <text class="hlabel" x="379" y="193">B</text>
+          <line class="hpillar" x1="459" y1="75" x2="459" y2="175"/>
+          <line class="hpillar" x1="437" y1="175" x2="481" y2="175"/>
+          <text class="hlabel" x="459" y="193">C</text>
+          <rect class="hdisk-big" x="262" y="157" width="74" height="16" rx="6"/>
+          <text class="htext" x="299" y="169" text-anchor="middle">3</text>
+          <rect class="hdisk" x="352" y="157" width="54" height="16" rx="6"/>
+          <text class="htext" x="379" y="169" text-anchor="middle">2</text>
+          <rect class="hdisk" x="362" y="139" width="34" height="16" rx="6"/>
+          <text class="htext" x="379" y="151" text-anchor="middle">1</text>
+          <text class="hlabel" x="124" y="225">② 盘3 A→C</text>
+          <line class="hpillar" x1="44" y1="250" x2="44" y2="350"/>
+          <line class="hpillar" x1="22" y1="350" x2="66" y2="350"/>
+          <text class="hlabel" x="44" y="368">A</text>
+          <line class="hpillar" x1="124" y1="250" x2="124" y2="350"/>
+          <line class="hpillar" x1="102" y1="350" x2="146" y2="350"/>
+          <text class="hlabel" x="124" y="368">B</text>
+          <line class="hpillar" x1="204" y1="250" x2="204" y2="350"/>
+          <line class="hpillar" x1="182" y1="350" x2="226" y2="350"/>
+          <text class="hlabel" x="204" y="368">C</text>
+          <rect class="hdisk" x="97" y="332" width="54" height="16" rx="6"/>
+          <text class="htext" x="124" y="344" text-anchor="middle">2</text>
+          <rect class="hdisk" x="107" y="314" width="34" height="16" rx="6"/>
+          <text class="htext" x="124" y="326" text-anchor="middle">1</text>
+          <rect class="hdisk-big" x="167" y="332" width="74" height="16" rx="6"/>
+          <text class="htext" x="204" y="344" text-anchor="middle">3</text>
+          <text class="hlabel" x="379" y="225">③ 盘1、2 B→C</text>
+          <line class="hpillar" x1="299" y1="250" x2="299" y2="350"/>
+          <line class="hpillar" x1="277" y1="350" x2="321" y2="350"/>
+          <text class="hlabel" x="299" y="368">A</text>
+          <line class="hpillar" x1="379" y1="250" x2="379" y2="350"/>
+          <line class="hpillar" x1="357" y1="350" x2="401" y2="350"/>
+          <text class="hlabel" x="379" y="368">B</text>
+          <line class="hpillar" x1="459" y1="250" x2="459" y2="350"/>
+          <line class="hpillar" x1="437" y1="350" x2="481" y2="350"/>
+          <text class="hlabel" x="459" y="368">C</text>
+          <rect class="hdisk-big" x="422" y="332" width="74" height="16" rx="6"/>
+          <text class="htext" x="459" y="344" text-anchor="middle">3</text>
+          <rect class="hdisk" x="432" y="314" width="54" height="16" rx="6"/>
+          <text class="htext" x="459" y="326" text-anchor="middle">2</text>
+          <rect class="hdisk" x="442" y="296" width="34" height="16" rx="6"/>
+          <text class="htext" x="459" y="308" text-anchor="middle">1</text>
+        </svg>
+      </div>
+
+      <p>看图最直观：初始时 3 个盘全在 A；第 1 步把上面的 2 个盘搬到 B（这 2 个盘本身又得按同样的“三步走”来搬，只是规模是 2）；第 2 步把最大的盘 3 从 A 直接搬到 C；第 3 步再把 B 上的 2 个盘搬回 C，全部归位。</p>
+      <p>递归总得有个<strong>终点</strong>：当 n = 1 时，上面已经没有“n-1 个盘”了，直接搬这一块即可——这就是<strong>基线条件（base case）</strong>，否则函数会无限调用自己。</p>
+      <p>那一共要搬多少步？设搬 n 个盘需要 T(n) 步，根据三步法：T(n) = 2·T(n-1) + 1（两次搬 n-1 个盘，加中间搬 1 次大盘），且 T(1) = 1。解出来就是 <strong>T(n) = 2ⁿ − 1</strong>。所以 3 个盘要 2³ − 1 = 7 步，64 个盘要 2⁶⁴ − 1 步——这就是开头“搬完世界就毁灭”的来历。</p>
+<button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>代码实现汉诺塔</h2>
+    </div>
+    <div class="lesson-body">
+      <p>把三步翻译成代码，函数签名可以写成 <code>hanoi(n, from, to, aux)</code>：把 n 个圆盘从 from 柱移到 to 柱，aux 作为辅助柱。</p>
+      <div class="code-block lang-py" data-file="hanoi.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>Python 汉诺塔</div>
+        <pre>def hanoi(n, source, target, helper):
+    if n == 1:
+        print(f"把圆盘 1 从 {source} 移到 {target}")
+        return
+    hanoi(n - 1, source, helper, target)
+    print(f"把圆盘 {n} 从 {source} 移到 {target}")
+    hanoi(n - 1, helper, target, source)
+
+hanoi(3, "A", "C", "B")</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="hanoi.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>C++ 汉诺塔</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+void hanoi(int n, char source, char target, char helper) {
+    if (n == 1) {
+        cout &lt;&lt; "把圆盘 1 从 " &lt;&lt; source &lt;&lt; " 移到 " &lt;&lt; target &lt;&lt; endl;
+        return;
+    }
+    hanoi(n - 1, source, helper, target);
+    cout &lt;&lt; "把圆盘 " &lt;&lt; n &lt;&lt; " 从 " &lt;&lt; source &lt;&lt; " 移到 " &lt;&lt; target &lt;&lt; endl;
+    hanoi(n - 1, helper, target, source);
+}
+
+int main() {
+    hanoi(3, 'A', 'C', 'B');
+    return 0;
+}</pre>
+      </div>
+      <p>运行 3 层版本，你会看到正好 7 行输出。每行对应一次移动。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+    <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：用递归走迷宫</h2>
+      <div class="lesson-sub">试路、碰壁、回头</div>
+    </div>
+    <div class="lesson-body">
+      <p>想象你站在迷宫入口，手里只有一支粉笔。你的目标很明确：找到出口。规则也很简单：每到一个新格子，你只能往上、下、左、右四个方向之一迈一步。如果前方是墙，或者你发现自己兜回了刚才走过的路，就不能走。</p>
+      <p>这个“走不通就回头换方向”的过程，本质上就是<strong>深度优先搜索（DFS）</strong>，而“回头”这个动作，专业上叫做<strong>回溯（backtracking）</strong>。</p>
+      <p>如何把“走迷宫”翻译成递归？</p>
+      <p>递归的核心是：假设我能解决小问题，那么大问题就迎刃而解。放在迷宫里就是：假设我能从“下一步所在的位置”走到出口，那么我只需要先走到“下一步”就行。</p>
+      <p>具体拆解成三个部分：</p>
+      <ol class="maze-steps" style="margin: 12px 0 12px 20px; color: var(--text-soft); line-height: 1.9;">
+        <li><strong>什么时候停下来？（基线条件 / Base Case）</strong><br>
+          每进入一个新格子，先问自己：这是不是出口？如果是，任务完成，直接返回成功。如果不是，继续探索。<br>
+          这就是递归的终止条件——没有它，你就会在迷宫里无限绕圈。</li>
+        <li><strong>怎么继续往前走？（递归步骤）</strong><br>
+          如果不是出口，你就站在当前格子，按固定顺序（比如上→下→左→右）依次检查四个方向：<br>
+          是墙？跳过，看下一个方向。<br>
+          已经走过？跳过，看下一个方向。（这里就用到了你手里的“粉笔”——程序里通常用一个 <code>visited</code> 数组或把地图上的值临时改成一个特殊标记，表示“此路已探”）<br>
+          能走？好，标记当前格子为“已访问”，然后递归调用自己：“假设我现在站在这个新格子上，帮我找出口。”</li>
+        <li><strong>走不通了怎么办？（自动回溯）</strong><br>
+          假设你从当前格子往北走，进入了一条死胡同。那一路上的递归调用会逐层碰壁，直到最深处发现四个方向全是死路。这时，最内层的函数执行完毕，自动返回到上一层——也就是把你“送”回了上一个格子。<br>
+          你不需要写任何“往回走”的代码，函数调用栈的弹出过程，就是物理意义上的“原路退回”。回到上一格后，程序继续检查你还没试过的方向（比如南、西、东），这就是回溯。</li>
+      </ol>
+
+      <div class="diagram">
+        <div class="diagram-cap">图：一个 5×7 的小迷宫（灰色是墙，绿色是从入口 S 到出口 G 的一条通路）</div>
+          <svg viewBox="0 0 368 300">
+          <rect class="maze-path" x="31" y="47" width="42" height="42" rx="5"/>
+          <rect class="maze-path" x="75" y="47" width="42" height="42" rx="5"/>
+          <rect class="maze-wall" x="119" y="47" width="42" height="42" rx="5"/>
+          <rect class="maze-cell" x="163" y="47" width="42" height="42" rx="5"/>
+          <rect class="maze-cell" x="207" y="47" width="42" height="42" rx="5"/>
+          <rect class="maze-cell" x="251" y="47" width="42" height="42" rx="5"/>
+          <rect class="maze-cell" x="295" y="47" width="42" height="42" rx="5"/>
+          <rect class="maze-wall" x="31" y="91" width="42" height="42" rx="5"/>
+          <rect class="maze-path" x="75" y="91" width="42" height="42" rx="5"/>
+          <rect class="maze-wall" x="119" y="91" width="42" height="42" rx="5"/>
+          <rect class="maze-cell" x="163" y="91" width="42" height="42" rx="5"/>
+          <rect class="maze-wall" x="207" y="91" width="42" height="42" rx="5"/>
+          <rect class="maze-wall" x="251" y="91" width="42" height="42" rx="5"/>
+          <rect class="maze-wall" x="295" y="91" width="42" height="42" rx="5"/>
+          <rect class="maze-wall" x="31" y="135" width="42" height="42" rx="5"/>
+          <rect class="maze-path" x="75" y="135" width="42" height="42" rx="5"/>
+          <rect class="maze-path" x="119" y="135" width="42" height="42" rx="5"/>
+          <rect class="maze-path" x="163" y="135" width="42" height="42" rx="5"/>
+          <rect class="maze-path" x="207" y="135" width="42" height="42" rx="5"/>
+          <rect class="maze-wall" x="251" y="135" width="42" height="42" rx="5"/>
+          <rect class="maze-cell" x="295" y="135" width="42" height="42" rx="5"/>
+          <rect class="maze-wall" x="31" y="179" width="42" height="42" rx="5"/>
+          <rect class="maze-wall" x="75" y="179" width="42" height="42" rx="5"/>
+          <rect class="maze-wall" x="119" y="179" width="42" height="42" rx="5"/>
+          <rect class="maze-wall" x="163" y="179" width="42" height="42" rx="5"/>
+          <rect class="maze-path" x="207" y="179" width="42" height="42" rx="5"/>
+          <rect class="maze-wall" x="251" y="179" width="42" height="42" rx="5"/>
+          <rect class="maze-wall" x="295" y="179" width="42" height="42" rx="5"/>
+          <rect class="maze-cell" x="31" y="223" width="42" height="42" rx="5"/>
+          <rect class="maze-cell" x="75" y="223" width="42" height="42" rx="5"/>
+          <rect class="maze-cell" x="119" y="223" width="42" height="42" rx="5"/>
+          <rect class="maze-cell" x="163" y="223" width="42" height="42" rx="5"/>
+          <rect class="maze-path" x="207" y="223" width="42" height="42" rx="5"/>
+          <rect class="maze-path" x="251" y="223" width="42" height="42" rx="5"/>
+          <rect class="maze-path" x="295" y="223" width="42" height="42" rx="5"/>
+          <polyline class="maze-route" points="52,68 96,68 96,112 96,156 140,156 184,156 228,156 228,200 228,244 272,244 316,244"/>
+          <text class="maze-mark" x="52" y="73">S</text>
+          <text class="maze-mark" x="316" y="249">G</text>
+        </svg>
+      </div>
+
+      <p>看图：绿色格子连成的就是一条从 S 到 G 的通路。递归会沿着绿线一路试探，遇到死胡同（比如上方那片墙）就沿原路退回，换一个方向接着试，直到抵达 G。它不保证走的是“最短”路，只保证“能到就一定能找到一条”。</p>
+
+      <div class="code-block lang-py" data-file="maze.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>Python 递归走迷宫</div>
+        <pre># 迷宫：0=墙, 1=可走；起点(0,0)，终点(4,6)
+maze = [
+    [1,1,0,1,1,1,1],
+    [0,1,0,1,0,0,0],
+    [0,1,1,1,1,0,1],
+    [0,0,0,0,1,0,1],
+    [1,1,1,1,1,1,1],
+]
+visited = [[False]*7 for _ in range(7)]
+
+def solve(x, y):
+    if (x, y) == (4, 6):          # 到达出口，基线条件
+        return True
+    visited[x][y] = True
+    for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:   # 上 下 左 右
+        nx, ny = x+dx, y+dy
+        if 0 &lt;= nx &lt; 5 and 0 &lt;= ny &lt; 7 and maze[nx][ny] == 1 and not visited[nx][ny]:
+            if solve(nx, ny):       # 递归走下一步
+                return True
+    return False                    # 四个方向都不通，回溯
+
+print("能走到出口吗？", solve(0, 0))</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="maze.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>C++ 递归走迷宫</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+// 迷宫：0=墙, 1=可走；起点(0,0)，终点(4,6)
+int maze[5][7] = {
+    {1,1,0,1,1,1,1},
+    {0,1,0,1,0,0,0},
+    {0,1,1,1,1,0,1},
+    {0,0,0,0,1,0,1},
+    {1,1,1,1,1,1,1},
+};
+bool visited[5][7] = {};
+
+bool solve(int x, int y) {
+    if (x == 4 &amp;&amp; y == 6) return true;   // 到达出口，基线条件
+    visited[x][y] = true;
+    int dx[4] = {-1, 1, 0, 0};             // 上 下 左 右
+    int dy[4] = {0, 0, -1, 1};
+    for (int i = 0; i &lt; 4; i++) {
+        int nx = x + dx[i], ny = y + dy[i];
+        if (nx &gt;= 0 &amp;&amp; nx &lt; 5 &amp;&amp; ny &gt;= 0 &amp;&amp; ny &lt; 7
+            &amp;&amp; maze[nx][ny] == 1 &amp;&amp; !visited[nx][ny]) {
+            if (solve(nx, ny)) return true; // 递归走下一步
+        }
+    }
+    return false;                          // 四方向都不通，回溯
+}
+
+int main() {
+    cout &lt;&lt; "能走到出口吗？" &lt;&lt; solve(0, 0) &lt;&lt; endl;
+    return 0;
+}</pre>
+      </div>
+      <p>运行后 <code>solve(0, 0)</code> 返回 <code>True</code>，说明入口能走到出口。这个函数和汉诺塔的 <code>hanoi</code> 是同一个套路：<strong>自己调用自己，每次问题规模（剩下的迷宫）都更小，直到碰到基线条件（到达出口，或四面碰壁返回）</strong>。区别只是汉诺塔的“子问题”是固定的两步，而迷宫的“子问题”是“四个方向里哪个走得通”——递归会替你把四种可能都试一遍。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <div class="quiz" data-answer="A">
+        <h4>3 层汉诺塔最少需要多少步？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。7 步（2³ - 1）" type="button">A. 7 步</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。8 步 不是本题的正确答案。7 步（2³ - 1） 才是正确的。" type="button">B. 8 步</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。9 步 不是本题的正确答案。7 步（2³ - 1） 才是正确的。" type="button">C. 9 步</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 D · 模块 6</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* ── 语言切换 ── */
+  var LANG_KEY = "coding-101-language";
+  var langBtns = $$('#lang-toggle button');
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    langBtns.forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-lang") === lang); });
+  }
+  applyLang(read(LANG_KEY) === "python" ? "python" : "cpp");
+  langBtns.forEach(function (b) {
+    b.addEventListener("click", function () {
+      var lang = b.getAttribute("data-lang");
+      applyLang(lang);
+      store(LANG_KEY, lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgD-m6-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

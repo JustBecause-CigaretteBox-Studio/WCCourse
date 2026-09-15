@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    从「帮我写代码」到「帮我做项目」 · 第二阶段课程包 N 模块 1
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgN-m1-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 N 模块 1：需求升级。支持离线打开、深色模式、学习进度本地保存。">
+  <title>从「帮我写代码」到「帮我做项目」 · 第二阶段课程包 N 模块 1</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>从「帮我写代码」到「帮我做项目」 · 课程包 N</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包N_Vibe_Coding_高阶.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包N_Vibe_Coding_高阶.html">课程包 N</a>
+    <span>/</span>
+    <span>模块 1：从「帮我写代码」到「帮我做项目」</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 N · 模块 1</span>
+    <h1>从「帮我写代码」到「帮我做项目」</h1>
+    <p>需求升级</p>
+    <a class="start-btn" href="#lesson-1">开始模块 1 第 1 小节 →</a>
+    <span class="meta">模块 1 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>从单函数到项目视角</h2>
+      <div class="lesson-sub">AI 能写函数，但项目需要你导演</div>
+    </div>
+    <div class="lesson-body">
+      <p>
+        第一阶段我们练过：给 AI 一句话，它就能生成一个排序函数、画一个正方形。
+        这种「帮我写代码」的模式很爽，但它解决的是<strong>孤立的小问题</strong>。
+      </p>
+      <p>
+        真实世界里的程序是<strong>项目</strong>：一个网站、一个工具、一个小游戏。
+        它们由很多文件、很多功能、很多决策组成。你不能只对 AI 说「帮我写」，而得说：
+        <strong>「帮我做成这个项目」</strong>。
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>需求升级对比</div>
+        <pre>❌ 帮我写代码：
+"写一个计算 BMI 的函数"
+
+✅ 帮我做项目：
+"我想做一个'个人健康记录'网页：
+- 用户输入身高体重，自动计算 BMI
+- 把记录存在本地，下次打开还能看到
+- 用 HTML + JS 实现，单文件即可
+- 界面要简洁，适配手机"</pre>
+      </div>
+      <p>
+        你可以把 AI 当成一个<strong>能力很强的执行者</strong>，而你是导演。
+        导演的活儿不是亲自画每一帧，而是告诉团队：故事是什么、角色是谁、画面要什么风格。
+      </p>
+      <p>
+        本模块就是教你怎样从「提一个功能」升级到「描述一个项目」，
+        让 AI 一次性给出更接近可用成品的方案。
+      </p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+<section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>项目需求的三件套</h2>
+      <div class="lesson-sub">用户故事、功能清单、验收标准</div>
+    </div>
+    <div class="lesson-body">
+      <p>
+        要让 AI 「做项目」而不只是「写代码」，你需要先把它也变成项目的参与者。
+        这就要求你描述清楚三件事：
+      </p>
+      <p><strong>1. 用户故事（Who & Why）</strong></p>
+      <p>
+        谁在什么场景下用这个功能？想解决什么问题？
+        把「用户」讲清楚，AI 才知道该为谁设计。
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>用户故事示例</div>
+        <pre>作为一个想控制日常开销的上班族，
+我希望能快速记录每一笔支出，
+这样我就能在月底看到钱花在了哪里。</pre>
+      </div>
+      <p><strong>2. 功能清单（What）</strong></p>
+      <p>
+        列出这个项目必须做的事。不要一次写太多，先把<strong>最小可用版本（MVP）</strong>列出来。
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>功能清单示例</div>
+        <pre>个人记账网页 MVP：
+- 输入：金额、类别、备注、日期
+- 展示：按日期倒序排列的消费列表
+- 统计：本月总支出、按类别汇总
+- 存储：用浏览器 localStorage 保存</pre>
+      </div>
+      <p><strong>3. 验收标准（Done）</strong></p>
+      <p>
+        怎么算「做完了」？给出可验证的条件，AI 就不会随便交差。
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>验收标准示例</div>
+        <pre>- 在手机上打开页面，输入框和按钮不会挤在一起
+- 添加一条 25 元的「交通」支出后，列表立刻显示，本月总支出增加 25
+- 关闭页面再打开，之前的记录还在
+- 类别至少包含：餐饮、交通、购物、其他</pre>
+      </div>
+      <p>
+        把这三件套放进 prompt，AI 就能从「猜你想要什么」变成「按你的清单施工」。
+      </p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+<section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>用 AI 生成项目骨架</h2>
+      <div class="lesson-sub">从需求到可运行的第一步</div>
+    </div>
+    <div class="lesson-body">
+      <p>
+        需求说清楚后，不要直接让 AI 写完整代码。先让它帮你搭一个<strong>项目骨架</strong>：
+        目录结构、文件职责、技术选型、数据格式。
+        这样你能先看清全局，再决定下一步怎么改。
+      </p>
+      <p>
+        一个好的骨架 prompt 通常长这样：
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>prompt 示例</div>
+        <pre>我要做一个"个人健康记录"网页，请帮我设计项目骨架：
+
+背景：
+- 用户想记录每日体重和 BMI
+- 数据只存在浏览器本地
+- 目标是一次打开、离线可用
+
+请输出：
+1. 项目目录和每个文件的作用
+2. 推荐的技术栈和理由
+3. 核心数据结构（用 JSON 示例）
+4. 三个开发阶段：先做哪个、后做哪个
+5. 第一阶段需要实现的 3 个最小功能</pre>
+      </div>
+      <p>
+        AI 返回的骨架可能不是完美的，但它给你一个讨论的起点。
+        你可以继续追问：「第一阶段太复杂，能不能再简化？」或「localStorage 满了怎么办？」
+      </p>
+      <p>
+        <strong>小技巧：</strong>让 AI 把骨架写成 <code>README.md</code> 和 <code>todo.md</code> 的格式，
+        你照着清单打勾，项目就不容易跑偏。
+      </p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：规划一个个人记账网页</h2>
+      <div class="lesson-sub">用项目视角写出第一版 prompt</div>
+    </div>
+    <div class="lesson-body">
+      <p>
+        现在动手，把本模块的内容串起来：不为 AI 提一个功能，而是描述一个完整项目。
+      </p>
+      <p><strong>任务目标：</strong></p>
+      <p>
+        用你学过的「用户故事 + 功能清单 + 验收标准」三件套，
+        写一份 prompt，让 AI 帮你生成一个「个人记账网页」的项目骨架。
+      </p>
+      <div class="code-block">
+        <div class="code-title"><span class="dot"></span>你的 prompt 模板</div>
+        <pre>我想做一个"个人记账网页"，请帮我设计项目骨架。
+
+用户故事：
+（填入：谁用？什么场景？解决什么问题？）
+
+功能清单（MVP）：
+1. 
+2. 
+……
+
+验收标准：
+- 
+- 
+- 
+
+请输出：
+1. 单文件 HTML 的大致结构
+2. 需要哪些 HTML 元素和 JS 函数
+3. 数据如何存储在 localStorage
+4. 开发的先后顺序</pre>
+      </div>
+      <p><strong>实践建议：</strong></p>
+      <p>
+        1. 先把 prompt 发给 AI，看它的骨架是否合理。<br>
+        2. 挑一个你不太同意的点，追问 AI 为什么这样设计。<br>
+        3. 让 AI 按你的意见修改后，再进入下一模块学习如何把它写成真正的 prompt。
+      </p>
+      <p>
+        这个实战不需要你写出最终代码，重点是练习「用项目语言描述需求」。
+      </p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：需求升级</p>
+      <div class="quiz" data-answer="C">
+        <h4>下面哪一项最像「帮我做项目」级别的 prompt？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。写一个斐波那契数列函数 不是本题的正确答案。我想做一个记录每日饮水量的小网页，用户能添加杯数和备注，数据存在浏览器本地， reopen 后记录还在 才是正确的。" type="button">A. 写一个斐波那契数列函数</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。用 Python 读取 CSV 文件 不是本题的正确答案。我想做一个记录每日饮水量的小网页，用户能添加杯数和备注，数据存在浏览器本地， reopen 后记录还在 才是正确的。" type="button">B. 用 Python 读取 CSV 文件</button>
+        <button class="quiz-opt" data-val="C" data-explain="正确。我想做一个记录每日饮水量的小网页，用户能添加杯数和备注，数据存在浏览器本地， reopen 后记录还在" type="button">C. 我想做一个记录每日饮水量的小网页，用户能添加杯数和备注，数据存在浏览器本地， reopen 后记录还在</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 N · 模块 1</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgN-m1-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

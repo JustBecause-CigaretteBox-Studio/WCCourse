@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    互联网不是魔法 · 第二阶段课程包 I 模块 1
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgI-m1-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 I 模块 1：从一根网线到全球网络。支持离线打开、深色模式、学习进度本地保存。">
+  <title>互联网不是魔法 · 第二阶段课程包 I 模块 1</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .callout { border: 1px solid; border-radius: 12px; padding: 16px; margin: 16px 0; font-size: 14px; line-height: 1.8; }
+  .callout-title { font-weight: 700; margin-bottom: 6px; }
+  .callout.idea { border-color: #bae6fd; background: #f0f9ff; color: #0c4a6e; }
+  .callout.warn { border-color: #fecdd3; background: #fff1f2; color: #881337; }
+  .callout.key  { border-color: #ddd6fe; background: #f5f3ff; color: #4c1d95; }
+  html.dark .callout.idea { border-color: #075985; background: rgba(8,47,73,.4);  color: #bae6fd; }
+  html.dark .callout.warn { border-color: #9f1239; background: rgba(76,5,25,.4);   color: #fecdd3; }
+  html.dark .callout.key  { border-color: #6d28d9; background: rgba(46,16,101,.4); color: #ddd6fe; }
+  .grid-2 { display: grid; gap: 12px; margin: 16px 0; }
+  @media (min-width: 640px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+  .card { border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); padding: 16px; }
+  .card-label { font-size: 12px; font-weight: 700; color: var(--text-faint); margin-bottom: 6px; }
+  .card-big { font-size: 15px; font-weight: 700; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-py single-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>互联网不是魔法 · 课程包 I</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包I_网络漫游.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active" disabled>Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包I_网络漫游.html">课程包 I</a>
+    <span>/</span>
+    <span>模块 1：互联网不是魔法</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 I · 模块 1</span>
+    <h1>互联网怎么联的</h1>
+    <p>从一根网线到全球网络</p>
+    <a class="start-btn" href="#lesson-1">开始模块 1 第 1 小节 →</a>
+    <span class="meta">模块 1 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>互联网是一张巨大的快递网络</h2>
+    </div>
+    <div class="lesson-body">
+      <p>很多人觉得互联网很抽象：打开浏览器，输入网址，页面就神奇的出现了。其实它本质上和现实中的<strong>快递系统</strong>没什么区别——你的请求被打包成一个个小包裹，经过无数台路由器和交换机，最终被送到目的地服务器，服务器再把回应包裹送回来。</p>
+      <p>快递需要「发件人地址」「收件人地址」「包裹内容」，网络数据也需要类似的字段。只不过网络上的地址是 <strong>IP 地址</strong>，包裹内容被拆分成 <strong>数据包（Packet）</strong>，而负责搬运包裹的设备叫 <strong>路由器（Router）</strong>。</p>
+      <div class="callout idea">
+        <div class="callout-title">💡 核心类比</div>
+        <p>互联网 = 全球快递网络；数据包 = 快递包裹；路由器 = 分拣中心；网线/光纤 = 高速公路。</p>
+      </div>
+      <p>下面这段 Python 代码用最简单的方式展示了「两台电脑通过 IP 和端口建立连接」的概念。它不会真的访问外网，只能在本地跑，但能帮你直观理解「地址 + 端口 = 收发窗口」：</p>
+      <div class="code-block" data-file="local_echo.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>local_echo.py</div>
+        <pre>import socket
+
+# 在本机（127.0.0.1 叫“回环地址”，代表自己）开一个“收件窗口”
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(("127.0.0.1", 9000))  # 地址 + 端口号
+server.listen(1)
+print("小服务器已开张，等待包裹...")
+
+conn, addr = server.accept()      # 等待有人连上来
+msg = conn.recv(1024).decode()    # 接收一个包裹
+print("收到：", msg)
+conn.sendall("收到啦！".encode())   # 回一个包裹
+conn.close()
+server.close()</pre>
+      </div>
+      <p>上面代码里的 <code>127.0.0.1</code> 是一个特殊 IP，意思是「我自己」。端口 <code>9000</code> 则像快递柜台编号：同一台电脑可以同时开很多个服务，靠端口号区分。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>数据包怎么找到路？</h2>
+    </div>
+    <div class="lesson-body">
+      <p>现实中的快递会经过多个中转站，网络数据包也一样。它不会「直线飞行」，而是被沿途的<strong>路由器</strong>一次次转发。每一跳（hop）都会把数据包推得更接近目标。</p>
+      <p>路由器怎么知道往哪走？每台路由器都维护着一张<strong>路由表（Routing Table）</strong>，就像快递分拣中心的全国地图。路由表里写着：「目标 IP 属于哪个网段，应该从哪个出口发出去」。如果路由器不知道具体位置，它会把包裹交给「上一级」更大的路由器，直到找到认识路的那一台。</p>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-label">局域网 LAN</div>
+          <div class="card-big">你家、公司、学校的内部网络。设备靠交换机相连，IP 通常是 192.168.x.x。</div>
+        </div>
+        <div class="card">
+          <div class="card-label">广域网 WAN</div>
+          <div class="card-big">跨城市、跨国的骨干网络。由运营商的大路由器和光纤组成。</div>
+        </div>
+      </div>
+      <p>你可以用 Python 调用系统命令 <code>traceroute</code>（Windows 上是 <code>tracert</code>）来看数据包到你家门外后走了哪些地方。注意： 校园网或某些网络可能会屏蔽这个命令。</p>
+      <div class="code-block" data-file="trace_route.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>trace_route.py</div>
+        <pre>import subprocess
+import platform
+
+target = "www.example.com"
+cmd = ["tracert", target] if platform.system() == "Windows" else ["traceroute", target]
+
+# 运行系统命令，看数据包经过多少跳路由器
+result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="ignore")
+print(result.stdout)</pre>
+      </div>
+      <div class="callout warn">
+        <div class="callout-title">⚠️ 注意</div>
+        <p>这段代码在本地运行需要系统支持 tracert/traceroute。部分网络环境会禁止或显示星号（*），这不代表代码错了，而是路由器选择不回应探测包。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>动手：看看本机网络配置</h2>
+    </div>
+    <div class="lesson-body">
+      <p>每台联网的设备都有自己的「名片」：IP 地址、子网掩码、默认网关、DNS 服务器。这些信息决定了数据包能不能顺利出家门、能不能找到域名对应的 IP。</p>
+      <p>在 Python 里，我们可以用标准库 <code>socket</code> 和 <code>subprocess</code> 快速查看本机主机名和 IP。更详细的网络信息可以调用系统命令 <code>ipconfig</code>（Windows）或 <code>ifconfig/ip</code>（Linux/macOS）。</p>
+      <div class="code-block" data-file="my_network.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>my_network.py</div>
+        <pre>import socket
+import subprocess
+import platform
+
+# 获取本机主机名和局域网 IP
+hostname = socket.gethostname()
+local_ip = socket.gethostbyname(hostname)
+print("主机名：", hostname)
+print("局域网 IP：", local_ip)
+
+# 查看更详细的网络配置（Windows 用 ipconfig，其他系统用 ip/ifconfig）
+sys = platform.system()
+cmd = "ipconfig" if sys == "Windows" else "ip a"
+print("\n系统网络配置：")
+print(subprocess.getoutput(cmd))</pre>
+      </div>
+      <p>运行后你会看到类似 <code>192.168.31.105</code> 的地址，这就是你家路由器给你这台电脑分配的「门牌号」。如果手机和电脑连的是同一个 Wi-Fi，它们的前三段（比如 <code>192.168.31</code>）通常相同，说明它们在同一个局域网。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：模拟一次“发快递”</h2>
+      <div class="lesson-sub">用 Python 把信息分成小包并记录每站</div>
+    </div>
+    <div class="lesson-body">
+      <p>真正的大规模网络会把长数据切成小块传输，每一块都写上序号、目标地址和校验信息。接收方收到后再按序号拼回来。下面我们用 Python 模拟一个极简版「分片-编号-重组」过程。</p>
+      <div class="code-block" data-file="packet_journey.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>packet_journey.py</div>
+        <pre>import random
+
+message = "野鸡动画编程课：数据包的环球旅行"
+chunk_size = 6  # 每 6 个字符一个小包裹
+packets = []
+
+# 1. 发送端：分片、编号
+for i in range(0, len(message), chunk_size):
+    payload = message[i:i + chunk_size]
+    packets.append({"seq": i // chunk_size, "data": payload})
+
+print("=== 发送端分片 ===")
+for p in packets:
+    print(f"包 {p['seq']}: {p['data']}")
+
+# 2. 网络传输：随机打乱顺序，模拟不同路径
+random.shuffle(packets)
+print("\n=== 网络中顺序被打乱 ===")
+for p in packets:
+    print(f"到达 包 {p['seq']}")
+
+# 3. 接收端：按序号重组
+packets.sort(key=lambda x: x["seq"])
+reassembled = "".join(p["data"] for p in packets)
+print("\n=== 接收端重组 ===")
+print("还原后的消息：", reassembled)</pre>
+      </div>
+      <p>这个练习想让你体会三件事：</p>
+      <p>1. <strong>分片</strong>：大数据被切成小块，方便在网络中传输。</p>
+      <p>2. <strong>编号</strong>：每个小包带序号，接收方才知道怎么拼。</p>
+      <p>3. <strong>乱序到达</strong>：真实网络中不同小包走不同路径，到达顺序可能不一样。</p>
+      <div class="callout key">
+        <div class="callout-title">🔑 模块 1 小结</div>
+        <p>互联网 = 快递网络；数据包 = 包裹；IP 地址 = 门牌号；端口 = 窗口；路由器 = 分拣中心。真正的网络还会做分片、编号、重组、错误恢复。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：从一根网线到全球网络</p>
+      <div class="quiz" data-answer="B">
+        <h4>下列哪个设备最像互联网中的「分拣中心」，负责把数据包转发到下一跳？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。显示器 不是本题的正确答案。路由器 才是正确的。" type="button">A. 显示器</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。路由器" type="button">B. 路由器</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。键盘 不是本题的正确答案。路由器 才是正确的。" type="button">C. 键盘</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 I · 模块 1</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgI-m1-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    Streamlit · 第二阶段课程包 O 模块 4
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgO-m4-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 O 模块 4：用 Python 做网页的捷径。支持离线打开、深色模式、学习进度本地保存。">
+  <title>Streamlit · 第二阶段课程包 O 模块 4</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-py single-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>Streamlit · 课程包 O</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包O_网页开发.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active" disabled>Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包O_网页开发.html">课程包 O</a>
+    <span>/</span>
+    <span>模块 4：Streamlit</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 O · 模块 4</span>
+    <h1>Streamlit</h1>
+    <p>用 Python 做网页的捷径</p>
+    <a class="start-btn" href="#lesson-1">开始模块 4 第 1 小节 →</a>
+    <span class="meta">模块 4 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>认识 Streamlit</h2>
+    </div>
+    <div class="lesson-body">
+      <p>前面我们用 HTML、CSS、JS 做网页，需要同时处理三样东西。如果你更熟悉 Python，又想做数据展示、小工具或简单网页，<strong>Streamlit</strong> 是一条捷径。</p>
+      <p>Streamlit 的理念很简单：用纯 Python 写脚本，它会自动帮你生成网页界面。你不需要写 HTML、CSS 或 JavaScript。</p>
+      <p>安装 Streamlit 只需要一行命令：</p>
+      <div class="code-block" data-file="终端" data-lang="python">
+        <div class="code-title"><span class="dot"></span>终端</div>
+        <pre>pip install streamlit</pre>
+      </div>
+      <p>然后创建一个 <code>app.py</code>，写下你的第一个 Streamlit 应用：</p>
+      <div class="code-block" data-file="app.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>app.py</div>
+        <pre>import streamlit as st
+
+st.title("我的第一个 Streamlit 网页")
+st.write("Hello, World!")</pre>
+      </div>
+      <p>在终端运行：</p>
+      <div class="code-block" data-file="终端" data-lang="python">
+        <div class="code-title"><span class="dot"></span>终端</div>
+        <pre>streamlit run app.py</pre>
+      </div>
+      <p>浏览器会自动弹出一个本地网页。这就像用 Python 写了一个脚本，但 Streamlit 替你把它包装成了可交互的网站。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>常用组件</h2>
+    </div>
+    <div class="lesson-body">
+      <p>Streamlit 最强大的地方是「一行代码一个组件」。下面是几个最常用的：</p>
+      <div class="code-block" data-file="widgets.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>常用组件</div>
+        <pre>import streamlit as st
+
+# 文本输入
+name = st.text_input("请输入你的名字")
+
+# 滑动条
+age = st.slider("选择你的年龄", 0, 120, 20)
+
+# 按钮
+clicked = st.button("点我")
+
+# 下拉选择
+fruit = st.selectbox("喜欢的水果", ["苹果", "香蕉", "橙子"])
+
+# 显示结果
+st.write(f"你好，{name}！你今年 {age} 岁，喜欢 {fruit}。")</pre>
+      </div>
+      <p>每个组件都会返回一个值：输入框返回字符串，滑动条返回数字，按钮返回 True 或 False。你可以像用普通 Python 变量一样使用这些返回值。</p>
+      <p>比如下面这个「摄氏度转华氏度」小工具，只需要 5 行核心代码：</p>
+      <div class="code-block" data-file="temperature.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>温度转换器</div>
+        <pre>import streamlit as st
+
+c = st.number_input("摄氏度", value=0.0)
+f = c * 9 / 5 + 32
+st.write(f"华氏度：{f}°F")</pre>
+      </div>
+      <p>不需要写 HTML 表单，也不需要写 JS 事件监听，Streamlit 会自动处理界面刷新。</p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>交互与状态</h2>
+    </div>
+    <div class="lesson-body">
+      <p>Streamlit 默认每次用户操作都会重新运行整个脚本。这意味着普通变量会被重置，想要「记住」一些东西，就要用 <strong>session_state</strong>。</p>
+      <p>比如做一个计数器，点一次按钮加 1：</p>
+      <div class="code-block" data-file="counter.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>用 session_state 做计数器</div>
+        <pre>import streamlit as st
+
+# 初始化计数器
+if "count" not in st.session_state:
+    st.session_state.count = 0
+
+# 点击按钮时增加计数
+if st.button("+1"):
+    st.session_state.count += 1
+
+st.write(f"当前计数：{st.session_state.count}")</pre>
+      </div>
+      <p><code>st.session_state</code> 是一个特殊的字典，页面刷新后里面的值仍然保留。它适合保存登录状态、购物车、表单草稿等需要「记忆」的数据。</p>
+      <p>再举一个例子：控制一组复选框，只有在用户勾选「同意协议」后才显示提交按钮：</p>
+      <div class="code-block" data-file="form.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>条件显示</div>
+        <pre>import streamlit as st
+
+agree = st.checkbox("我已阅读并同意用户协议")
+
+if agree:
+    st.success("可以继续操作")
+    st.button("提交")
+else:
+    st.warning("请先勾选同意协议")</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战</h2>
+      <div class="lesson-sub">做一个 BMI 计算器</div>
+    </div>
+    <div class="lesson-body">
+      <p>BMI（身体质量指数）是体重（kg）除以身高（m）的平方。我们用 Streamlit 做一个输入身高体重、自动计算并显示结果的网页。</p>
+      <div class="code-block" data-file="bmi.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>bmi.py</div>
+        <pre>import streamlit as st
+
+st.title("BMI 计算器")
+
+height = st.number_input("身高（米）", min_value=0.5, max_value=2.5, value=1.70)
+weight = st.number_input("体重（千克）", min_value=20.0, max_value=200.0, value=60.0)
+
+if st.button("计算 BMI"):
+    bmi = weight / (height ** 2)
+    st.write(f"你的 BMI 是：**{bmi:.2f}**")
+
+    if bmi &lt; 18.5:
+        st.info("偏瘦")
+    elif bmi &lt; 24:
+        st.success("正常")
+    elif bmi &lt; 28:
+        st.warning("超重")
+    else:
+        st.error("肥胖")</pre>
+      </div>
+      <p>实战任务：</p>
+      <ol style="margin-bottom: 12px; padding-left: 24px; line-height: 1.9;">
+        <li>把上面的代码保存为 <code>bmi.py</code>。</li>
+        <li>在终端运行 <code>streamlit run bmi.py</code>。</li>
+        <li>修改代码，用 <code>st.sidebar</code> 把输入项放到侧边栏。</li>
+        <li>挑战：给计算结果添加一个历史记录，用 <code>st.session_state</code> 保存最近 5 次记录。</li>
+      </ol>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：运行 Streamlit 应用的命令是什么？</p>
+      <div class="quiz" data-answer="A">
+        <h4>启动一个 Streamlit 应用的命令是？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。streamlit run app.py" type="button">A. streamlit run app.py</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。python app.py 不是本题的正确答案。streamlit run app.py 才是正确的。" type="button">B. python app.py</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。pip install streamlit 不是本题的正确答案。streamlit run app.py 才是正确的。" type="button">C. pip install streamlit</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 O · 模块 4</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgO-m4-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

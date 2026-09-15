@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    CPU：电脑的大脑 · 第二阶段课程包 G 模块 2
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgG-m2-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 G 模块 2：取指令、执行、寄存器、时钟。支持离线打开、深色模式、学习进度本地保存。">
+  <title>CPU：电脑的大脑 · 第二阶段课程包 G 模块 2</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .callout {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 16px; margin: 16px 0;
+  }
+  .callout-title { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .diagram {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-card); padding: 16px; margin: 16px 0;
+    overflow-x: auto;
+  }
+  .diagram svg {
+    display: block; max-width: 100%; height: auto; margin: 0 auto;
+  }
+  .diagram .d-box {
+    fill: var(--bg-soft); stroke: var(--border); stroke-width: 1.5;
+  }
+  .diagram .d-diamond {
+    fill: var(--bg-soft); stroke: var(--border); stroke-width: 1.5;
+  }
+  .diagram .d-text {
+    fill: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    font-size: 14px; font-weight: 700; text-anchor: middle; dominant-baseline: middle;
+  }
+  .diagram .d-label {
+    fill: var(--text-soft);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    font-size: 12px; text-anchor: middle; dominant-baseline: middle;
+  }
+  .diagram .d-arrow { stroke: var(--text-soft); stroke-width: 2; fill: none; }
+  .diagram .d-arrow-head { fill: var(--text-soft); }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>CPU：电脑的大脑 · 课程包 G</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/4 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包G_计算机解剖.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包G_计算机解剖.html">课程包 G</a>
+    <span>/</span>
+    <span>模块 2：CPU：电脑的大脑</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 G · 模块 2</span>
+    <h1>CPU：电脑的大脑</h1>
+    <p>取指令、执行、寄存器、时钟</p>
+    <a class="start-btn" href="#lesson-1">开始模块 2 第 1 小节 →</a>
+    <span class="meta">模块 2 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>取指令：CPU 在做什么</h2>
+    </div>
+    <div class="lesson-body">
+      <p>CPU 并不会「理解」你的 Python 代码。Python 程序最终被解释或编译成一条条非常简单的机器指令，比如「把内存地址 100 的数字加到寄存器 A 上」。CPU 的工作就是不断重复三个动作：</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 420 80" width="420" height="80" role="img" aria-label="取指令、译码、执行循环">
+          <defs>
+            <marker id="arrowhead-fde" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L10,3.5 L0,7 z" class="d-arrow-head" />
+            </marker>
+          </defs>
+          <rect x="10" y="16" width="110" height="48" rx="8" class="d-box" />
+          <text x="65" y="36" class="d-text">取指令</text>
+          <text x="65" y="54" class="d-label">Fetch</text>
+
+          <line x1="122" y1="40" x2="148" y2="40" class="d-arrow" marker-end="url(#arrowhead-fde)" />
+
+          <rect x="155" y="16" width="110" height="48" rx="8" class="d-box" />
+          <text x="210" y="36" class="d-text">译码</text>
+          <text x="210" y="54" class="d-label">Decode</text>
+
+          <line x1="267" y1="40" x2="293" y2="40" class="d-arrow" marker-end="url(#arrowhead-fde)" />
+
+          <rect x="300" y="16" width="110" height="48" rx="8" class="d-box" />
+          <text x="355" y="36" class="d-text">执行</text>
+          <text x="355" y="54" class="d-label">Execute</text>
+        </svg>
+      </div>
+
+      <p>CPU 里有一个特殊的寄存器叫 <strong>程序计数器（PC）</strong>，它永远记着「下一条指令在哪里」。每次取完指令，PC 就自动加 1（或跳到别的地方），指向下一条。循环、函数调用、条件判断，本质上都是通过修改 PC 的值来实现的。</p>
+
+      <div class="code-block lang-py" data-file="fetch_cycle.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>模拟取指令循环</div>
+        <pre>program = [
+    "LOAD  A, 10",   # 把 10 放进寄存器 A
+    "LOAD  B, 3",    # 把 3 放进寄存器 B
+    "ADD   A, B",    # A = A + B
+    "PRINT A",       # 输出 A
+]
+
+pc = 0
+while pc &lt; len(program):
+    instruction = program[pc]
+    print("PC=", pc, ", 取指令:", instruction)
+    pc = pc + 1</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="fetch_cycle.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>fetch_cycle.cpp</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;string&gt;
+using namespace std;
+
+int main() {
+    string program[4] = {
+        "LOAD  A, 10",   // 把 10 放进寄存器 A
+        "LOAD  B, 3",    // 把 3 放进寄存器 B
+        "ADD   A, B",    // A = A + B
+        "PRINT A",       // 输出 A
+    };
+
+    int pc = 0;
+    while (pc &lt; 4) {
+        string instruction = program[pc];
+        cout &lt;&lt; "PC=" &lt;&lt; pc &lt;&lt; ", 取指令: " &lt;&lt; instruction &lt;&lt; endl;
+        pc = pc + 1;
+    }
+    return 0;
+}</pre>
+      </div>
+
+      <p>真实的 CPU 每秒钟会执行几十亿次这样的取指令循环，所以一个看起来很复杂的程序，在 CPU 眼里就是无数条简单指令的排列组合。</p>
+
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>执行：译码与算术逻辑单元</h2>
+    </div>
+    <div class="lesson-body">
+      <p>取到指令后，CPU 要把它「翻译」成具体的电路动作，这个过程叫 <strong>译码（Decode）</strong>。例如「ADD A, B」这条指令会告诉 ALU：把寄存器 A 和 B 的值相加，结果写回 A。</p>
+
+      <p>真正做运算的部件叫 <strong>ALU（Arithmetic Logic Unit，算术逻辑单元）</strong>。它就像 CPU 里的计算器，能做整数加减、位运算、比较大小等操作。模块 1 里学的加法器，就是 ALU 的核心组成部分。</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 520 150" width="520" height="150" role="img" aria-label="ADD A, B 指令执行示意图">
+          <defs>
+            <marker id="arrowhead-alu" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L10,3.5 L0,7 z" class="d-arrow-head" />
+            </marker>
+          </defs>
+          <text x="260" y="20" class="d-text">指令: ADD A, B</text>
+
+          <rect x="20" y="40" width="90" height="44" rx="8" class="d-box" />
+          <text x="65" y="62" class="d-text">寄存器 A</text>
+
+          <rect x="20" y="102" width="90" height="44" rx="8" class="d-box" />
+          <text x="65" y="124" class="d-text">寄存器 B</text>
+
+          <polygon points="230,52 290,92 230,132 170,92" class="d-diamond" />
+          <text x="230" y="90" class="d-text">ALU</text>
+          <text x="230" y="108" class="d-label">A + B</text>
+
+          <line x1="110" y1="62" x2="168" y2="78" class="d-arrow" marker-end="url(#arrowhead-alu)" />
+          <line x1="110" y1="124" x2="168" y2="106" class="d-arrow" marker-end="url(#arrowhead-alu)" />
+
+          <rect x="360" y="70" width="140" height="44" rx="8" class="d-box" />
+          <text x="430" y="92" class="d-text">结果写回 寄存器 A</text>
+          <line x1="292" y1="92" x2="358" y2="92" class="d-arrow" marker-end="url(#arrowhead-alu)" />
+        </svg>
+      </div>
+
+      <p>现代 CPU 通常有多个 ALU，可以同时执行多条独立指令，这种技术叫<strong>流水线</strong>和<strong>超标量</strong>。但初学者只需要记住：CPU 的核心工作就是取指令、译码、执行，循环往复。</p>
+
+      <div class="callout">
+        <div class="callout-title">⚠️ 注意</div>
+        <p>CPU 能直接执行的指令集叫「机器码」或「汇编指令」。我们平时写的 Python、C++ 代码需要被翻译成机器码才能运行。这个翻译工作由解释器、编译器完成。</p>
+      </div>
+
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>寄存器与时钟：CPU 的速度</h2>
+    </div>
+    <div class="lesson-body">
+      <p>CPU 内部有一小片极快的存储空间，叫做 <strong>寄存器（Register）</strong>。寄存器数量很少（通常几十个），但读写速度比内存快几十倍甚至上百倍。CPU 做运算时，数据先要被搬进寄存器，算完再搬出去。</p>
+
+      <p>你可以这样理解：</p>
+      <ul style="margin-left:20px;margin-bottom:12px">
+        <li><strong>寄存器</strong>：CPU 手边的工作台，放正在用的东西。</li>
+        <li><strong>内存（RAM）</strong>：书桌，离得比较近，常用资料放这里。</li>
+        <li><strong>硬盘</strong>：书柜，离得远，但容量大、能长期保存。</li>
+      </ul>
+
+      <p>CPU 的所有操作都由一个<strong>时钟</strong>来统一节拍。时钟每「滴答」一次，CPU 就完成一步操作（比如取一条指令）。常见的 3 GHz CPU，意味着每秒能滴答 30 亿次。时钟频率越高，CPU 在同样时间内能做的步骤就越多，但发热和耗电也会上升。</p>
+
+      <div class="code-block lang-py" data-file="clock_demo.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>频率转换</div>
+        <pre>ghz = 3.0
+hz = ghz * 1000000000      # 1 GHz = 10 亿 Hz
+cycles_per_ms = hz / 1000  # 1 秒 = 1000 毫秒
+print(ghz, "GHz 的 CPU 每毫秒大约滴答", cycles_per_ms, "次")
+# 输出：3.0 GHz 的 CPU 每毫秒大约滴答 3000000.0 次</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="clock_demo.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>clock_demo.cpp</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;iomanip&gt;
+using namespace std;
+
+int main() {
+    double ghz = 3.0;
+    double hz = ghz * 1000000000;   // 1 GHz = 10 亿 Hz
+    double cycles_per_ms = hz / 1000;
+
+    // fixed + setprecision(0)：让小数点后面不显示（格式控制，记住这个写法即可）
+    cout &lt;&lt; fixed &lt;&lt; setprecision(0);
+    cout &lt;&lt; ghz &lt;&lt; " GHz 的 CPU 每毫秒大约滴答 "
+         &lt;&lt; cycles_per_ms &lt;&lt; " 次" &lt;&lt; endl;
+    return 0;
+}</pre>
+      </div>
+
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：写一个极简 CPU 模拟器</h2>
+      <div class="lesson-sub">把取指令、译码、执行串起来</div>
+    </div>
+    <div class="lesson-body">
+      <p>下面我们实现一个玩具 CPU，支持四条指令：LOAD、ADD、SUB、PRINT。它将展示 CPU 最核心的「取-译-执行」循环。</p>
+
+      <div class="code-block lang-py" data-file="tiny_cpu.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>极简 CPU 模拟器</div>
+        <pre># 内存里存储的程序：每条指令是一个小列表 [操作, 参数1, 参数2]
+program = [
+    ["LOAD", "A", "10"],
+    ["LOAD", "B", "4"],
+    ["ADD",  "A", "B"],
+    ["SUB",  "A", "B"],
+    ["PRINT", "A", ""],
+]
+
+registers = {"A": 0, "B": 0}   # 用字典当寄存器（第一阶段第 2 章学过）
+pc = 0
+
+while pc &lt; len(program):
+    op = program[pc][0]     # 指令名
+    arg1 = program[pc][1]   # 第一个参数
+    arg2 = program[pc][2]   # 第二个参数
+    print("PC=", pc, ", 执行", op, arg1, arg2)
+
+    if op == "LOAD":
+        registers[arg1] = int(arg2)   # int() 把文字转成数字
+    elif op == "ADD":
+        registers[arg1] = registers[arg1] + registers[arg2]
+    elif op == "SUB":
+        registers[arg1] = registers[arg1] - registers[arg2]
+    elif op == "PRINT":
+        print("  -&gt; 输出: 寄存器", arg1, "=", registers[arg1])
+
+    pc = pc + 1
+
+print("最终寄存器状态:", registers)</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="tiny_cpu.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>tiny_cpu.cpp</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;string&gt;
+using namespace std;
+
+int main() {
+    // 内存里存储的程序：三个数组分别存指令名、参数1、参数2
+    string ops[5]  = {"LOAD", "LOAD", "ADD", "SUB", "PRINT"};
+    string arg1[5] = {"A", "B", "A", "A", "A"};
+    string arg2[5] = {"10", "4", "B", "B", ""};
+
+    // 两个寄存器
+    int regA = 0;
+    int regB = 0;
+    int pc = 0;
+
+    while (pc &lt; 5) {
+        cout &lt;&lt; "PC=" &lt;&lt; pc &lt;&lt; ", 执行 " &lt;&lt; ops[pc]
+             &lt;&lt; " " &lt;&lt; arg1[pc] &lt;&lt; " " &lt;&lt; arg2[pc] &lt;&lt; endl;
+
+        if (ops[pc] == "LOAD") {
+            int value = stoi(arg2[pc]);   // stoi 把文字转成整数
+            if (arg1[pc] == "A") regA = value;
+            if (arg1[pc] == "B") regB = value;
+        } else if (ops[pc] == "ADD") {
+            if (arg1[pc] == "A") regA = regA + regB;
+            if (arg1[pc] == "B") regB = regB + regA;
+        } else if (ops[pc] == "SUB") {
+            if (arg1[pc] == "A") regA = regA - regB;
+            if (arg1[pc] == "B") regB = regB - regA;
+        } else if (ops[pc] == "PRINT") {
+            if (arg1[pc] == "A") cout &lt;&lt; "  -&gt; 输出: 寄存器 A = " &lt;&lt; regA &lt;&lt; endl;
+            if (arg1[pc] == "B") cout &lt;&lt; "  -&gt; 输出: 寄存器 B = " &lt;&lt; regB &lt;&lt; endl;
+        }
+        pc = pc + 1;
+    }
+
+    cout &lt;&lt; "最终寄存器状态: A=" &lt;&lt; regA &lt;&lt; " B=" &lt;&lt; regB &lt;&lt; endl;
+    return 0;
+}</pre>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">💡 扩展挑战</div>
+        <p>试着给这个 CPU 增加一条 <code>JUMP n</code> 指令，让 PC 直接跳到第 n 条指令。再增加一条 <code>JUMP_IF_ZERO reg, n</code>，如果寄存器值为 0 就跳转。实现循环和条件分支，你的玩具 CPU 就更有真实感了。</p>
+      </div>
+
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：取指令、执行、寄存器、时钟</p>
+      <div class="quiz" data-answer="B">
+        <h4>CPU 执行一条机器指令时，通常第一步做什么？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。把结果写回内存 不是本题的正确答案。从内存中取出下一条指令 才是正确的。" type="button">A. 把结果写回内存</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。从内存中取出下一条指令" type="button">B. 从内存中取出下一条指令</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。调用显卡显示画面 不是本题的正确答案。从内存中取出下一条指令 才是正确的。" type="button">C. 调用显卡显示画面</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 G · 模块 2</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgG-m2-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) {
+      btn.classList.add("completed");
+      btn.textContent = "✓ 已完成";
+    }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

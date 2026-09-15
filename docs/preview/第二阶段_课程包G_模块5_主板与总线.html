@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    主板与总线 · 第二阶段课程包 G 模块 5
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgG-m5-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 G 模块 5：电脑里的高速公路。支持离线打开、深色模式、学习进度本地保存。">
+  <title>主板与总线 · 第二阶段课程包 G 模块 5</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .callout {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 16px; margin: 16px 0;
+  }
+  .callout-title { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .diagram {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-card); padding: 16px; margin: 16px 0;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    line-height: 1.6; overflow-x: auto;
+  }
+  .diagram svg {
+    width: 100%; height: auto; display: block;
+  }
+  .diagram .cpu-box,
+  .diagram .hw-box,
+  .diagram .mb-box {
+    fill: var(--bg-soft);
+    stroke: var(--border);
+    stroke-width: 2;
+  }
+  .diagram .cpu-box {
+    fill: var(--bg-section);
+    stroke: var(--text-soft);
+  }
+  .diagram .mb-box {
+    fill: var(--bg-card);
+    stroke: var(--text-soft);
+  }
+  .diagram text {
+    fill: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    text-anchor: middle;
+  }
+  .diagram .conn-line,
+  .diagram .bus-line {
+    stroke: var(--text-soft);
+    stroke-width: 2;
+    color: var(--text-soft);
+    fill: none;
+  }
+  .diagram .bus-label {
+    fill: var(--text-soft);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>主板与总线 · 课程包 G</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/4 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包G_计算机解剖.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包G_计算机解剖.html">课程包 G</a>
+    <span>/</span>
+    <span>模块 5：主板与总线</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 G · 模块 5</span>
+    <h1>主板与总线</h1>
+    <p>电脑里的高速公路</p>
+    <a class="start-btn" href="#lesson-1">开始模块 5 第 1 小节 →</a>
+    <span class="meta">模块 5 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>主板：所有硬件的「骨架」</h2>
+    </div>
+    <div class="lesson-body">
+      <p>主板是一块大型印刷电路板（PCB），CPU、内存、显卡、硬盘、电源等所有部件都插在它上面。它不提供算力，但负责让各个部件互相连接、互相通信。</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 520 280" xmlns="http://www.w3.org/2000/svg" aria-label="CPU 与主板硬件连接示意图">
+          <defs>
+            <marker id="arrow-down-1" markerWidth="10" markerHeight="10" refX="5" refY="9" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L10,0 L5,9 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <!-- CPU -->
+          <rect class="cpu-box" x="210" y="16" width="100" height="48" rx="8"/>
+          <text class="cpu-text" x="260" y="46">CPU</text>
+          <!-- 连接线：CPU → 三部件 -->
+          <line class="conn-line" x1="260" y1="64" x2="260" y2="88"/>
+          <line class="conn-line" x1="90" y1="88" x2="430" y2="88"/>
+          <line class="conn-line" x1="90" y1="88" x2="90" y2="112" marker-end="url(#arrow-down-1)"/>
+          <line class="conn-line" x1="260" y1="88" x2="260" y2="112" marker-end="url(#arrow-down-1)"/>
+          <line class="conn-line" x1="430" y1="88" x2="430" y2="112" marker-end="url(#arrow-down-1)"/>
+          <!-- 三个部件 -->
+          <rect class="hw-box" x="40" y="112" width="100" height="48" rx="8"/>
+          <text class="hw-text" x="90" y="142">内存</text>
+          <rect class="hw-box" x="210" y="112" width="100" height="48" rx="8"/>
+          <text class="hw-text" x="260" y="142">显卡</text>
+          <rect class="hw-box" x="380" y="112" width="100" height="48" rx="8"/>
+          <text class="hw-text" x="430" y="142">硬盘</text>
+          <!-- 部件到主板 -->
+          <line class="conn-line" x1="90" y1="160" x2="90" y2="188" marker-end="url(#arrow-down-1)"/>
+          <line class="conn-line" x1="260" y1="160" x2="260" y2="188" marker-end="url(#arrow-down-1)"/>
+          <line class="conn-line" x1="430" y1="160" x2="430" y2="188" marker-end="url(#arrow-down-1)"/>
+          <!-- 主板 -->
+          <rect class="mb-box" x="20" y="188" width="480" height="56" rx="10"/>
+          <text class="mb-text" x="260" y="222">主板（Motherboard）</text>
+        </svg>
+      </div>
+
+      <p>主板上还有很多辅助芯片，比如芯片组（Chipset）负责协调 CPU 与外设之间的数据交换，BIOS/UEFI 芯片负责开机自检和引导操作系统。你可以把主板想象成城市的道路网：它自己不运货，但没有它，货就没法运。</p>
+
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>总线：数据的高速公路</h2>
+    </div>
+    <div class="lesson-body">
+      <p>主板上的各种部件要靠<strong>总线（Bus）</strong>来传输数据。总线就像高速公路，负责把信息从一个地方运到另一个地方。常见的总线分为三类：</p>
+
+      <ul style="margin-left:20px;margin-bottom:12px">
+        <li><strong>数据总线（Data Bus）</strong>：运送实际的数据，比如从内存读到 CPU 的一个数。</li>
+        <li><strong>地址总线（Address Bus）</strong>：运送内存地址，告诉对方「我要读写哪个位置」。</li>
+        <li><strong>控制总线（Control Bus）</strong>：运送控制信号，比如「读」「写」「准备好没有」等命令。</li>
+      </ul>
+
+      <div class="diagram">
+        <svg viewBox="0 0 520 200" xmlns="http://www.w3.org/2000/svg" aria-label="CPU 与内存之间的三类总线">
+          <defs>
+            <marker id="arrow-right-2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="currentColor"/>
+            </marker>
+            <marker id="arrow-left-2" markerWidth="10" markerHeight="10" refX="1" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M9,0 L9,6 L0,3 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <!-- CPU / 内存 -->
+          <rect class="cpu-box" x="40" y="60" width="100" height="80" rx="8"/>
+          <text class="cpu-text" x="90" y="105">CPU</text>
+          <rect class="hw-box" x="380" y="60" width="100" height="80" rx="8"/>
+          <text class="hw-text" x="430" y="105">内存</text>
+          <!-- 数据总线（双向） -->
+          <line class="bus-line" x1="150" y1="82" x2="370" y2="82" marker-start="url(#arrow-left-2)" marker-end="url(#arrow-right-2)"/>
+          <text class="bus-label" x="260" y="74">数据总线</text>
+          <!-- 地址总线 -->
+          <line class="bus-line" x1="150" y1="110" x2="370" y2="110" marker-end="url(#arrow-right-2)"/>
+          <text class="bus-label" x="260" y="102">地址总线</text>
+          <!-- 控制总线 -->
+          <line class="bus-line" x1="150" y1="138" x2="370" y2="138" marker-end="url(#arrow-right-2)"/>
+          <text class="bus-label" x="260" y="130">控制总线</text>
+        </svg>
+      </div>
+
+      <p>总线有宽度限制。地址总线的宽度决定了 CPU 能访问多少内存：32 位地址总线最多访问 2³² 字节，约 4 GB；64 位地址总线则能访问极大的空间。数据总线的宽度则决定了一次能搬运多少位数据。</p>
+
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>带宽与延迟：总线有多快</h2>
+    </div>
+    <div class="lesson-body">
+      <p>衡量总线性能有两个关键指标：</p>
+
+      <ul style="margin-left:20px;margin-bottom:12px">
+        <li><strong>带宽（Bandwidth）</strong>：单位时间内能传输多少数据，通常用 GB/s 表示。带宽越高，同时传输的数据越多。</li>
+        <li><strong>延迟（Latency）</strong>：从发出请求到收到第一个数据需要多少时间，通常用纳秒（ns）或毫秒（ms）表示。延迟越低，响应越快。</li>
+      </ul>
+
+      <p>打个比方：带宽像高速公路的车道数量，延迟像从入口到出口的行驶时间。车道再多，如果路很长、红绿灯很多，第一次到达仍然慢。</p>
+
+      <div class="code-block lang-py" data-file="bandwidth_latency.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>计算总线带宽</div>
+        <pre># 假设总线宽度 64 位，频率 1 GHz
+bus_width_bits = 64
+frequency_hz = 1000000000   # 1 GHz = 10 亿 Hz
+
+# 每秒传输字节数 = 位宽 × 频率 / 8
+bandwidth_bytes_per_sec = bus_width_bits * frequency_hz / 8
+bandwidth_gb_per_sec = bandwidth_bytes_per_sec / 1000000000
+
+print("理论带宽:", bandwidth_gb_per_sec, "GB/s")</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="bandwidth_latency.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>bandwidth_latency.cpp</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;iomanip&gt;
+using namespace std;
+
+int main() {
+    // 假设总线宽度 64 位，频率 1 GHz
+    int bus_width_bits = 64;
+    double frequency_hz = 1000000000;   // 1 GHz = 10 亿 Hz
+
+    // 每秒传输字节数 = 位宽 × 频率 / 8
+    double bandwidth_bytes_per_sec = bus_width_bits * frequency_hz / 8;
+    double bandwidth_gb_per_sec = bandwidth_bytes_per_sec / 1000000000;
+
+    // fixed + setprecision(2)：让小数只保留两位（格式控制，记住这个写法即可）
+    cout &lt;&lt; fixed &lt;&lt; setprecision(2);
+    cout &lt;&lt; "理论带宽: " &lt;&lt; bandwidth_gb_per_sec &lt;&lt; " GB/s" &lt;&lt; endl;
+    return 0;
+}</pre>
+      </div>
+
+      <p>现代电脑里，CPU 和内存之间有高速总线（如 DDR 内存通道），显卡通过 PCIe 总线连接，硬盘通过 SATA 或 NVMe 总线连接。NVMe 比 SATA 快很多，正是因为它的总线更宽、协议更高效。</p>
+
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：模拟总线传输</h2>
+      <div class="lesson-sub">用 Python 体验带宽与延迟</div>
+    </div>
+    <div class="lesson-body">
+      <p>下面我们写一个简化版总线模拟器：CPU 要从内存读取一批数据。你会看到，即使「总线带宽」很高，如果每次读取都要等待较长的「延迟」，总耗时也会显著增加。</p>
+
+      <div class="code-block lang-py" data-file="bus_simulator.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>总线传输模拟</div>
+        <pre>def read_from_memory(data_size_mb, bandwidth_gb_s, latency_ms):
+    # data_size_mb: 要读的数据大小（MB）
+    # bandwidth_gb_s: 总线带宽（GB/s）
+    # latency_ms: 每次访问的延迟（ms）
+
+    # 传输时间 = 数据量 / 带宽
+    transfer_time_s = (data_size_mb / 1024) / bandwidth_gb_s
+    latency_s = latency_ms / 1000
+    total_s = latency_s + transfer_time_s
+    return total_s
+
+# 对比两种总线（按顺序传入三个参数：数据量、带宽、延迟）
+slow = read_from_memory(100, 0.5, 10)
+fast = read_from_memory(100, 10.0, 0.1)
+
+print("慢总线（SATA 硬盘风格）:", round(slow, 3), "秒")   # round(x, 3) 保留三位小数
+print("快总线（NVMe 硬盘风格）:", round(fast, 3), "秒")
+print("快总线约是慢总线的", round(slow / fast, 1), "倍")</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="bus_simulator.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>bus_simulator.cpp</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;iomanip&gt;
+using namespace std;
+
+// data_size_mb: 要读的数据大小（MB）
+// bandwidth_gb_s: 总线带宽（GB/s）
+// latency_ms: 每次访问的延迟（ms）
+double read_from_memory(double data_size_mb, double bandwidth_gb_s, double latency_ms) {
+    double transfer_time_s = (data_size_mb / 1024.0) / bandwidth_gb_s;
+    double latency_s = latency_ms / 1000.0;
+    return latency_s + transfer_time_s;
+}
+
+int main() {
+    double slow = read_from_memory(100, 0.5, 10);
+    double fast = read_from_memory(100, 10.0, 0.1);
+
+    // fixed + setprecision(3)：让小数只保留三位（格式控制，记住这个写法即可）
+    cout &lt;&lt; fixed &lt;&lt; setprecision(3);
+    cout &lt;&lt; "慢总线（SATA 硬盘风格）: " &lt;&lt; slow &lt;&lt; " 秒" &lt;&lt; endl;
+    cout &lt;&lt; "快总线（NVMe 硬盘风格）: " &lt;&lt; fast &lt;&lt; " 秒" &lt;&lt; endl;
+    cout &lt;&lt; "快总线约是慢总线的 " &lt;&lt; slow / fast &lt;&lt; " 倍" &lt;&lt; endl;
+    return 0;
+}</pre>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">💡 扩展挑战</div>
+        <p>把上面的函数改成「每次只能读取 4 KB 的小块」，并且每次读取都要付一次延迟。对比「一次读取 100 MB」和「分 25600 次读取 4 KB」的总时间，体会为什么减少请求次数、合并数据访问能提升性能。</p>
+      </div>
+
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：电脑里的高速公路</p>
+      <div class="quiz" data-answer="B">
+        <h4>CPU 想读取内存中某个字节的数据，需要先通过哪条总线告诉内存「我要哪个地址」？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。数据总线 不是本题的正确答案。地址总线 才是正确的。" type="button">A. 数据总线</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。地址总线" type="button">B. 地址总线</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。控制总线 不是本题的正确答案。地址总线 才是正确的。" type="button">C. 控制总线</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 G · 模块 5</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgG-m5-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) {
+      btn.classList.add("completed");
+      btn.textContent = "✓ 已完成";
+    }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

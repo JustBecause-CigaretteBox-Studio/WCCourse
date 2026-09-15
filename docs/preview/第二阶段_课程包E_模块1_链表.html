@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    链表 · 第二阶段课程包 E 模块 1
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgE-m1-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 E 模块 1：会生长的数组，插入删除不再搬家。支持离线打开、深色模式、学习进度本地保存。">
+  <title>链表 · 第二阶段课程包 E 模块 1</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  /* 链表图示 */
+  .diagram { border: 1px solid var(--border); border-radius: 14px; background: var(--bg-section); padding: 16px 18px; margin: 18px 0; }
+  .diagram .diagram-cap { font-size: 13px; font-weight: 700; color: var(--text-soft); margin-bottom: 10px; }
+  .diagram svg { width: 100%; height: auto; display: block; }
+  .ll-node { fill: var(--bg-card); stroke: var(--border); stroke-width: 1.5; }
+  .ll-node-prev { fill: rgba(14,165,233,.12); stroke: #0ea5e9; stroke-width: 1.5; }
+  .ll-node-next { fill: rgba(16,185,129,.12); stroke: #10b981; stroke-width: 1.5; }
+  .ll-sentinel { fill: rgba(139,92,246,.16); stroke: #8b5cf6; stroke-width: 1.5; }
+  .ll-label { fill: var(--text-soft); font-size: 13px; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; text-anchor: middle; }
+  .ll-arrow { stroke: var(--text-faint); stroke-width: 2; fill: none; }
+  .ll-arrow-h { fill: var(--text-faint); }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>链表 · 课程包 E</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包E_数据结构进阶.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包E_数据结构进阶.html">课程包 E</a>
+    <span>/</span>
+    <span>模块 1：链表</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 E · 模块 1</span>
+    <h1>链表</h1>
+    <p>会生长的数组，插入删除不再搬家</p>
+    <a class="start-btn" href="#lesson-1">开始模块 1 第 1 小节 →</a>
+    <span class="meta">模块 1 · 6 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>链表是什么</h2>
+      <div class="lesson-sub">像火车车厢一样连在一起的数据</div>
+    </div>
+    <div class="lesson-body">
+      <p>我们已经学过数组：把所有元素按顺序排成一排，就像电影院里固定位置的座位。数组查某个位置很快，但想在中间插入或删除一个元素，后面的所有元素都要「搬家」。</p>
+      <p>链表则像一列火车：每节车厢只知道自己前面/后面连着哪一节。只要找到某一节，把它的「前面/后面是谁」改一下，就能完成插入或删除，不需要移动其他车厢。我们来深入研究这种数据结构。</p>
+      <p>链表的每个元素叫作<strong>节点（Node）</strong>，节点里存两样东西：数据本身，以及指向下一个节点的「钩子」（指针或引用）。</p>
+      <div class="code-block lang-py" data-file="linked_list.py" data-lang="python"><pre>class Node:
+    def __init__(self, value):
+        self.value = value  # 当前车厢装的数据
+        self.next = None    # 下一节车厢，目前为空</pre></div>
+      <div class="code-block lang-cpp" data-file="linked_list.cpp" data-lang="cpp"><pre>struct Node {
+    int value;      // 当前车厢装的数据
+    Node* next;     // 指向下一节车厢的指针
+    Node(int v) : value(v), next(nullptr) {}
+};</pre></div>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>插入与删除</h2>
+      <div class="lesson-sub">只需改两根线，不用搬全家</div>
+    </div>
+    <div class="lesson-body">
+      <p>在链表中间插入一个新节点，只需要做两件事：让前一个节点指向新节点，再让新节点指向原来的后一个节点。删除也是一样：让前一个节点直接指向被删节点的下一个节点。</p>
+      <p>因为其他节点在内存里不需要连续排列，插入和删除的平均时间复杂度是 <code>O(1)</code>（前提是已经找到了位置）。对比数组中间插入的 <code>O(n)</code>，链表更适合频繁增删的场景。</p>
+      <div class="code-block lang-py" data-file="insert_delete.py" data-lang="python"><pre>class LinkedList:
+    def __init__(self):
+        self.head = None
+
+    def push_front(self, value):       # 在链表头部插入
+        new_node = Node(value)
+        new_node.next = self.head
+        self.head = new_node
+
+    def remove_first(self):            # 删除头部节点
+        if self.head:
+            self.head = self.head.next</pre></div>
+      <div class="code-block lang-cpp" data-file="insert_delete.cpp" data-lang="cpp"><pre>void push_front(Node*&amp; head, int value) {
+    Node* newNode = new Node(value);
+    newNode-&gt;next = head;
+    head = newNode;
+}
+
+void remove_first(Node*&amp; head) {
+    if (head) {
+        Node* temp = head;
+        head = head-&gt;next;
+        delete temp;            // C++ 里记得释放内存
+    }
+}</pre></div>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>遍历链表</h2>
+      <div class="lesson-sub">从头开始一节一节往后走</div>
+    </div>
+    <div class="lesson-body">
+      <p>链表不像数组那样能直接跳到第 5 个位置。想知道第 5 个节点的值，只能从头节点出发，沿着 <code>next</code> 一步一步走，直到数到第 5 个。因此链表的按索引查找是 <code>O(n)</code>。</p>
+      <p>遍历的核心思想很简单：拿一个临时变量 <code>cur</code> 指向当前节点，反复执行「处理当前节点 → 走到下一个节点」，直到 <code>cur</code> 变成空。</p>
+      <div class="code-block lang-py" data-file="traverse.py" data-lang="python"><pre>def print_list(head):
+    cur = head
+    while cur:
+        print(cur.value, end=" -&gt; ")
+        cur = cur.next
+    print("None")
+
+# 使用示例
+lst = LinkedList()
+for x in [3, 7, 5]:
+    lst.push_front(x)
+print_list(lst.head)   # 输出 5 -&gt; 7 -&gt; 3 -&gt; None</pre></div>
+      <div class="code-block lang-cpp" data-file="traverse.cpp" data-lang="cpp"><pre>void printList(Node* head) {
+    Node* cur = head;
+    while (cur) {
+        cout &lt;&lt; cur-&gt;value &lt;&lt; " -&gt; ";
+        cur = cur-&gt;next;
+    }
+    cout &lt;&lt; "None\n";
+}
+
+// 使用示例
+Node* head = nullptr;
+push_front(head, 3);
+push_front(head, 7);
+push_front(head, 5);
+printList(head);   // 输出 5 -&gt; 7 -&gt; 3 -&gt; None</pre></div>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：反转链表</h2>
+      <div class="lesson-sub">把火车车厢的顺序倒过来</div>
+    </div>
+    <div class="lesson-body">
+      <p>反转链表是面试和算法题里的经典操作。思路是：从头到尾遍历链表，每遇到一个节点，就把它从原来的方向上「掰」过来，指向前面那个节点。</p>
+      <p>具体需要三个指针：<code>prev</code>（前一个节点）、<code>cur</code>（当前节点）、<code>nxt</code>（临时保存当前节点的下一个节点）。一遍遍历就能完成反转。</p>
+      <div class="code-block lang-py" data-file="reverse.py" data-lang="python"><pre>def reverse(head):
+    prev = None
+    cur = head
+    while cur:
+        nxt = cur.next      # 先记住下一个
+        cur.next = prev     # 当前节点掉头指向前一个
+        prev = cur          # 前一个前进一步
+        cur = nxt           # 当前也前进一步
+    return prev
+
+# 使用
+lst.head = reverse(lst.head)
+print_list(lst.head)   # 输出 3 -&gt; 7 -&gt; 5 -&gt; None</pre></div>
+      <div class="code-block lang-cpp" data-file="reverse.cpp" data-lang="cpp"><pre>Node* reverse(Node* head) {
+    Node* prev = nullptr;
+    Node* cur = head;
+    while (cur) {
+        Node* nxt = cur-&gt;next;
+        cur-&gt;next = prev;
+        prev = cur;
+        cur = nxt;
+    }
+    return prev;
+}
+
+// 使用
+head = reverse(head);
+printList(head);   // 输出 3 -&gt; 7 -&gt; 5 -&gt; None</pre></div>
+      <p><strong>练习：</strong>在上面的代码基础上，尝试写一个在链表末尾追加节点 <code>push_back</code> 的函数，然后用它重新创建一条 3 -> 7 -> 5 的链表，再反转一次。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+    <section class="lesson" id="lesson-5">
+    <div class="lesson-head">
+      <div class="lesson-no">第 5 小节</div>
+      <h2>双向链表</h2>
+      <div class="lesson-sub">每个节点再多一根往回走的线</div>
+    </div>
+    <div class="lesson-body">
+      <p>单向链表有个不方便：只能从前往后走。如果已经站在中间某个节点，想回到上一个节点，只能从头再遍历一遍。双向链表（Doubly Linked List）给每个节点额外加了一根 <code>prev</code> 指针，指向前一个节点，于是火车就能<strong>双向行驶</strong>了。</p>
+      <div class="diagram">
+        <div class="diagram-cap">图：双向链表节点比单向多了一个 <code>prev</code> 指针</div>
+        <svg viewBox="0 0 470 130">
+          <rect class="ll-node-prev" x="20" y="40" width="130" height="50" rx="8"/>
+          <text class="ll-label" x="85" y="60">prev</text>
+          <text class="ll-label" x="85" y="80" style="font-size:11px;fill:var(--text-faint)">指向前一个</text>
+          <rect class="ll-node" x="170" y="40" width="130" height="50" rx="8"/>
+          <text class="ll-label" x="235" y="60">数据</text>
+          <text class="ll-label" x="235" y="80" style="font-size:11px;fill:var(--text-faint)">当前车厢</text>
+          <rect class="ll-node-next" x="320" y="40" width="130" height="50" rx="8"/>
+          <text class="ll-label" x="385" y="60">next</text>
+          <text class="ll-label" x="385" y="80" style="font-size:11px;fill:var(--text-faint)">指向后一个</text>
+        </svg>
+      </div>
+      <p>整条链子于是同时有两条方向相反的“轨道”：实线 <code>next</code> 往后走，虚线 <code>prev</code> 往前走。</p>
+      <div class="diagram">
+        <div class="diagram-cap">图：双向链表的两条轨道（next 往后，prev 往前）</div>
+        <svg viewBox="0 0 640 170">
+          <rect class="ll-node" x="40" y="70" width="120" height="50" rx="10"/>
+          <text class="ll-label" x="100" y="100">A</text>
+          <rect class="ll-node" x="260" y="70" width="120" height="50" rx="10"/>
+          <text class="ll-label" x="320" y="100">B</text>
+          <rect class="ll-node" x="480" y="70" width="120" height="50" rx="10"/>
+          <text class="ll-label" x="540" y="100">C</text>
+          <line class="ll-arrow" x1="160" y1="120" x2="260" y2="120" marker-end="url(#llArr)"/>
+          <line class="ll-arrow" x1="380" y1="120" x2="480" y2="120" marker-end="url(#llArr)"/>
+          <text class="ll-label" x="210" y="140">next</text>
+          <text class="ll-label" x="430" y="140">next</text>
+          <line class="ll-arrow" x1="260" y1="80" x2="160" y2="80" marker-end="url(#llArr)" stroke-dasharray="4 4"/>
+          <line class="ll-arrow" x1="480" y1="80" x2="380" y2="80" marker-end="url(#llArr)" stroke-dasharray="4 4"/>
+          <text class="ll-label" x="210" y="56">prev</text>
+          <text class="ll-label" x="430" y="56">prev</text>
+          <defs>
+            <marker id="llArr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path class="ll-arrow-h" d="M0,0 L8,3 L0,6 Z"/></marker>
+          </defs>
+        </svg>
+      </div>
+      <p><strong>代价与好处。</strong> 插入或删除一个节点时，除了改两根 <code>next</code> 线，还要同步改两根 <code>prev</code> 线，相当于“改四根线”，操作更繁琐、也多占一点内存。但换来两个实打实的好处：可以<strong>双向遍历</strong>，以及——当你已经拿着某个节点的引用时——删除它只要 <code>O(1)</code>（单向链表删除已知节点还得先找到它的前驱，是 <code>O(n)</code>）。</p>
+      <div class="code-block lang-py" data-file="dll.py" data-lang="python"><pre>class DNode:
+    def __init__(self, value):
+        self.value = value
+        self.prev = None   # 新增：指向前一个节点
+        self.next = None   # 指向下一个节点
+
+class DoublyList:
+    def __init__(self):
+        self.head = None
+
+    def push_front(self, value):
+        node = DNode(value)
+        node.next = self.head
+        if self.head:
+            self.head.prev = node   # 别忘了把老 head 的 prev 指回来
+        self.head = node</pre></div>
+      <div class="code-block lang-cpp" data-file="dll.cpp" data-lang="cpp"><pre>struct DNode {
+    int value;
+    DNode* prev;   // 新增：指向前一个节点
+    DNode* next;   // 指向下一个节点
+    DNode(int v) : value(v), prev(nullptr), next(nullptr) {}
+};
+
+void push_front(DNode*&amp; head, int value) {
+    DNode* node = new DNode(value);
+    node-&gt;next = head;
+    if (head) {
+        head-&gt;prev = node;   // 别忘了把老 head 的 prev 指回来
+    }
+    head = node;
+}</pre></div>
+      <button class="done-btn" data-lesson="lesson-5" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-6">
+    <div class="lesson-head">
+      <div class="lesson-no">第 6 小节</div>
+      <h2>哨兵节点</h2>
+      <div class="lesson-sub">用一个假节点，消灭所有“边界特判”</div>
+    </div>
+    <div class="lesson-body">
+      <p>前面写插入/删除时，你可能想到过一堆让人头大的特殊判断，例如：要删的是头节点怎么办？这些“边界情况”最容易写错，也最不优雅。</p>
+      <p><strong>哨兵节点（Sentinel）</strong>就是专门解决这个问题的：在链表真正的数据之前，放一个<strong>永远存在、但不存任何真实数据</strong>的“假节点”（也叫哑节点 dummy head）。它像一个固定的哨兵，站在队伍最前面。</p>
+      <div class="diagram">
+        <div class="diagram-cap">图：哨兵（紫色）永远站在最前面，真实节点从它后面开始</div>
+        <svg viewBox="0 0 560 150">
+          <rect class="ll-sentinel" x="20" y="55" width="120" height="50" rx="10"/>
+          <text class="ll-label" x="80" y="85">哨兵</text>
+          <rect class="ll-node" x="200" y="55" width="120" height="50" rx="10"/>
+          <text class="ll-label" x="260" y="85">A</text>
+          <rect class="ll-node" x="380" y="55" width="120" height="50" rx="10"/>
+          <text class="ll-label" x="440" y="85">B</text>
+          <line class="ll-arrow" x1="140" y1="80" x2="200" y2="80" marker-end="url(#llArr)"/>
+          <line class="ll-arrow" x1="320" y1="80" x2="380" y2="80" marker-end="url(#llArr)"/>
+          <text class="ll-label" x="170" y="108" style="font-size:11px">next</text>
+          <text class="ll-label" x="350" y="108" style="font-size:11px">next</text>
+          <text class="ll-label" x="80" y="35" style="font-size:11px;fill:var(--text-faint)">永远存在，不存数据</text>
+          <defs>
+            <marker id="llArr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path class="ll-arrow-h" d="M0,0 L8,3 L0,6 Z"/></marker>
+          </defs>
+        </svg>
+      </div>
+      <p>有了哨兵，原先的“特殊情况”全消失了：</p>
+      <ul style="margin: 12px 0 12px 20px; color: var(--text-soft); line-height: 1.9;">
+        <li><strong>链表为空</strong>不再需要判断——哨兵永远在，队伍永远“至少有一个节点”（尽管它不是真数据）。</li>
+        <li><strong>在头部插入</strong> 退化为“在哨兵后面插入”，和“在中间插入”用的是同一套代码，没有 <code>if (head == nullptr)</code> 分支。</li>
+        <li><strong>删除头节点</strong> 也变成“删除哨兵后面的节点”，统一处理。</li>
+      </ul>
+      <p>下面用哨兵重写了插入和删除，注意代码里<strong>完全没有了空判断</strong>：</p>
+      <div class="code-block lang-py" data-file="sentinel.py" data-lang="python"><pre>class SentinelList:
+    def __init__(self):
+        self.head = DNode(None)   # 哨兵：数据填 None，永远存在
+
+    def push_front(self, value):
+        node = DNode(value)
+        node.next = self.head.next
+        if self.head.next:        # 只有在“后面真有节点”时才把它的 prev 指回
+            self.head.next.prev = node
+        node.prev = self.head
+        self.head.next = node     # 永远插在哨兵后面
+
+    def remove_first(self):
+        real = self.head.next
+        if not real: return        # 真没数据了才提前返回
+        self.head.next = real.next
+        if real.next:
+            real.next.prev = self.head</pre></div>
+      <div class="code-block lang-cpp" data-file="sentinel.cpp" data-lang="cpp"><pre>struct SentinelList {
+    DNode* head;            // 哨兵，永远非空
+    SentinelList() { head = new DNode(0); }   // 数据随便填，不真正使用
+};
+
+void push_front(SentinelList&amp; list, int value) {
+    DNode* node = new DNode(value);
+    node-&gt;next = list.head-&gt;next;
+    if (list.head-&gt;next) list.head-&gt;next-&gt;prev = node;
+    node-&gt;prev = list.head;
+    list.head-&gt;next = node;        // 永远插在哨兵后面
+}
+
+void remove_first(SentinelList&amp; list) {
+    DNode* real = list.head-&gt;next;
+    if (!real) return;             // 真没数据了才提前返回
+    list.head-&gt;next = real-&gt;next;
+    if (real-&gt;next) real-&gt;next-&gt;prev = list.head;
+    delete real;
+}</pre></div>
+      <p>哨兵的代价是多用了一个节点、且遍历时要跳过它（从 <code>head.next</code> 开始才是真数据）。但在频繁增删、尤其是写库/框架时，它换来的代码简洁和少 bug 往往非常划算。双向链表 + 哨兵，是很多工业级链表（比如 Linux 内核链表、Java LinkedHashMap）的标准搭配。</p>
+      <button class="done-btn" data-lesson="lesson-6" type="button">标记为已完成</button>
+    </div>
+  </section>
+<div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>关于链表的时间复杂度，下面哪一项是正确的？</p>
+      <div class="quiz" data-answer="B">
+        <h4>在链表中，已知插入位置后执行插入操作的时间复杂度是？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。O(n)，因为需要移动后面所有元素 不是本题的正确答案。O(1)，只需修改相邻两个节点的引用 才是正确的。" type="button">A. O(n)，因为需要移动后面所有元素</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。O(1)，只需修改相邻两个节点的引用" type="button">B. O(1)，只需修改相邻两个节点的引用</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。O(log n)，因为链表可以二分查找 不是本题的正确答案。O(1)，只需修改相邻两个节点的引用 才是正确的。" type="button">C. O(log n)，因为链表可以二分查找</button>
+        <div class="quiz-explain"></div>
+      </div>
+      <p>关于“哨兵节点”的作用，下面哪一项是正确的？</p>
+      <div class="quiz" data-answer="C">
+        <h4>引入哨兵（dummy head）节点，主要是为了什么？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。哨兵只是不存数据的假节点，并不会让按值查找变快。统一头/尾插入删除的边界处理、消灭空判断 才是正确的。" type="button">A. 让链表的查找速度变快</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。哨兵本身会多占一个节点，并不会节省内存。统一头/尾插入删除的边界处理、消灭空判断 才是正确的。" type="button">B. 节省内存占用</button>
+        <button class="quiz-opt" data-val="C" data-explain="正确。哨兵永远存在，使头部/尾部插入删除与中间一致，不再需要 head==null 之类的空判断" type="button">C. 统一头/尾插入删除的边界处理，消灭空判断</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 E · 模块 1</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgE-m1-progress";
+  var TOTAL = $$(".done-btn").length;   // 自动按小节按钮数量推算，新增/删除小节无需改这里
+
+  function loadProgress() {
+    var raw = read(PROGRESS_KEY);
+    var data = {};
+    try { data = JSON.parse(raw || "{}"); } catch (e) { data = {}; }
+    // 清洗：只保留当前 TOTAL 范围内的 lesson-N 键，避免添加/删除小节后旧数据干扰显示
+    var cleaned = {};
+    var dirty = false;
+    if (!data || typeof data !== "object") {
+      dirty = true;
+    } else {
+      Object.keys(data).forEach(function (k) {
+        var m = k.match(/^lesson-(\d+)$/);
+        if (m) {
+          var n = parseInt(m[1], 10);
+          if (n >= 1 && n <= TOTAL && data[k]) {
+            cleaned[k] = true;
+          } else {
+            dirty = true;
+          }
+        } else {
+          dirty = true;
+        }
+      });
+    }
+    if (dirty) saveProgress(cleaned);
+    return cleaned;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.min(100, Math.round(done / TOTAL * 100)) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    var m = lesson && lesson.match(/^lesson-(\d+)$/);
+    var n = m ? parseInt(m[1], 10) : 0;
+    if (!m || n < 1 || n > TOTAL) return;   // 跳过非法或已删除小节对应的按钮
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

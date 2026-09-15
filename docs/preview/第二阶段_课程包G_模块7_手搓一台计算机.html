@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    手搓一台计算机 · 第二阶段课程包 G 模块 7
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgG-m7-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 G 模块 7：在《我的世界》里把逻辑门、加法器、寄存器、内存、时钟和控制单元用红石总线连成一台真正能跑程序的计算机，串起整个课程包 G。支持离线打开、深色模式、学习进度本地保存。">
+  <title>综合实战：在《我的世界》手搓一台计算机 · 课程包 G 模块 7</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-opt.dim { opacity: .5; }
+  .quiz-explain { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .callout {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 16px; margin: 16px 0;
+  }
+  .callout-title { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .diagram {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-card); padding: 16px; margin: 16px 0;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    line-height: 1.6; overflow-x: auto;
+  }
+  .diagram svg { width: 100%; max-width: 560px; height: auto; margin: 0 auto; display: block; }
+  .diagram pre { margin: 0; white-space: pre; overflow-x: auto; font-size: 13px; line-height: 1.5; color: var(--text-soft); }
+  /* SVG 图示配色（深浅色自动适配） */
+  .mc-box  { fill: rgba(99,102,241,.10);  stroke: #818cf8; stroke-width: 2; }
+  .mc-box-soft { fill: rgba(14,165,233,.08); stroke: #38bdf8; stroke-width: 1.5; }
+  .mc-line  { stroke: var(--text-soft); stroke-width: 2; fill: none; }
+  .mc-thick { stroke: var(--text-soft); stroke-width: 4; fill: none; }
+  .mc-lbl   { fill: var(--text); font: 700 13px system-ui, sans-serif; }
+  .mc-lbl-soft { fill: var(--text-soft); font: 600 11px system-ui, sans-serif; }
+  .mc-lbl-c { fill: #fff; font: 800 13px system-ui, sans-serif; }
+  .lesson-body h3 { font-size: 17px; font-weight: 800; color: var(--text); margin: 26px 0 10px; }
+  .lesson-body h3:first-child { margin-top: 0; }
+  .lesson-body ul { margin: 0 0 12px 20px; }
+  .lesson-body li { margin-bottom: 6px; }
+  .diagram-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 14px; text-align: center;
+  }
+  .diagram-table th,
+  .diagram-table td {
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+  }
+  .diagram-table th {
+    background: var(--bg-soft); color: var(--text);
+    font-weight: 700;
+  }
+  .diagram-table td { color: var(--text-soft); }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>手搓一台计算机 · 课程包 G</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/4 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包G_计算机解剖.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包G_计算机解剖.html">课程包 G</a>
+    <span>/</span>
+    <span>模块 7：在《我的世界》手搓一台计算机</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 G · 模块 7</span>
+    <h1>综合实战：在《我的世界》手搓一台计算机</h1>
+    <p>把前面学过的逻辑门、加法器、寄存器、内存、时钟和控制单元，用一条红石总线连成一台真正能「取指令、算结果、写回去」的计算机。这是整个课程包 G 的终点，也是模块 1《从灯泡到芯片》里那颗 CPU 的完全体。</p>
+    <a class="start-btn" href="#lesson-1">开始模块 7 第 1 小节 →</a>
+    <span class="meta">模块 7 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>整机蓝图：把零件摆上桌子</h2>
+      <div class="lesson-sub">先看清一台计算机由哪几块拼成</div>
+    </div>
+    <div class="lesson-body">
+      <p>模块 1 到模块 5，我们分别认识了 CPU 内部的大脑（运算、取指令）、内存与硬盘（记住东西）、显卡（画画面）、主板与总线（把它们连起来）。现在把它们全部摆在一张图里，你就看到一台计算机的「全家福」了。</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 480 260" role="img" aria-label="计算机整机架构图：CPU 内含寄存器、ALU、控制单元，与内存通过总线相连">
+          <defs>
+            <marker id="a1" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+              <path class="mc-lbl-soft" d="M0,0 L7,3 L0,6 Z" fill="var(--text-soft)"></path>
+            </marker>
+          </defs>
+          <!-- CPU 外框 -->
+          <rect class="mc-box" x="20" y="30" width="200" height="200" rx="12"></rect>
+          <text class="mc-lbl" x="120" y="52" text-anchor="middle">CPU</text>
+          <!-- CPU 内部三块 -->
+          <rect class="mc-box-soft" x="40" y="64" width="160" height="38" rx="8"></rect>
+          <text class="mc-lbl" x="120" y="88" text-anchor="middle">寄存器（暂存数据）</text>
+          <rect class="mc-box-soft" x="40" y="112" width="160" height="38" rx="8"></rect>
+          <text class="mc-lbl" x="120" y="136" text-anchor="middle">ALU（跑加法/逻辑）</text>
+          <rect class="mc-box-soft" x="40" y="160" width="160" height="38" rx="8"></rect>
+          <text class="mc-lbl" x="120" y="184" text-anchor="middle">控制单元（打拍子）</text>
+          <!-- 内存 -->
+          <rect class="mc-box-soft" x="320" y="95" width="130" height="100" rx="10"></rect>
+          <text class="mc-lbl" x="385" y="125" text-anchor="middle">内存 RAM</text>
+          <text class="mc-lbl-soft" x="385" y="148" text-anchor="middle">记住正在用的</text>
+          <text class="mc-lbl-soft" x="385" y="165" text-anchor="middle">程序和数据</text>
+          <!-- 总线 -->
+          <line class="mc-line" x1="220" y1="104" x2="320" y2="104" marker-end="url(#a1)"></line>
+          <line class="mc-line" x1="220" y1="131" x2="320" y2="131" marker-end="url(#a1)"></line>
+          <line class="mc-line" x1="220" y1="158" x2="320" y2="158" marker-end="url(#a1)"></line>
+          <text class="mc-lbl-soft" x="270" y="200" text-anchor="middle">总线（一根根电线）</text>
+          <text class="mc-lbl-soft" x="270" y="216" text-anchor="middle">数据 / 地址 / 控制 三种信号</text>
+        </svg>
+      </div>
+
+      <p>这张图里最关键的不是某块有多大，而是那三根连在 CPU 和内存之间的「总线」。它就像一条公共马路：<strong>数据要走它、地址要走它、控制信号也要走它</strong>。CPU 想从内存拿一个数，就往总线上喊一声「地址 3 的数据给我」，内存回应「这是数据」，数据再沿总线回到 CPU。后面三节，我们就把这条马路和马路两头的房子一件件做出来。</p>
+
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>寄存器与内存：红石怎么记住一个数</h2>
+      <div class="lesson-sub">从「1 个比特」到「1 个字节」</div>
+    </div>
+    <div class="lesson-body">
+      <p>前面模块 6 里，拉杆一扳代表 1、扳回去代表 0。但拉杆会「忘」——你一走开，它还是 1 还是 0 全看现场。计算机需要的是：<strong>一旦写入，就一直保持，直到被新数据覆盖</strong>。红石里有专门的「锁存」元件能记住状态，对应现实里的寄存器与内存。</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 480 150" role="img" aria-label="一个字节由 8 个比特小方格组成，示例值为 01011001">
+          <rect class="mc-box" x="20" y="15" width="440" height="120" rx="12"></rect>
+          <text class="mc-lbl" x="240" y="35" text-anchor="middle">1 个字节 = 8 个比特（Bit）</text>
+          <g>
+            <rect class="mc-box-soft" x="35"  y="55" width="44" height="60" rx="6"></rect>
+            <rect class="mc-box-soft" x="87"  y="55" width="44" height="60" rx="6"></rect>
+            <rect class="mc-box-soft" x="139" y="55" width="44" height="60" rx="6"></rect>
+            <rect class="mc-box-soft" x="191" y="55" width="44" height="60" rx="6"></rect>
+            <rect class="mc-box-soft" x="243" y="55" width="44" height="60" rx="6"></rect>
+            <rect class="mc-box-soft" x="295" y="55" width="44" height="60" rx="6"></rect>
+            <rect class="mc-box-soft" x="347" y="55" width="44" height="60" rx="6"></rect>
+            <rect class="mc-box-soft" x="399" y="55" width="44" height="60" rx="6"></rect>
+            <text class="mc-lbl" x="57"  y="92" text-anchor="middle">0</text>
+            <text class="mc-lbl" x="109" y="92" text-anchor="middle">1</text>
+            <text class="mc-lbl" x="161" y="92" text-anchor="middle">0</text>
+            <text class="mc-lbl" x="213" y="92" text-anchor="middle">1</text>
+            <text class="mc-lbl" x="265" y="92" text-anchor="middle">1</text>
+            <text class="mc-lbl" x="317" y="92" text-anchor="middle">0</text>
+            <text class="mc-lbl" x="369" y="92" text-anchor="middle">0</text>
+            <text class="mc-lbl" x="421" y="92" text-anchor="middle">1</text>
+            <text class="mc-lbl-soft" x="57"  y="128" text-anchor="middle">bit7</text>
+            <text class="mc-lbl-soft" x="109" y="128" text-anchor="middle">bit6</text>
+            <text class="mc-lbl-soft" x="161" y="128" text-anchor="middle">bit5</text>
+            <text class="mc-lbl-soft" x="213" y="128" text-anchor="middle">bit4</text>
+            <text class="mc-lbl-soft" x="265" y="128" text-anchor="middle">bit3</text>
+            <text class="mc-lbl-soft" x="317" y="128" text-anchor="middle">bit2</text>
+            <text class="mc-lbl-soft" x="369" y="128" text-anchor="middle">bit1</text>
+            <text class="mc-lbl-soft" x="421" y="128" text-anchor="middle">bit0</text>
+          </g>
+        </svg>
+      </div>
+
+      <p>上图是内存里最小的一格「字节」：8 个小灯（比特）排成一排，能表示 0 到 255 之间的任意整数。<strong>寄存器</strong>就是 CPU 内部的小而快的这种格子（比如 32 位寄存器 = 32 个比特一排）；<strong>内存</strong>则是成千上万个这样的格子排成一面墙，每个格子有一个编号（地址）。我们用一段代码模拟「在寄存器里存一个数、再读出来」：</p>
+
+      <div class="code-block lang-py" data-file="register.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>用 Python 模拟一个 4 位寄存器</div>
+        <pre># 寄存器 = 一串会记住自己的比特
+reg = [0, 0, 0, 0]          # 4 个比特，初始全为 0
+
+def write(value):            # 把 0~15 的数写进寄存器
+    for i in range(4):
+        reg[3 - i] = (value &gt;&gt; i) &amp; 1
+
+def read():                  # 从寄存器读出这个数
+    return sum(bit &lt;&lt; (3 - i) for i, bit in enumerate(reg))
+
+write(9)                     # 9 的二进制是 1001
+print(reg)                   # [1, 0, 0, 1]
+print(read())                # 9</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="register.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>register.cpp</div>
+        <pre>#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    int reg = 0;             // C++ 里一个 int 就是一排会记住自己的比特
+
+    reg = 9;                 // 9 的二进制是 1001
+    cout &lt;&lt; reg &lt;&lt; endl;    // 9
+
+    reg = reg &lt;&lt; 1;          // 左移一位：相当于把所有比特往左挪，变成 10010 = 18
+    cout &lt;&lt; reg &lt;&lt; endl;    // 18
+    return 0;
+}</pre>
+      </div>
+
+      <p>现实中你不用自己一个比特一个比特去拨——编译器会帮你把 <code>reg = 9</code> 翻译成「把对应那几个比特点亮」的动作。但理解「数据其实是被记住的一排 0/1」，是看懂计算机的第一步。</p>
+
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>控制单元与时钟：让计算机「一步步」动起来</h2>
+      <div class="lesson-sub">没有指挥，零件只是一堆静止的红石</div>
+    </div>
+    <div class="lesson-body">
+      <p>有了寄存器和 ALU，零件齐了，但它们还不会自己动。你需要一个「指挥家」——<strong>控制单元</strong>，外加一只不停打拍子的<strong>时钟</strong>。时钟每「滴答」一次，控制单元就指挥大家做一步：先从内存取一条指令，再交给 ALU 算，最后把结果写回寄存器或内存。然后滴答第二下，再来一轮。</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 500 230" role="img" aria-label="左侧时钟方波，右侧取指与执行两个步骤循环，每个时钟滴答完成一步">
+          <defs>
+            <marker id="a2" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+              <path class="mc-lbl-soft" d="M0,0 L7,3 L0,6 Z" fill="var(--text-soft)"></path>
+            </marker>
+          </defs>
+          <!-- 时钟方波 -->
+          <text class="mc-lbl" x="60" y="28" text-anchor="middle">时钟（滴答）</text>
+          <polyline class="mc-line" points="20,70 20,40 80,40 80,70 140,70 140,40 200,40 200,70 260,70 260,40 320,40 320,70"></polyline>
+          <text class="mc-lbl-soft" x="50" y="92" text-anchor="middle">1</text>
+          <text class="mc-lbl-soft" x="110" y="92" text-anchor="middle">0</text>
+          <text class="mc-lbl-soft" x="170" y="92" text-anchor="middle">1</text>
+          <text class="mc-lbl-soft" x="230" y="92" text-anchor="middle">0</text>
+          <text class="mc-lbl-soft" x="290" y="92" text-anchor="middle">1</text>
+          <!-- 取指 / 执行 循环 -->
+          <rect class="mc-box-soft" x="300" y="130" width="150" height="48" rx="10"></rect>
+          <text class="mc-lbl" x="375" y="159" text-anchor="middle">① 取指令</text>
+          <rect class="mc-box-soft" x="300" y="190" width="150" height="48" rx="10"></rect>
+          <text class="mc-lbl" x="375" y="219" text-anchor="middle">② 执行</text>
+          <line class="mc-line" x1="375" y1="178" x2="375" y2="190" marker-end="url(#a2)"></line>
+          <line class="mc-line" x1="345" y1="214" x2="300" y2="214" marker-end="url(#a2)"></line>
+          <path class="mc-line" d="M300,214 L300,154 L345,154" marker-end="url(#a2)"></path>
+          <text class="mc-lbl-soft" x="375" y="120" text-anchor="middle">每滴答一步，循环往复</text>
+        </svg>
+      </div>
+
+      <p>这「取指令 → 执行 → 取指令 → 执行」的循环，就是传说中的<strong>取指-执行周期（Fetch-Decode-Execute Cycle）</strong>。下面用代码模拟这一节奏：一个 <code>while</code> 循环，每轮先取一条、再执行一条，直到程序结束。</p>
+
+      <div class="code-block lang-py" data-file="cycle.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>用 Python 模拟取指-执行循环</div>
+        <pre>program = ["LOAD 5", "ADD 3", "STORE 0"]   # 一条小程序：载入5、加3、存回
+regs = [0, 0, 0, 0]
+
+pc = 0                       # pc = 程序计数器，指向当前指令
+while pc &lt; len(program):
+    instr = program[pc]      # ① 取指令
+    print("执行:", instr)    # ② 执行（这里简化为打印）
+    pc = pc + 1              # 指向下一条，等下一个时钟滴答</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="cycle.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>cycle.cpp</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+int main() {
+    vector&lt;string&gt; program = {"LOAD 5", "ADD 3", "STORE 0"};
+    int pc = 0;                       // pc = 程序计数器
+
+    while (pc &lt; program.size()) {
+        string instr = program[pc];   // ① 取指令
+        cout &lt;&lt; "执行: " &lt;&lt; instr &lt;&lt; endl;   // ② 执行
+        pc = pc + 1;                  // 等下一个时钟滴答
+    }
+    return 0;
+}</pre>
+      </div>
+
+      <p>时钟越快，每秒能跑的循环就越多——这就是你买电脑时关心的「主频 3 GHz」的含义：每秒大约 30 亿个滴答。滴答之间，上面那一套取指-执行就完整走一遍。</p>
+
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>连起来：数据总线与整机运行</h2>
+      <div class="lesson-sub">把 CPU、内存、硬盘串成一条街</div>
+    </div>
+    <div class="lesson-body">
+      <p>最后一步，是用<strong>总线</strong>把 CPU、内存、硬盘这三家连成一条街。总线就是一排并排的电线：有的专门传「数据」（今天搬什么数），有的专门传「地址」（搬到哪个格子），有的专门传「控制」（是读还是写）。谁要在总线上说话，先举手申请，总线空闲了再发。这样所有零件共用一条马路，省去两两之间拉专线的麻烦。</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 480 200" role="img" aria-label="CPU、内存、硬盘通过中间一排总线相连">
+          <defs>
+            <marker id="a3" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+              <path class="mc-lbl-soft" d="M0,0 L7,3 L0,6 Z" fill="var(--text-soft)"></path>
+            </marker>
+          </defs>
+          <!-- 三个方框 -->
+          <rect class="mc-box" x="20" y="70" width="110" height="60" rx="10"></rect>
+          <text class="mc-lbl" x="75" y="98" text-anchor="middle">CPU</text>
+          <text class="mc-lbl-soft" x="75" y="116" text-anchor="middle">运算 + 指挥</text>
+
+          <rect class="mc-box" x="185" y="70" width="110" height="60" rx="10"></rect>
+          <text class="mc-lbl" x="240" y="98" text-anchor="middle">内存</text>
+          <text class="mc-lbl-soft" x="240" y="116" text-anchor="middle">正在用的</text>
+
+          <rect class="mc-box" x="350" y="70" width="110" height="60" rx="10"></rect>
+          <text class="mc-lbl" x="405" y="98" text-anchor="middle">硬盘</text>
+          <text class="mc-lbl-soft" x="405" y="116" text-anchor="middle">长期存档</text>
+
+          <!-- 总线带 -->
+          <line class="mc-thick" x1="20" y1="145" x2="460" y2="145"></line>
+          <line class="mc-thick" x1="20" y1="155" x2="460" y2="155"></line>
+          <line class="mc-thick" x1="20" y1="165" x2="460" y2="165"></line>
+          <text class="mc-lbl" x="240" y="190" text-anchor="middle">数据总线（数据 / 地址 / 控制 三股线）</text>
+
+          <!-- 连接竖线 -->
+          <line class="mc-line" x1="75"  y1="130" x2="75"  y2="145" marker-end="url(#a3)"></line>
+          <line class="mc-line" x1="240" y1="130" x2="240" y2="145" marker-end="url(#a3)"></line>
+          <line class="mc-line" x1="405" y1="130" x2="405" y2="145" marker-end="url(#a3)"></line>
+        </svg>
+      </div>
+
+      <p>把这一节到第一节连起来看：拉杆（模块 6 的红石）→ 逻辑门 → 加法器 → 寄存器 → 时钟指挥 → 总线串起 CPU 和内存。从课程包 G 模块 1 的一颗灯泡，到这一节的一整台计算机，红石依然是那同一种「通电 / 断电 = 1 / 0」的游戏。你在《我的世界》里搭出来的，本质上就是真实 CPU 的工作原理的玩具版。</p>
+
+      <div class="callout">
+        <div class="callout-title">💡 收尾一句话</div>
+        <p>计算机不是魔法，它只是无数个「会翻转的开关」被时钟一点点组织起来，按写在内存里的指令，自动完成你交给它的事。看懂了这台红石计算机，你就看懂了模块 1 里那颗芯片的灵魂。</p>
+      </div>
+
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：计算机为什么能「自动、一步步」地运行起来？</p>
+      <div class="quiz" data-answer="B">
+        <h4>计算机能不停地自动运行，靠的是什么在背后反复「打拍子」？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。电源只是供电，它不会告诉计算机「现在该做哪一步」。" type="button">A. 电源</button>
+        <button class="quiz-opt" data-val="B" data-explain="正确。时钟（Clock）不停地产⽣滴答，控制单元每滴答一次就指挥完成「取指令→执行」的一步。" type="button">B. 时钟</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。内存负责记住数据，但「什么时候该动」是由时钟指挥的。" type="button">C. 内存</button>
+        <button class="quiz-opt" data-val="D" data-explain="不对。鼠标是输入设备，和计算机内部的自动运行节奏无关。" type="button">D. 鼠标</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site">
+    <p>写给新手的编程课 · 第二阶段 · 课程包 G · 模块 7</p>
+    <p>从灯泡到一台能跑程序的计算机，你已经走完了计算机解剖的全程。</p>
+  </footer>
+
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgG-m7-progress";
+  var TOTAL = $$(".done-btn").length;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) {
+      btn.classList.add("completed");
+      btn.textContent = "✓ 已完成";
+    }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

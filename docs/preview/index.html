@@ -665,15 +665,14 @@
     }, 60);
   }
 
-  /* 第二阶段尚未开放：入口改为跳转到预告页（不再切到本页的第二阶段面板） */
-  $("#stage2-cta").addEventListener("click", function () {
-    location.href = "第二阶段预告.html";
-  });
+  $("#stage2-cta").addEventListener("click", goStage2);
   $("#back-to-stage1").addEventListener("click", goStage1);
 
-  /* 刷新后恢复阶段位置：第二阶段尚未开放，一律强制留在第一阶段 */
+  /* 刷新后恢复阶段位置 */
   if (read("coding-101-stage") === "2") {
-    try { localStorage.setItem("coding-101-stage", "1"); } catch (e) {}
+    document.body.classList.add("stage-2");
+    panel1.classList.remove("active");
+    panel2.classList.add("active");
   }
 
   /* ── 问卷展开/收起 ── */
@@ -757,30 +756,16 @@
   var grid = $("#chapters");
   var overallDone = 0, overallTotal = 0;
 
-  /* 第六章默认锁住：前五章全部完成、看过恭喜页之后才解锁。
-     兼容老用户——若 ch6-progress 里已有数据（旧版本第六章可直接学），
-     说明已经学过，自动解锁。 */
-  var ch6Progress = {};
-  try { ch6Progress = JSON.parse(read("coding-101-ch6-progress") || "{}"); } catch (e) {}
-  var hasCh6Progress = false;
-  for (var _k in ch6Progress) { if (ch6Progress[_k]) { hasCh6Progress = true; break; } }
-  var ch6Unlocked = read("coding-101-ch6-unlocked") === "1" || hasCh6Progress;
-
   CHAPTERS.forEach(function (ch) {
-    var locked = (ch.num === 6 && !ch6Unlocked);
     var p = chapterProgress(ch);
-
-    /* 锁住的章节不计入总进度，否则前五章学完也走不到 100% */
-    if (!locked) {
-      overallDone += p.done;
-      overallTotal += p.total;
-    }
+    overallDone += p.done;
+    overallTotal += p.total;
 
     var card = document.createElement("article");
-    card.className = "chapter-card" + (locked ? " coming" : "");
+    card.className = "chapter-card";
 
     var tagsHtml = ch.tags.map(function (t) { return "<span>" + t + "</span>"; }).join("");
-    var progressHtml = (p.total && !locked)
+    var progressHtml = p.total
       ? '<div class="card-progress">' +
           '<div class="meta"><span>学习进度</span><span>' + p.done + "/" + p.total + ' 小节</span></div>' +
           '<div class="bar"><i style="width:' + p.pct + '%"></i></div>' +
@@ -788,9 +773,7 @@
       : '';
 
     var actionHtml;
-    if (locked) {
-      actionHtml = '<span class="btn" aria-disabled="true">🔒 完成前五章后解锁</span>';
-    } else if (p.pct === 100) {
+    if (p.pct === 100) {
       actionHtml = '<a class="btn done" href="' + ch.file + '">✓ 已完成 · 复习</a>';
     } else if (p.pct > 0) {
       actionHtml = '<a class="btn" href="' + ch.file + '">继续学习 →</a>';
@@ -814,8 +797,7 @@
   $("#overall-text").textContent = overallDone + "/" + overallTotal + " 小节";
   $("#overall-bar").style.width = overallPct + "%";
 
-  /* 「前往第二阶段」：第六章解锁后、且整个第一阶段全部学完才出现 */
-  var stage1Done = ch6Unlocked && overallTotal > 0 && overallDone >= overallTotal;
+  var stage1Done = overallTotal > 0 && overallDone >= overallTotal;
   if (stage1Done) {
     $("#stage2-cta").style.display = "";
   }
@@ -1093,15 +1075,15 @@
 <!-- 第一阶段全部小节学完 → 跳转庆祝页（只跳一次） -->
 <script>
 (function () {
-  /* 庆祝节点只看前五章：第六章是解锁后的加餐，不参与判定 */
   var STAGE1_KEYS = [
     "coding-101-progress",
     "coding-101-ch2-progress",
     "coding-101-ch3-progress",
     "coding-101-ch4-progress",
-    "coding-101-ch5-progress"
+    "coding-101-ch5-progress",
+    "coding-101-ch6-progress"
   ];
-  var STAGE1_TOTALS = [6, 8, 7, 7, 5];
+  var STAGE1_TOTALS = [6, 8, 7, 7, 5, 7];
 
   function allDone() {
     try {

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    经典 DP：爬楼梯 · 第二阶段课程包 F 模块 3
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgF-m3-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 F 模块 3：斐波那契与状态转移。支持离线打开、深色模式、学习进度本地保存。">
+  <title>经典 DP：爬楼梯 · 第二阶段课程包 F 模块 3</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>经典 DP：爬楼梯 · 课程包 F</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包F_动态规划.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包F_动态规划.html">课程包 F</a>
+    <span>/</span>
+    <span>模块 3：经典 DP：爬楼梯</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 F · 模块 3</span>
+    <h1>经典 DP：爬楼梯</h1>
+    <p>斐波那契与状态转移</p>
+    <a class="start-btn" href="#lesson-1">开始模块 3 第 1 小节 →</a>
+    <span class="meta">模块 3 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>爬楼梯问题</h2>
+    </div>
+    <div class="lesson-body">
+      <p>爬楼梯是动态规划最经典的入门题。问题很简单：一共有 n 级台阶，你每次可以走 1 级或 2 级，问有多少种不同的方法走到第 n 级？</p>
+      <p>如果你学得很认真，应该会有一种熟悉感。没错，这和之前那个问题是等价的。先来复习一下思路，然后我们会进行一些变化</p>
+      <p>先从小例子找规律。n=1 时只有 1 种走法；n=2 时可以 1+1 或直接 2，共 2 种。n=3 时可以是 1+1+1、1+2、2+1，共 3 种。n=4 时共有 5 种。看出来了吗？这些数字正好就是斐波那契数列：1, 2, 3, 5, 8, 13...</p>
+      <p>为什么？因为要到第 n 级，最后一步必然是从第 n-1 级跨 1 步，或者从第 n-2 级跨 2 步。所以 "到 n 级的方法数" 等于 "到 n-1 级的方法数" 加上 "到 n-2 级的方法数"。</p>
+      <div class="code-block lang-py" data-file="climb_stairs.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>climb_stairs.py</div>
+        <pre># 爬楼梯：递推版
+def climb_stairs(n):
+    if n &lt;= 2:
+        return n
+    dp = [0] * (n + 1)
+    dp[1] = 1
+    dp[2] = 2
+    for i in range(3, n + 1):
+        dp[i] = dp[i - 1] + dp[i - 2]
+    return dp[n]
+
+print(climb_stairs(5))   # 8
+print(climb_stairs(10))  # 89</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="climb_stairs.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>climb_stairs.cpp</div>
+        <pre>// 爬楼梯：递推版
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+int climb_stairs(int n) {
+    if (n &lt;= 2) return n;
+    vector&lt;int&gt; dp(n + 1, 0);
+    dp[1] = 1;
+    dp[2] = 2;
+    for (int i = 3; i &lt;= n; ++i) {
+        dp[i] = dp[i - 1] + dp[i - 2];
+    }
+    return dp[n];
+}
+
+int main() {
+    cout &lt;&lt; climb_stairs(5) &lt;&lt; endl;   // 8
+    cout &lt;&lt; climb_stairs(10) &lt;&lt; endl;  // 89
+    return 0;
+}</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>状态转移方程</h2>
+    </div>
+    <div class="lesson-body">
+      <p>动态规划做题时，最重要的是写出<strong>状态转移方程</strong>。它描述了"当前状态"如何从"之前的状态"推导出来。</p>
+      <p>对于爬楼梯，我们定义 <code>dp[i]</code> 表示到达第 i 级台阶的方法数。状态转移方程就是：<code>dp[i] = dp[i-1] + dp[i-2]</code>。边界条件是 <code>dp[1]=1</code>，<code>dp[2]=2</code>。</p>
+      <p>写状态转移方程的通用套路是：先问自己"最后一步发生了什么"，然后把所有可能的最后一步列出来，分别对应哪些更小的状态。这个方法在背包、线性 DP 等更复杂的问题里同样适用。</p>
+      <div class="code-block lang-py" data-file="state_transition.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>state_transition.py</div>
+        <pre># 爬楼梯：显式写出状态转移
+n = 6
+dp = [0] * (n + 1)
+dp[1] = 1          # 边界
+dp[2] = 2          # 边界
+
+# 状态转移：dp[i] = dp[i-1] + dp[i-2]
+for i in range(3, n + 1):
+    dp[i] = dp[i - 1] + dp[i - 2]
+
+print(dp)          # [0, 1, 2, 3, 5, 8, 13]
+print(dp[n])       # 13</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="state_transition.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>state_transition.cpp</div>
+        <pre>// 爬楼梯：显式写出状态转移
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+int main() {
+    int n = 6;
+    vector&lt;int&gt; dp(n + 1, 0);
+    dp[1] = 1;          // 边界
+    dp[2] = 2;          // 边界
+
+    // 状态转移：dp[i] = dp[i-1] + dp[i-2]
+    for (int i = 3; i &lt;= n; ++i) {
+        dp[i] = dp[i - 1] + dp[i - 2];
+    }
+
+    for (int x : dp) cout &lt;&lt; x &lt;&lt; " ";  // 0 1 2 3 5 8 13
+    cout &lt;&lt; endl;
+    cout &lt;&lt; dp[n] &lt;&lt; endl;              // 13
+    return 0;
+}</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>空间优化与变形</h2>
+    </div>
+    <div class="lesson-body">
+      <p>观察状态转移方程 <code>dp[i] = dp[i-1] + dp[i-2]</code>，你会发现计算 <code>dp[i]</code> 时只需要前两个值。因此我们不需要保存整个数组，只要两个变量滚动更新即可，把空间复杂度从 O(n) 降到 O(1)。</p>
+      <p>爬楼梯还有很多变形：如果一次可以走 1、2、3 级，方程就变成 <code>dp[i] = dp[i-1] + dp[i-2] + dp[i-3]</code>；如果某些台阶是坏的不能踩，只需要在转移时跳过坏台阶即可。掌握了状态转移，变形就不难。</p>
+      <div class="code-block lang-py" data-file="climb_opt.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>climb_opt.py</div>
+        <pre># 空间优化版：只需要两个变量
+def climb_stairs_o1(n):
+    if n &lt;= 2:
+        return n
+    prev2, prev1 = 1, 2   # 分别代表 dp[i-2] 和 dp[i-1]
+    for _ in range(3, n + 1):
+        curr = prev1 + prev2
+        prev2, prev1 = prev1, curr
+    return prev1
+
+print(climb_stairs_o1(10))  # 89
+
+# 变形：每次可走 1、2、3 级
+def climb_three(n):
+    if n == 1: return 1
+    if n == 2: return 2
+    if n == 3: return 4   # 1+1+1, 1+2, 2+1, 3
+    a, b, c = 1, 2, 4
+    for _ in range(4, n + 1):
+        a, b, c = b, c, a + b + c
+    return c
+
+print(climb_three(5))       # 13</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="climb_opt.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>climb_opt.cpp</div>
+        <pre>// 空间优化版：只需要两个变量
+#include &lt;iostream&gt;
+using namespace std;
+
+int climb_stairs_o1(int n) {
+    if (n &lt;= 2) return n;
+    int prev2 = 1, prev1 = 2;   // 分别代表 dp[i-2] 和 dp[i-1]
+    for (int i = 3; i &lt;= n; ++i) {
+        int curr = prev1 + prev2;
+        prev2 = prev1;
+        prev1 = curr;
+    }
+    return prev1;
+}
+
+// 变形：每次可走 1、2、3 级
+int climb_three(int n) {
+    if (n == 1) return 1;
+    if (n == 2) return 2;
+    if (n == 3) return 4;   // 1+1+1, 1+2, 2+1, 3
+    int a = 1, b = 2, c = 4;
+    for (int i = 4; i &lt;= n; ++i) {
+        int nxt = a + b + c;
+        a = b;
+        b = c;
+        c = nxt;
+    }
+    return c;
+}
+
+int main() {
+    cout &lt;&lt; climb_stairs_o1(10) &lt;&lt; endl;  // 89
+    cout &lt;&lt; climb_three(5) &lt;&lt; endl;       // 13
+    return 0;
+}</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：最小花费爬楼梯</h2>
+      <div class="lesson-sub">带权重的状态转移</div>
+    </div>
+    <div class="lesson-body">
+      <p>现在升级一下：每级台阶有一个"体力花费"，你可以从第 i 级花 <code>cost[i]</code> 的体力向上迈一步或两步。目标是爬到顶部（第 n 级之外），求最小花费。</p>
+      <p>定义 <code>dp[i]</code> 为到达第 i 级台阶所需的最小花费。状态转移方程变成：<code>dp[i] = min(dp[i-1] + cost[i-1], dp[i-2] + cost[i-2])</code>。含义是：最后一步要么从 i-1 迈上来，要么从 i-2 迈上来，取花费更小的那个。</p>
+      <div class="code-block lang-py" data-file="min_cost_climb.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>min_cost_climb.py</div>
+        <pre># 最小花费爬楼梯
+def min_cost_climbing_stairs(cost):
+    n = len(cost)
+    # dp[i] 表示到达第 i 级台阶的最小花费
+    dp = [0] * (n + 1)
+    dp[0] = 0
+    dp[1] = 0
+    for i in range(2, n + 1):
+        dp[i] = min(dp[i - 1] + cost[i - 1],
+                    dp[i - 2] + cost[i - 2])
+    return dp[n]
+
+cost = [10, 15, 20]
+print(min_cost_climbing_stairs(cost))  # 15
+
+cost2 = [1, 100, 1, 1, 1, 100, 1, 1, 100, 1]
+print(min_cost_climbing_stairs(cost2)) # 6</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="min_cost_climb.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>min_cost_climb.cpp</div>
+        <pre>// 最小花费爬楼梯
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+int min_cost_climbing_stairs(vector&lt;int&gt;&amp; cost) {
+    int n = cost.size();
+    // dp[i] 表示到达第 i 级台阶的最小花费
+    vector&lt;int&gt; dp(n + 1, 0);
+    dp[0] = 0;
+    dp[1] = 0;
+    for (int i = 2; i &lt;= n; ++i) {
+        dp[i] = min(dp[i - 1] + cost[i - 1],
+                    dp[i - 2] + cost[i - 2]);
+    }
+    return dp[n];
+}
+
+int main() {
+    vector&lt;int&gt; cost = {10, 15, 20};
+    cout &lt;&lt; min_cost_climbing_stairs(cost) &lt;&lt; endl;  // 15
+
+    vector&lt;int&gt; cost2 = {1, 100, 1, 1, 1, 100, 1, 1, 100, 1};
+    cout &lt;&lt; min_cost_climbing_stairs(cost2) &lt;&lt; endl; // 6
+    return 0;
+}</pre>
+      </div>
+      <p>这个实战题是 LeetCode 746 原题，也是很多竞赛的常客。它把"计数"变成了"求最值"，但核心仍然是状态转移。你可以试着自己改写成 O(1) 空间版本。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：斐波那契与状态转移</p>
+      <div class="quiz" data-answer="C">
+        <h4>爬楼梯问题中，到达第 n 级的方法数满足什么关系？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="不对。dp[n] = dp[n-1] + 1 不是本题的正确答案。dp[n] = dp[n-1] + dp[n-2] 才是正确的。" type="button">A. dp[n] = dp[n-1] + 1</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。dp[n] = dp[n-1] * 2 不是本题的正确答案。dp[n] = dp[n-1] + dp[n-2] 才是正确的。" type="button">B. dp[n] = dp[n-1] * 2</button>
+        <button class="quiz-opt" data-val="C" data-explain="正确。dp[n] = dp[n-1] + dp[n-2]" type="button">C. dp[n] = dp[n-1] + dp[n-2]</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 F · 模块 3</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgF-m3-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

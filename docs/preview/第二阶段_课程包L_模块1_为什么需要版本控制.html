@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    为什么需要版本控制 · 第二阶段课程包 L 模块 1
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgL-m1-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 L 模块 1：从「最终版」到「最终最终版」的噩梦。支持离线打开、深色模式、学习进度本地保存。">
+  <title>为什么需要版本控制 · 第二阶段课程包 L 模块 1</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-py single-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>为什么需要版本控制 · 课程包 L</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包L_Git_时光机.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active" disabled>Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包L_Git_时光机.html">课程包 L</a>
+    <span>/</span>
+    <span>模块 1：为什么需要版本控制</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 L · 模块 1</span>
+    <h1>为什么需要版本控制</h1>
+    <p>给每一次改动拍一张快照，随时回到过去</p>
+    <a class="start-btn" href="#lesson-1">开始模块 1 第 1 小节 →</a>
+    <span class="meta">模块 1 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+<section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>从「最终版」到「最终最终版」的噩梦</h2>
+      
+    </div>
+    <div class="lesson-body">
+      
+      <p>你有没有见过这种文件夹？</p>
+      <div class="code-block" data-file="文件夹真实写照.txt" data-lang="python"><pre>论文_最终版.docx
+论文_最终最终版.docx
+论文_最终最终不改版.docx
+论文_最终最终不改版_真的.docx
+论文_最终最终不改版_真的_备份.docx</pre></div>
+      <p>每次改动都另存为一个新文件，想找回三天前的某段文字，却根本记不清它藏在哪个「最终版」里。更可怕的是：手滑删错、改崩了、或者甲方说「还是第一版好」——全部没有后悔药。</p>
+      <p><strong class="hl-rose">版本控制</strong>就是来解决这个问题的。它像一台时间相机，每当你对项目做一次有意义的修改，就帮你拍一张「快照」。这些快照按顺序保存，你随时可以：</p>
+      <ul style="margin: 0 0 16px 20px; color: var(--text-soft); line-height: 1.9;">
+        <li>回退到任意一个历史版本；</li>
+        <li>查看每次改了什么；</li>
+        <li>让多人同时修改而不互相覆盖。</li>
+      </ul>
+      <p>下面这张图能帮你理解：没有版本控制时，你的文件是「一堆同名复印件」；有了版本控制，它们变成一条清晰的时间线。</p>
+
+      <figure style="margin:16px 0;">
+        <svg viewBox="0 0 680 350" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;">
+          <defs>
+            <marker id="vcArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+              <path d="M0,0 L0,8 L9,4 z" fill="#10b981"/>
+            </marker>
+          </defs>
+
+          <text x="24" y="28" font-size="14" font-weight="700" style="fill:var(--text)">没有版本控制：一堆同名复印件</text>
+          <g font-size="12" style="fill:var(--text-soft)">
+            <rect x="30" y="46" width="104" height="30" rx="6" fill="none" stroke="#ef4444" stroke-opacity=".6"/>
+            <text x="42" y="65">作文.doc</text>
+            <rect x="150" y="40" width="150" height="30" rx="6" fill="none" stroke="#ef4444" stroke-opacity=".6"/>
+            <text x="162" y="59">作文_第2版.doc</text>
+            <rect x="316" y="54" width="158" height="30" rx="6" fill="none" stroke="#ef4444" stroke-opacity=".6"/>
+            <text x="328" y="73">作文_最终版.doc</text>
+            <rect x="76" y="92" width="166" height="30" rx="6" fill="none" stroke="#ef4444" stroke-opacity=".6"/>
+            <text x="88" y="111">作文_最终版2.doc</text>
+            <rect x="262" y="102" width="200" height="30" rx="6" fill="none" stroke="#ef4444" stroke-opacity=".6"/>
+            <text x="274" y="121">作文_最终版_final.doc</text>
+            <rect x="480" y="84" width="176" height="30" rx="6" fill="none" stroke="#ef4444" stroke-opacity=".6"/>
+            <text x="492" y="103">作文_最最最终版.doc</text>
+          </g>
+          <text x="30" y="156" font-size="12" fill="#ef4444">哪个才是最新的？老师要的又是哪个？——分不清。</text>
+
+          <line x1="24" y1="186" x2="656" y2="186" style="stroke:var(--border)"/>
+
+          <text x="24" y="216" font-size="14" font-weight="700" style="fill:var(--text)">有版本控制：一条清晰的时间线</text>
+
+          <line x1="90" y1="280" x2="596" y2="280" stroke="#10b981" stroke-width="2" marker-end="url(#vcArrow)"/>
+
+          <g font-size="12" style="fill:var(--text-soft)" text-anchor="middle">
+            <text x="110" y="252">初稿</text>
+            <text x="345" y="252">修改第二段</text>
+            <text x="580" y="252">恢复第一段</text>
+          </g>
+
+          <g font-size="13" font-weight="700" fill="#10b981" text-anchor="middle">
+            <circle cx="110" cy="280" r="20" style="fill:var(--bg-card)" stroke="#10b981" stroke-width="2"/>
+            <text x="110" y="285">v1</text>
+            <circle cx="345" cy="280" r="20" style="fill:var(--bg-card)" stroke="#10b981" stroke-width="2"/>
+            <text x="345" y="285">v2</text>
+            <circle cx="580" cy="280" r="20" style="fill:var(--bg-card)" stroke="#10b981" stroke-width="2"/>
+            <text x="580" y="285">v3</text>
+          </g>
+
+          <text x="656" y="336" font-size="11" style="fill:var(--text-faint)" text-anchor="end">想回到哪一版，随时都能回 →</text>
+        </svg>
+      </figure>
+    
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+<section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>Git 是什么？</h2>
+      
+    </div>
+    <div class="lesson-body">
+      
+      <p><strong>Git</strong> 是目前最流行的版本控制工具，免费、开源、本地运行。你可以把它理解成一个「超级记忆力助手」：</p>
+      <div class="code-block" data-file="Git 自我介绍.txt" data-lang="python"><pre>Git = 自动记录每一次修改 + 随时回滚 + 支持多人协作</pre></div>
+      <p>Git 和手动复制文件最大的区别是：它只保存<strong>变化</strong>，而不是每次都生成一个完整副本。这样既省空间，又能精确告诉你「谁在什么时候改了哪一行」。</p>
+      <p>使用 Git 时，你主要和三个概念打交道：</p>
+      <ul style="margin: 0 0 16px 20px; color: var(--text-soft); line-height: 1.9;">
+        <li><strong>工作区（Working Directory）</strong>：你日常看到的文件夹；</li>
+        <li><strong>暂存区（Stage/Index）</strong>：准备提交的快照；</li>
+        <li><strong>仓库（Repository）</strong>：保存所有历史版本的地方。</li>
+      </ul>
+      <p>简单记忆：工作区是你正在写字的草稿纸，暂存区是准备交的作业，仓库是老师收上去归档的档案袋。</p>
+    
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+<section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>安装与初次配置</h2>
+      
+    </div>
+    <div class="lesson-body">
+      
+      <p>在开始学习具体命令前，先确保电脑里已经安装了 Git。打开终端（Windows 用 Git Bash 或 PowerShell，macOS 用 Terminal），输入：</p>
+      <div class="code-block" data-file="检查 Git 版本" data-lang="python"><pre>git --version</pre></div>
+      <p>如果看到类似 <code class="inline">git version 2.40.0</code> 的输出，说明已经装好了。没有的话，去 <a href="https://git-scm.com" target="_blank" style="color:#0ea5e9">git-scm.com</a> 下载安装。</p>
+      <p>安装好后，先告诉 Git 你是谁。这一步只需要做一次：</p>
+      <div class="code-block" data-file="配置用户名和邮箱" data-lang="python"><pre>git config --global user.name "你的名字"
+git config --global user.email "你的邮箱@example.com"</pre></div>
+      <p>这些信息会写在每一次提交记录里，方便日后追溯「这段代码是谁写的」。可以用下面的命令检查是否配置成功：</p>
+      <div class="code-block" data-file="查看配置" data-lang="python"><pre>git config --global user.name
+git config --global user.email</pre></div>
+    
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+<section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战</h2>
+      <div class="lesson-sub">手动做一次「土法版本控制」</div>
+    </div>
+    <div class="lesson-body">
+      
+      <p>在真正用 Git 之前，先用最朴素的方式体验一下「版本控制」到底解决什么问题。请准备一个小项目文件夹，里面放一篇作文或一段代码。</p>
+      <p><strong>步骤 1：</strong>写第一版内容并保存。</p>
+      <p><strong>步骤 2：</strong>修改几个句子后，把文件另存为 <code class="inline">作文_第2版.txt</code>。</p>
+      <p><strong>步骤 3：</strong>再改一次，另存为 <code class="inline">作文_第3版.txt</code>。</p>
+      <p><strong>步骤 4：</strong>尝试回答：如果老师说「把第二段改回第一版的样子」，你能立刻找到吗？三个文件分别占了多少空间？</p>
+      <p>做完这个小练习，你应该能体会到：手动复制文件既混乱又浪费。下一模块开始，我们用 Git 把这套流程自动化。</p>
+    
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+<div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>为什么需要版本控制？</p>
+      <div class="quiz" data-answer="A">
+        <h4>为什么需要版本控制？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。为了避免「最终版」「最终最终版」这种混乱，并能随时回退历史" type="button">A. 为了避免「最终版」「最终最终版」这种混乱，并能随时回退历史</button>
+<button class="quiz-opt" data-val="B" data-explain="不对。性能取决于具体实现，不能一概而论。" type="button">B. 为了让电脑运行得更快</button>
+<button class="quiz-opt" data-val="C" data-explain="不对。为了把文件变大变多 不是本题的正确答案。为了避免「最终版」「最终最终版」这种混乱，并能随时回退历史 才是正确的。" type="button">C. 为了把文件变大变多</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 L · 模块 1</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgL-m1-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    综合实战 · 第二阶段课程包 S 模块 6
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgS-m6-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 S 模块 6：抓取天气 / 新闻 / 歌词，做成每日简报。支持离线打开、深色模式、学习进度本地保存。">
+  <title>综合实战 · 第二阶段课程包 S 模块 6</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .flow-svg {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-card); padding: 16px; margin: 16px 0;
+    overflow-x: auto;
+  }
+  .flow-svg svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+  .flow-svg svg rect { fill: var(--bg-soft); stroke: var(--border); stroke-width: 1.5; }
+  .flow-svg svg text { fill: var(--text); font-size: 12px; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; text-anchor: middle; dominant-baseline: middle; }
+  .flow-svg svg line, .flow-svg svg path { stroke: var(--text-soft); stroke-width: 2; fill: none; }
+  .callout {
+    border: 1px solid; border-radius: 12px; padding: 16px; margin: 16px 0;
+    font-size: 14px; line-height: 1.8;
+  }
+  .callout.warn { border-color: #fecdd3; background: #fff1f2; color: #881337; }
+  .callout.idea { border-color: #bae6fd; background: #f0f9ff; color: #0c4a6e; }
+  .callout.key  { border-color: #ddd6fe; background: #f5f3ff; color: #4c1d95; }
+  html.dark .callout.warn { border-color: #9f1239; background: rgba(76,5,25,.4);   color: #fecdd3; }
+  html.dark .callout.idea { border-color: #075985; background: rgba(8,47,73,.4);  color: #bae6fd; }
+  html.dark .callout.key  { border-color: #6d28d9; background: rgba(46,16,101,.4); color: #ddd6fe; }
+  .callout-title { font-weight: 700; margin-bottom: 6px; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-py single-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>综合实战 · 课程包 S</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包S_爬虫入门.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="python" class="active" disabled>Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包S_爬虫入门.html">课程包 S</a>
+    <span>/</span>
+    <span>模块 6：综合实战</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 S · 模块 6</span>
+    <h1>综合实战</h1>
+    <p>抓取天气 / 新闻 / 歌词，做成每日简报</p>
+    <a class="start-btn" href="#lesson-1">开始模块 6 第 1 小节 →</a>
+    <span class="meta">模块 6 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>项目规划</h2>
+      <div class="lesson-sub">每日简报需要哪些信息</div>
+    </div>
+    <div class="lesson-body">
+      <p>学完前面的模块，你已经能请求网页、解析内容、保存数据、遵守规矩。现在把这些能力串起来，做一个小项目：<strong>每日简报生成器</strong>。</p>
+
+      <p>简报的内容可以包括：</p>
+      <ul style="margin:12px 0 12px 24px">
+        <li>一句话天气（从允许抓取的公开天气站点获取）。</li>
+        <li>几条新闻标题（从允许抓取的新闻聚合页或 RSS 获取）。</li>
+        <li>一句喜欢的歌词或名言（可选，用来练习字符串处理）。</li>
+      </ul>
+
+      <p>整个项目的流程图：</p>
+
+      <div class="flow-svg">
+        <svg viewBox="0 0 720 70" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="爬虫项目流程">
+          <defs>
+            <marker id="arr-s6" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L10,3.5 L0,7 z" fill="var(--text-soft)"/>
+            </marker>
+          </defs>
+          <rect x="10" y="15" width="100" height="40" rx="8"/>
+          <text x="60" y="35">确定目标</text>
+          <line x1="112" y1="35" x2="138" y2="35" marker-end="url(#arr-s6)"/>
+
+          <rect x="145" y="15" width="120" height="40" rx="8"/>
+          <text x="205" y="35">检查 robots.txt</text>
+          <line x1="267" y1="35" x2="293" y2="35" marker-end="url(#arr-s6)"/>
+
+          <rect x="300" y="15" width="100" height="40" rx="8"/>
+          <text x="350" y="35">请求页面</text>
+          <line x1="402" y1="35" x2="428" y2="35" marker-end="url(#arr-s6)"/>
+
+          <rect x="435" y="15" width="100" height="40" rx="8"/>
+          <text x="485" y="35">解析数据</text>
+          <line x1="537" y1="35" x2="563" y2="35" marker-end="url(#arr-s6)"/>
+
+          <rect x="570" y="15" width="120" height="40" rx="8"/>
+          <text x="630" y="35">保存/生成简报</text>
+        </svg>
+      </div>
+
+      <div class="callout warn">
+        <div class="callout-title">⚠️ 关于真实数据</div>
+        <p>本课程示例使用 <code>example.com</code> 或本地 HTML 片段演示。你在实际练习时，请选择明确允许抓取的站点，或使用官方 API。不要对商业网站进行高频抓取。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>抓取与解析</h2>
+      <div class="lesson-sub">用 requests + BeautifulSoup 摘取片段</div>
+    </div>
+    <div class="lesson-body">
+      <p>下面这段代码演示如何从一个本地或公开页面中提取新闻标题。为了离线也能运行，我们先用一段本地 HTML 字符串练习：</p>
+
+      <div class="code-block" data-file="parse_news.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>parse_news.py</div>
+        <pre>from bs4 import BeautifulSoup
+
+html_doc = """
+&lt;div class="news-list"&gt;
+  &lt;article&gt;&lt;h3&gt;&lt;a href="/news/1"&gt;Python 发布新版本&lt;/a&gt;&lt;/h3&gt;&lt;/article&gt;
+  &lt;article&gt;&lt;h3&gt;&lt;a href="/news/2"&gt;人工智能最新进展&lt;/a&gt;&lt;/h3&gt;&lt;/article&gt;
+  &lt;article&gt;&lt;h3&gt;&lt;a href="/news/3"&gt;开源社区周刊&lt;/a&gt;&lt;/h3&gt;&lt;/article&gt;
+&lt;/div&gt;
+"""
+
+soup = BeautifulSoup(html_doc, "html.parser")
+news = []
+for article in soup.select(".news-list article"):
+    a = article.find("a")
+    news.append({
+        "title": a.get_text(strip=True),
+        "link": a.get("href"),
+    })
+
+for item in news:
+    print(item["title"], "-&gt;", item["link"])</pre>
+      </div>
+
+      <p>实际项目中，把 <code>html_doc</code> 换成 <code>requests.get(url).text</code> 即可。注意：<code>soup.select(".news-list article")</code> 是 CSS 选择器写法，可以一次性定位到复合结构的节点。</p>
+
+      <div class="callout idea">
+        <div class="callout-title">💡 小技巧</div>
+        <p>CSS 选择器是 BeautifulSoup 的强力补充。例如 <code>.post h2 a</code> 表示「class 为 post 的元素下面的 h2 下面的 a」。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>生成每日简报</h2>
+      <div class="lesson-sub">把数据格式化成可读文本</div>
+    </div>
+    <div class="lesson-body">
+      <p>抓取到的数据如果只是躺在 CSV 里，还不够「简报」。我们可以用 Python 把它们格式化成一段文本，保存为 Markdown 或纯文本文件：</p>
+
+      <div class="code-block" data-file="generate_brief.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>generate_brief.py</div>
+        <pre>from datetime import date
+
+# 假设已经从网页中解析到这些数据
+weather = "晴，22℃~30℃"
+news = [
+    "Python 发布新版本",
+    "人工智能最新进展",
+    "开源社区周刊",
+]
+quote = "代码是写给人看的，顺便让机器运行。"
+
+today = date.today().isoformat()
+lines = [
+    f"# 每日简报 {today}",
+    "",
+    "## 天气",
+    weather,
+    "",
+    "## 新闻",
+]
+for i, title in enumerate(news, 1):
+    lines.append(f"{i}. {title}")
+
+lines.extend(["", "## 今日一句", quote])
+
+brief = "\n".join(lines)
+with open(f"brief_{today}.md", "w", encoding="utf-8") as f:
+    f.write(brief)
+
+print(brief)</pre>
+      </div>
+
+      <p>运行后会生成一个 Markdown 文件，里面包含天气、新闻列表和一句话。你可以每天早上运行一次脚本，得到当天的简报。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战</h2>
+      <div class="lesson-sub">完成你的第一个爬虫项目</div>
+    </div>
+    <div class="lesson-body">
+      <p>下面是一个完整的项目模板，融合了本课程包学到的所有要点：合规检查、请求、解析、保存、频率控制。请把它复制到你的 Python 环境中，选择一个允许抓取的公开站点进行替换测试。</p>
+
+      <div class="code-block" data-file="daily_brief.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>daily_brief.py</div>
+        <pre>import time
+import requests
+from bs4 import BeautifulSoup
+from datetime import date
+
+BASE_URL = "https://example.com"   # 请替换为允许抓取的公开站点
+HEADERS = {
+    "User-Agent": "MyDailyBriefBot/1.0 (myemail@example.com)",
+}
+
+def fetch(path):
+    url = BASE_URL + path
+    resp = requests.get(url, headers=HEADERS, timeout=10)
+    time.sleep(2)                  # 礼貌：每次请求后暂停 2 秒
+    return resp
+
+# 1. 检查 robots.txt（手动确认目标路径是否允许）
+print("robots.txt 内容片段：")
+print(fetch("/robots.txt").text[:500])
+
+# 2. 抓取并解析目标页面
+# resp = fetch("/allowed-news-page")
+# soup = BeautifulSoup(resp.text, "html.parser")
+
+# 3. 提取标题（根据实际结构调整选择器）
+# titles = [a.get_text(strip=True) for a in soup.select("article h2 a")]
+
+# 4. 生成简报并保存
+# today = date.today().isoformat()
+# brief = f"# 每日简报 {today}\n\n" + "\n".join(f"{i}. {t}" for i, t in enumerate(titles[:5], 1))
+# with open(f"brief_{today}.md", "w", encoding="utf-8") as f:
+#     f.write(brief)
+# print("简报已生成")</pre>
+      </div>
+
+      <p>练习任务：</p>
+      <ol style="margin:12px 0 12px 24px">
+        <li>把 <code>BASE_URL</code> 换成允许抓取的公开站点。</li>
+        <li>用浏览器开发者工具分析目标页面结构，修改 CSS 选择器。</li>
+        <li>去掉注释，让代码真正运行起来。</li>
+        <li>检查生成的 Markdown 文件内容是否正确。</li>
+      </ol>
+
+      <div class="callout key">
+        <div class="callout-title">🔑 模块 6 小结</div>
+        <p>✅ 项目流程：规划 → 合规检查 → 请求 → 解析 → 保存。</p>
+        <p>✅ CSS 选择器让解析更精准。</p>
+        <p>✅ Markdown 是生成简报的好格式。</p>
+        <p>✅ 永远不要忘记 robots.txt 和请求频率控制。</p>
+      </div>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：抓取天气 / 新闻 / 歌词，做成每日简报</p>
+      <div class="quiz" data-answer="A">
+        <h4>完成一个爬虫项目的正确顺序大致是？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。检查 robots.txt → 请求 → 解析 → 保存" type="button">A. 检查 robots.txt → 请求 → 解析 → 保存</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。直接高频请求 → 解析 → 保存 不是本题的正确答案。检查 robots.txt → 请求 → 解析 → 保存 才是正确的。" type="button">B. 直接高频请求 → 解析 → 保存</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。保存 → 请求 → 解析 → 检查 robots.txt 不是本题的正确答案。检查 robots.txt → 请求 → 解析 → 保存 才是正确的。" type="button">C. 保存 → 请求 → 解析 → 检查 robots.txt</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 S · 模块 6</p>
+  <p>项目做完，爬虫入门才算真正落地。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgS-m6-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

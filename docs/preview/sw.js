@@ -1,4 +1,4 @@
-const CACHE_NAME = 'yeji-course-v2';
+const CACHE_NAME = 'yeji-course-v3';
 const CACHE_URLS = [
   './index.html',
   './开始之前.html',
@@ -44,8 +44,25 @@ self.addEventListener('activate', function(e) {
   }));
 });
 
+/* 第二阶段有 100+ 个页面、约 3.7MB，不适合在 install 阶段全量预缓存，
+   这里只预缓存第一阶段核心文件；其余（含第二阶段）在访问时按需入缓存。 */
 self.addEventListener('fetch', function(e) {
-  e.respondWith(caches.match(e.request).then(function(response) {
-    return response || fetch(e.request);
-  }));
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    caches.match(e.request).then(function(response) {
+      if (response) return response;
+      return fetch(e.request).then(function(res) {
+        if (res && res.status === 200 && res.type === 'basic') {
+          var copy = res.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(e.request, copy);
+          });
+        }
+        return res;
+      }).catch(function() {
+        // 离线兜底：导航请求回主页，其余不响应
+        if (e.request.mode === 'navigate') return caches.match('./index.html');
+      });
+    })
+  );
 });

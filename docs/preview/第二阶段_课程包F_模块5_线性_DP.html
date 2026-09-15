@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    线性 DP · 第二阶段课程包 F 模块 5
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgF-m5-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 F 模块 5：最长上升子序列、最长公共子序列。支持离线打开、深色模式、学习进度本地保存。">
+  <title>线性 DP · 第二阶段课程包 F 模块 5</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>线性 DP · 课程包 F</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包F_动态规划.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包F_动态规划.html">课程包 F</a>
+    <span>/</span>
+    <span>模块 5：线性 DP</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 F · 模块 5</span>
+    <h1>线性 DP</h1>
+    <p>最长上升子序列、最长公共子序列</p>
+    <a class="start-btn" href="#lesson-1">开始模块 5 第 1 小节 →</a>
+    <span class="meta">模块 5 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>最长上升子序列（LIS）</h2>
+    </div>
+    <div class="lesson-body">
+      <p>最长上升子序列（Longest Increasing Subsequence，LIS）问题是：给定一个序列，找出其中最长的严格递增子序列的长度。子序列不要求连续，但要求相对顺序不变。</p>
+      <p>例如序列 <code>[10, 9, 2, 5, 3, 7, 101, 18]</code> 的最长上升子序列是 <code>[2, 3, 7, 101]</code> 或 <code>[2, 5, 7, 101]</code>，长度为 4。</p>
+      <p>定义 <code>dp[i]</code> 为：以第 i 个数结尾的最长上升子序列长度。那么对于每个 i，去看前面所有比它小的数 j，有 <code>dp[i] = max(dp[i], dp[j] + 1)</code>。边界是 <code>dp[i] = 1</code>（每个数自己就是一个长度为 1 的上升子序列）。</p>
+      <div class="code-block lang-py" data-file="lis.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>lis.py</div>
+        <pre># 最长上升子序列：O(n^2) DP
+def length_of_lis(nums):
+    if not nums:
+        return 0
+    n = len(nums)
+    dp = [1] * n
+    for i in range(1, n):
+        for j in range(i):
+            if nums[j] &lt; nums[i]:
+                dp[i] = max(dp[i], dp[j] + 1)
+    return max(dp)
+
+nums = [10, 9, 2, 5, 3, 7, 101, 18]
+print(length_of_lis(nums))  # 4</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="lis.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>lis.cpp</div>
+        <pre>// 最长上升子序列：O(n^2) DP
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+int length_of_lis(vector&lt;int&gt;&amp; nums) {
+    if (nums.empty()) return 0;
+    int n = nums.size();
+    vector&lt;int&gt; dp(n, 1);
+    for (int i = 1; i &lt; n; ++i) {
+        for (int j = 0; j &lt; i; ++j) {
+            if (nums[j] &lt; nums[i]) {
+                dp[i] = max(dp[i], dp[j] + 1);
+            }
+        }
+    }
+    return *max_element(dp.begin(), dp.end());
+}
+
+int main() {
+    vector&lt;int&gt; nums = {10, 9, 2, 5, 3, 7, 101, 18};
+    cout &lt;&lt; length_of_lis(nums) &lt;&lt; endl;  // 4
+    return 0;
+}</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>最长公共子序列（LCS）</h2>
+    </div>
+    <div class="lesson-body">
+      <p>最长公共子序列（Longest Common Subsequence，LCS）问题是：给定两个序列，求它们最长的公共子序列长度。子序列同样不要求连续。</p>
+      <p>例如 <code>"abcde"</code> 和 <code>"ace"</code> 的 LCS 是 <code>"ace"</code>，长度为 3。<code>"abc"</code> 和 <code>"def"</code> 的 LCS 长度为 0。</p>
+      <p>定义 <code>dp[i][j]</code> 为：text1 的前 i 个字符和 text2 的前 j 个字符的 LCS 长度。转移时比较两个串的最后一个字符：如果相同，则 <code>dp[i][j] = dp[i-1][j-1] + 1</code>；如果不同，则 <code>dp[i][j] = max(dp[i-1][j], dp[i][j-1])</code>。</p>
+      <div class="code-block lang-py" data-file="lcs.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>lcs.py</div>
+        <pre># 最长公共子序列：二维 DP
+def longest_common_subsequence(text1, text2):
+    m, n = len(text1), len(text2)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if text1[i - 1] == text2[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1] + 1
+            else:
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+    return dp[m][n]
+
+print(longest_common_subsequence("abcde", "ace"))  # 3
+print(longest_common_subsequence("abc", "def"))    # 0</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="lcs.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>lcs.cpp</div>
+        <pre>// 最长公共子序列：二维 DP
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+int longest_common_subsequence(string text1, string text2) {
+    int m = text1.size(), n = text2.size();
+    vector&lt;vector&lt;int&gt;&gt; dp(m + 1, vector&lt;int&gt;(n + 1, 0));
+    for (int i = 1; i &lt;= m; ++i) {
+        for (int j = 1; j &lt;= n; ++j) {
+            if (text1[i - 1] == text2[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+    return dp[m][n];
+}
+
+int main() {
+    cout &lt;&lt; longest_common_subsequence("abcde", "ace") &lt;&lt; endl;  // 3
+    cout &lt;&lt; longest_common_subsequence("abc", "def") &lt;&lt; endl;    // 0
+    return 0;
+}</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>回顾与练习</h2>
+    </div>
+    <div class="lesson-body">
+      <p>LIS 和 LCS 是最常见的线性 DP 模型。它们的共同点是：把"以某个位置结尾"或"前若干个字符"作为状态，通过比较前面已经算出的状态来推导当前状态。</p>
+      <p>练习：把 LIS 的代码改成输出一条具体的最长上升子序列（而不仅是长度）。提示：在更新 <code>dp[i]</code> 时，同时记录 <code>prev[i]</code> 表示 i 是从哪个 j 转移过来的，最后从最大值位置反向追踪。</p>
+      <div class="code-block lang-py" data-file="lis_path.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>lis_path.py</div>
+        <pre># 练习：输出 LIS 的一条路径
+def lis_with_path(nums):
+    n = len(nums)
+    dp = [1] * n
+    prev = [-1] * n
+    for i in range(n):
+        for j in range(i):
+            if nums[j] &lt; nums[i] and dp[j] + 1 &gt; dp[i]:
+                dp[i] = dp[j] + 1
+                prev[i] = j
+    # 找终点
+    best = max(range(n), key=lambda i: dp[i])
+    # 反向追踪
+    path = []
+    cur = best
+    while cur != -1:
+        path.append(nums[cur])
+        cur = prev[cur]
+    path.reverse()
+    return dp[best], path
+
+print(lis_with_path([10, 9, 2, 5, 3, 7, 101, 18]))
+# 输出：(4, [2, 3, 7, 101])</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="lis_path.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>lis_path.cpp</div>
+        <pre>// 练习：输出 LIS 的一条路径
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+pair&lt;int, vector&lt;int&gt;&gt; lis_with_path(vector&lt;int&gt;&amp; nums) {
+    int n = nums.size();
+    vector&lt;int&gt; dp(n, 1);
+    vector&lt;int&gt; prev(n, -1);
+    for (int i = 0; i &lt; n; ++i) {
+        for (int j = 0; j &lt; i; ++j) {
+            if (nums[j] &lt; nums[i] &amp;&amp; dp[j] + 1 &gt; dp[i]) {
+                dp[i] = dp[j] + 1;
+                prev[i] = j;
+            }
+        }
+    }
+    // 找终点
+    int best = 0;
+    for (int i = 1; i &lt; n; ++i) {
+        if (dp[i] &gt; dp[best]) best = i;
+    }
+    // 反向追踪
+    vector&lt;int&gt; path;
+    int cur = best;
+    while (cur != -1) {
+        path.push_back(nums[cur]);
+        cur = prev[cur];
+    }
+    reverse(path.begin(), path.end());
+    return {dp[best], path};
+}
+
+int main() {
+    vector&lt;int&gt; nums = {10, 9, 2, 5, 3, 7, 101, 18};
+    auto res = lis_with_path(nums);
+    cout &lt;&lt; res.first &lt;&lt; endl;
+    for (int x : res.second) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
+    // 输出：4
+    //       2 3 7 101
+    return 0;
+}</pre>
+      </div>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：编辑距离</h2>
+      <div class="lesson-sub">线性 DP 的拓展</div>
+    </div>
+    <div class="lesson-body">
+      <p>编辑距离（Edit Distance）是 LCS 的近亲，也是面试和竞赛高频题。题目：把字符串 word1 转换成 word2，最少需要多少次操作？每次可以插入、删除或替换一个字符。</p>
+      <p>定义 <code>dp[i][j]</code> 为 word1 前 i 个字符变成 word2 前 j 个字符的最少操作数。如果 <code>word1[i-1] == word2[j-1]</code>，则不需要额外操作：<code>dp[i][j] = dp[i-1][j-1]</code>；否则取插入、删除、替换三种操作的最小值加 1。</p>
+      <div class="code-block lang-py" data-file="edit_distance.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>edit_distance.py</div>
+        <pre># 编辑距离
+def min_distance(word1, word2):
+    m, n = len(word1), len(word2)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    # 边界：一个空串变成另一个串
+    for i in range(m + 1):
+        dp[i][0] = i
+    for j in range(n + 1):
+        dp[0][j] = j
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if word1[i - 1] == word2[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1]
+            else:
+                dp[i][j] = min(dp[i - 1][j],      # 删除
+                               dp[i][j - 1],      # 插入
+                               dp[i - 1][j - 1]) + 1  # 替换
+    return dp[m][n]
+
+print(min_distance("horse", "ros"))    # 3
+print(min_distance("intention", "execution"))  # 5</pre>
+      </div>
+      <div class="code-block lang-cpp" data-file="edit_distance.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>edit_distance.cpp</div>
+        <pre>// 编辑距离
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+int min_distance(string word1, string word2) {
+    int m = word1.size(), n = word2.size();
+    vector&lt;vector&lt;int&gt;&gt; dp(m + 1, vector&lt;int&gt;(n + 1, 0));
+    // 边界：一个空串变成另一个串
+    for (int i = 0; i &lt;= m; ++i) dp[i][0] = i;
+    for (int j = 0; j &lt;= n; ++j) dp[0][j] = j;
+    for (int i = 1; i &lt;= m; ++i) {
+        for (int j = 1; j &lt;= n; ++j) {
+            if (word1[i - 1] == word2[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1];
+            } else {
+                dp[i][j] = min({dp[i - 1][j],      // 删除
+                                dp[i][j - 1],      // 插入
+                                dp[i - 1][j - 1]}) + 1;  // 替换
+            }
+        }
+    }
+    return dp[m][n];
+}
+
+int main() {
+    cout &lt;&lt; min_distance("horse", "ros") &lt;&lt; endl;           // 3
+    cout &lt;&lt; min_distance("intention", "execution") &lt;&lt; endl; // 5
+    return 0;
+}</pre>
+      </div>
+      <p>编辑距离把线性 DP 从"最长"问题拓展到"最省代价"问题。它依然遵循"先定义状态、再写转移、最后处理边界"的三步套路。熟练掌握这个套路，大多数线性 DP 都能迎刃而解。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：最长上升子序列、最长公共子序列</p>
+      <div class="quiz" data-answer="A">
+        <h4>最长公共子序列（LCS）中，当两个字符不相同时，状态如何转移？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。dp[i][j] = max(dp[i-1][j], dp[i][j-1])" type="button">A. dp[i][j] = max(dp[i-1][j], dp[i][j-1])</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。dp[i][j] = dp[i-1][j-1] + 1 不是本题的正确答案。dp[i][j] = max(dp[i-1][j], dp[i][j-1]) 才是正确的。" type="button">B. dp[i][j] = dp[i-1][j-1] + 1</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。dp[i][j] = min(dp[i-1][j], dp[i][j-1]) 不是本题的正确答案。dp[i][j] = max(dp[i-1][j], dp[i][j-1]) 才是正确的。" type="button">C. dp[i][j] = min(dp[i-1][j], dp[i][j-1])</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 F · 模块 5</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgF-m5-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

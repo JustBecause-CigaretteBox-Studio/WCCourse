@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    时间复杂度 · 第二阶段课程包 D 模块 2
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgD-m2-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 D 模块 2：为什么有的程序快有的慢——大 O 记号。支持离线打开、深色模式、学习进度本地保存。">
+  <title>时间复杂度 · 第二阶段课程包 D 模块 2</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .compare-table {
+    width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px;
+  }
+  .compare-table th, .compare-table td {
+    border: 1px solid var(--border); padding: 10px 12px; text-align: left;
+  }
+  .compare-table th { background: var(--bg-soft); color: var(--text); }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button {
+    border: 0; border-radius: 6px; padding: 4px 10px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    background: transparent; color: var(--text-faint);
+  }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  body.lang-cpp .lang-py { display: none !important; }
+  body.lang-py .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-cpp">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>时间复杂度 · 课程包 D</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/4 节</span>
+      </div>
+      <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active" type="button">C++</button>
+        <button data-lang="python" type="button">Python</button>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包D_算法入门.html">返回课程包</a>
+      <button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包D_算法入门.html">课程包 D</a>
+    <span>/</span>
+    <span>模块 2：时间复杂度</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 D · 模块 2</span>
+    <h1>时间复杂度</h1>
+    <p>为什么有的程序快有的慢——大 O 记号</p>
+    <a class="start-btn" href="#lesson-1">开始模块 2 第 1 小节 →</a>
+    <span class="meta">模块 2 · 4 个小节 · 进度自动保存</span>
+  </div>
+
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>数全校人数需要多久</h2>
+    </div>
+    <div class="lesson-body">
+      <p>假设校长让你数全校有多少学生。方法一：逐个班级点名，把人数加起来。方法二：让每个班长直接报班级人数，你只把 30 个数字相加。</p>
+      <p>方法一相当于程序里的“循环遍历”，每个学生都要被数一次；方法二相当于“直接取关键值”，只用很少的步骤。如果学校有 1000 人，方法一大约要做 1000 次操作，方法二大约做 30 次操作，当然这也涉及到并行的问题，目前暂时忽略。</p>
+      <p>在算法里，我们用<strong>时间复杂度</strong>来描述这种“操作次数随数据量增长的变化趋势”。它不精确到毫秒，而是回答一个问题：<strong>如果数据变成原来的 10 倍，程序会变慢多少倍？</strong></p>
+      <p>这就好比搬家：东西少的时候差别不大，东西一多，不同搬法的差距就会非常刺眼。</p>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>大 O 记号：给复杂度起个名字</h2>
+    </div>
+    <div class="lesson-body">
+      <p>为了比较算法快慢，计算机科学家发明了<strong>大 O 记号</strong>。它只保留增长最快的那一项，忽略常数和低次项。比如 3n+5 和 100n+20，在大 O 看来都是 O(n)，因为数据量足够大时，前面的系数影响越来越小。</p>
+      <p>对新手来说，记住这三种最常见的复杂度就够了：</p>
+      <table class="compare-table">
+        <tr><th>大 O</th><th>名字</th><th>含义</th><th>例子</th></tr>
+        <tr><td>O(1)</td><td>常数时间</td><td>不管数据多少，步骤固定</td><td>取数组第一个元素</td></tr>
+        <tr><td>O(n)</td><td>线性时间</td><td>数据翻倍，操作也翻倍</td><td>从头到尾遍历列表</td></tr>
+        <tr><td>O(n²)</td><td>平方时间</td><td>数据翻倍，操作变成 4 倍</td><td>两层嵌套循环</td></tr>
+      </table>
+      <p>打个比方：O(1) 像从冰箱里拿一瓶饮料；O(n) 像把冰箱里的饮料一瓶瓶数完；O(n²) 像把饮料两两搭配做品尝测试，搭配组合会暴增。</p>
+      <p>
+         再复习一遍：饮料两两搭配，严格来讲方法数量是 n(n-1)/2，
+      </p>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>数一下循环次数</h2>
+    </div>
+    <div class="lesson-body">
+      <p>判断复杂度，最实用的办法就是看代码里的循环。没有循环、只固定执行几步的操作，通常是 O(1)。一个遍历 n 个元素的循环，通常是 O(n)。两个嵌套循环，每个都跑 n 次，通常是 O(n²)。</p>
+      <div class="code-block lang-py" data-file="count_loops.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>不同复杂度的循环</div>
+        <pre>def find_first(items):
+    return items[0]          # O(1)：只取第一个，和列表多长无关
+
+def count_all(items):
+    total = 0
+    for x in items:          # O(n)：每个元素访问一次
+        total += x
+    return total
+
+def count_pairs(items):
+    count = 0
+    for i in range(len(items)):
+        for j in range(len(items)):  # O(n²)：每个元素都和其他元素配对
+            if i != j:
+                count += 1
+    return count</pre>
+      </div><div class="code-block lang-cpp" data-file="count_loops.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>count_loops.cpp</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+int find_first(vector&lt;int&gt;&amp; items) {
+    return items[0];          // O(1)：只取第一个，和列表多长无关
+}
+
+int count_all(vector&lt;int&gt;&amp; items) {
+    int total = 0;
+    for (int x : items) {     // O(n)：每个元素访问一次
+        total += x;
+    }
+    return total;
+}
+
+int count_pairs(vector&lt;int&gt;&amp; items) {
+    int count = 0;
+    int n = items.size();
+    for (int i = 0; i &lt; n; i++) {
+        for (int j = 0; j &lt; n; j++) {  // O(n²)：每个元素都和其他元素配对
+            if (i != j) {
+                count += 1;
+            }
+        }
+    }
+    return count;
+}
+
+int main() {
+    vector&lt;int&gt; items = {1, 2, 3, 4, 5};
+    cout &lt;&lt; find_first(items) &lt;&lt; endl;
+    cout &lt;&lt; count_all(items) &lt;&lt; endl;
+    cout &lt;&lt; count_pairs(items) &lt;&lt; endl;
+    return 0;
+}</pre>
+      </div>
+      <p>注意，大 O 说的是<strong>最坏情况</strong>或<strong>一般情况</strong>。比如查找元素，如果运气好第一个就命中，那实际很快；但复杂度假设的是“可能要查到最后”，这样比较才有意义。</p>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>综合实战：比比两种求和法</h2>
+      <div class="lesson-sub">用计时器感受复杂度的差异</div>
+    </div>
+    <div class="lesson-body">
+      <p>还记得模块 1 里的 1 到 n 求和吗？循环法的时间复杂度是 O(n)，公式法（n*(n+1)/2）的时间复杂度是 O(1)。数据小的时候感觉不到差别，数据大到百万、千万时，差距就出来了。</p>
+      <p>下面这个小程序用一个简单的计时方法，比较两种方法在 n=1000000 时的表现。注意运行时间受电脑状态影响，不一定每次相同，但趋势是稳定的。</p>
+      <div class="code-block lang-py" data-file="compare_sum.py" data-lang="python">
+        <div class="code-title"><span class="dot"></span>计时比较</div>
+        <pre>import time
+
+def sum_loop(n):
+    total = 0
+    for i in range(1, n + 1):
+        total += i
+    return total
+
+def sum_formula(n):
+    return n * (n + 1) // 2
+
+n = 1000000
+
+start = time.time()
+print(sum_loop(n))
+print("循环法耗时：", time.time() - start, "秒")
+
+start = time.time()
+print(sum_formula(n))
+print("公式法耗时：", time.time() - start, "秒")</pre>
+      </div><div class="code-block lang-cpp" data-file="compare_sum.cpp" data-lang="cpp">
+        <div class="code-title"><span class="dot"></span>compare_sum.cpp</div>
+        <pre>#include &lt;iostream&gt;
+#include &lt;chrono&gt;
+using namespace std;
+
+long long sum_loop(long long n) {
+    long long total = 0;
+    for (long long i = 1; i &lt;= n; i++) {
+        total += i;
+    }
+    return total;
+}
+
+long long sum_formula(long long n) {
+    return n * (n + 1) / 2;
+}
+
+int main() {
+    long long n = 1000000;
+
+    auto start = chrono::high_resolution_clock::now();
+    cout &lt;&lt; sum_loop(n) &lt;&lt; endl;
+    auto end = chrono::high_resolution_clock::now();
+    chrono::duration&lt;double&gt; elapsed = end - start;
+    cout &lt;&lt; "循环法耗时：" &lt;&lt; elapsed.count() &lt;&lt; " 秒" &lt;&lt; endl;
+
+    start = chrono::high_resolution_clock::now();
+    cout &lt;&lt; sum_formula(n) &lt;&lt; endl;
+    end = chrono::high_resolution_clock::now();
+    elapsed = end - start;
+    cout &lt;&lt; "公式法耗时：" &lt;&lt; elapsed.count() &lt;&lt; " 秒" &lt;&lt; endl;
+
+    return 0;
+}</pre>
+      </div>
+      <p>动手把 n 改成更大的数，看看循环法会不会明显变慢，公式法是否几乎不变。这种“把 n 调大、观察时间如何增长”的思维方式，就是分析时间复杂度的起点。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>本模块核心问题：时间复杂度</p>
+      <div class="quiz" data-answer="A">
+        <h4>一个函数用单层循环遍历了包含 n 个元素的列表，它的时间复杂度最接近？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。O(n)" type="button">A. O(n)</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。O(n²) 不是本题的正确答案。O(n) 才是正确的。" type="button">B. O(n²)</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。O(1) 不是本题的正确答案。O(n) 才是正确的。" type="button">C. O(1)</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 D · 模块 2</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* ── 语言切换 ── */
+  var LANG_KEY = "coding-101-language";
+  var langBtns = $$('#lang-toggle button');
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    langBtns.forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-lang") === lang); });
+  }
+  applyLang(read(LANG_KEY) === "python" ? "python" : "cpp");
+  langBtns.forEach(function (b) {
+    b.addEventListener("click", function () {
+      var lang = b.getAttribute("data-lang");
+      applyLang(lang);
+      store(LANG_KEY, lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgD-m2-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>

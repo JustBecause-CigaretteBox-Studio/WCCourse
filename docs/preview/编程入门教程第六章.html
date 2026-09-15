@@ -279,50 +279,6 @@
   .truth-grid > div.head { background: var(--bg-soft); color: var(--text); font-weight: 700; }
   .truth-grid > div.high { color: #0ea5e9; font-weight: 700; }
   </style>
-
-<!-- 第六章默认锁住：前五章全部完成（见过恭喜页）后才可进入 -->
-<script>
-(function () {
-  /* 标记写过的，或 ch6-progress 里有数据（旧用户）都算解锁 */
-  var unlocked = false;
-  try {
-    if (localStorage.getItem("coding-101-ch6-unlocked") === "1") {
-      unlocked = true;
-    } else {
-      var p = JSON.parse(localStorage.getItem("coding-101-ch6-progress") || "{}");
-      for (var _k in p) { if (p[_k]) { unlocked = true; break; } }
-    }
-  } catch (e) {}
-  if (unlocked) return;
-
-  /* 未解锁时盖一层全屏遮罩，不销毁正文，避免破坏页面自身的脚本 */
-  function lock() {
-    var box = document.createElement("div");
-    box.style.cssText =
-      "position:fixed;inset:0;z-index:99999;display:flex;align-items:center;" +
-      "justify-content:center;padding:24px;text-align:center;background:var(--bg,#f1f5f9);";
-    box.innerHTML =
-      '<div style="max-width:480px">' +
-        '<div style="font-size:48px">🔒</div>' +
-        '<h1 style="font-size:24px;margin:16px 0 14px;color:var(--text,#0f172a)">第六章还没解锁</h1>' +
-        '<p style="line-height:2;color:var(--text-soft,#475569)">' +
-          '这一章是核心课程之后的补充内容。<br>先把前五章全部学完，它会自动解锁。' +
-        '</p>' +
-        '<a href="index.html" style="display:inline-block;margin-top:22px;padding:12px 30px;' +
-        'border-radius:12px;background:#0ea5e9;color:#fff;font-size:15px;font-weight:700;text-decoration:none">' +
-        '返回主页</a>' +
-      '</div>';
-    document.body.appendChild(box);
-    document.body.style.overflow = "hidden";
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", lock);
-  } else {
-    lock();
-  }
-})();
-</script>
 </head>
 <body>
 

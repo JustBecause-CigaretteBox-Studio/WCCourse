@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+    进程与线程 · 第二阶段课程包 H 模块 2
+    ─────────────────────────────────────────────────────────────
+    完全独立的单文件网页，双击即可在浏览器中离线打开。
+    进度保存在 localStorage 的 "coding-101-pkgH-m2-progress"。
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="第二阶段课程包 H 模块 2：程序的多任务分身术。支持离线打开、深色模式、学习进度本地保存。">
+  <title>进程与线程 · 第二阶段课程包 H 模块 2</title>
+
+  <style>
+  :root {
+    --bg:           #f6f4ee;
+    --bg-section:   #fdfcf9;
+    --bg-card:      #ffffff;
+    --bg-soft:      #f8fafc;
+    --text:         #1e293b;
+    --text-soft:    #475569;
+    --text-faint:   #94a3b8;
+    --border:       #e2e8f0;
+    --code-inline-bg: #f1f5f9;
+  }
+  html.dark {
+    --bg:           #0e1120;
+    --bg-section:   #161a2c;
+    --bg-card:      #1e2336;
+    --bg-soft:      #232842;
+    --text:         #e2e8f0;
+    --text-soft:    #cbd5e1;
+    --text-faint:   #64748b;
+    --border:       #2a3049;
+    --code-inline-bg: #2a3049;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    transition: background .2s, color .2s;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; color: var(--text); text-decoration: none; }
+  .brand .logo {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #1c1f2e; color: #38bdf8; font-size: 15px;
+  }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 32px; min-width: 32px; padding: 0 8px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); color: var(--text-soft);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+  main { padding: 32px 0 96px; }
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px; padding: 48px 32px; margin-bottom: 40px;
+    background: linear-gradient(135deg, #1c1f2e, #232842 55%, #2b2440);
+    color: #fff; box-shadow: 0 12px 32px rgba(15,23,42,.25);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; width: 256px; height: 256px;
+    border-radius: 99px; filter: blur(60px); opacity: .25;
+  }
+  .hero::before { right: -64px; top: -64px; background: #0ea5e9; }
+  .hero::after  { left: -40px; bottom: -80px; background: #8b5cf6; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
+    font-size: 12px; color: #7dd3fc;
+  }
+  .hero h1 { font-size: 40px; font-weight: 900; margin-top: 16px; }
+  @media (max-width: 640px) { .hero h1 { font-size: 28px; } }
+  .hero p { max-width: 640px; margin-top: 16px; font-size: 15px; line-height: 2; color: #cbd5e1; }
+  .start-btn {
+    display: inline-block; margin-top: 20px; padding: 12px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9); color: #fff;
+    font-size: 15px; font-weight: 800; text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16,185,129,.4);
+  }
+  .hero .meta { display: block; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+  .crumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-faint); margin-bottom: 24px;
+  }
+  .crumbs a { color: var(--text-soft); text-decoration: none; }
+  .crumbs a:hover { color: #0ea5e9; }
+  .crumbs span { color: var(--text); font-weight: 700; }
+  .section-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-faint); margin-bottom: 24px; }
+  .lesson {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg-card); padding: 28px; margin-bottom: 28px;
+  }
+  .lesson-head { margin-bottom: 18px; }
+  .lesson-no { font-size: 12px; font-weight: 700; color: #0ea5e9; }
+  .lesson h2 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .lesson-sub { font-size: 14px; color: var(--text-faint); margin-top: 4px; }
+  .lesson-body { font-size: 15px; line-height: 1.9; color: var(--text-soft); }
+  .lesson-body p { margin-bottom: 12px; }
+  .done-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 24px; padding: 16px 28px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    min-width: 220px; justify-content: center;
+  }
+  .done-btn:hover { background: var(--border); }
+  .done-btn.completed { background: #10b981; color: #fff; border-color: #10b981; }
+  .quiz {
+    border: 1px dashed var(--border); border-radius: 12px;
+    background: var(--bg-section); padding: 20px; margin-top: 24px;
+  }
+  .quiz h4 { font-size: 16px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13.5px; transition: all .15s;
+    background: var(--bg-card); color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover { border-color: #38bdf8; }
+  .quiz-opt.correct { border-color: #10b981; background: rgba(16,185,129,.1); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,.1); }
+  .quiz-feedback { margin-top: 12px; font-size: 13px; color: var(--text-soft); }
+  .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--code-inline-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: #10b981; width: 0; transition: width .3s; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .progress-mini .bar { width: 128px; }
+  .progress-mini span { font-size: 12px; color: var(--text-faint); }
+  .code-block {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0;
+    background: #1e2336; color: #e2e8f0;
+  }
+  .code-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: #161a2c; font-size: 12px; color: #94a3b8;
+  }
+  .code-title .dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  footer.site { text-align: center; font-size: 12px; line-height: 2; color: var(--text-faint); padding-top: 48px; }
+  /* 语言切换 */
+  .lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; background: var(--bg-card); }
+  .lang-toggle button { flex: 1; padding: 4px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lang-toggle button.active { background: #0ea5e9; color: #fff; }
+  .lang-toggle button:disabled { opacity: .7; cursor: default; }
+  body.lang-cpp .lang-py  { display: none !important; }
+  body.lang-py  .lang-cpp { display: none !important; }
+  </style>
+</head>
+<body class="lang-cpp dual-lang">
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <span>进程与线程 · 课程包 H</span>
+    </div>
+    <div class="header-right">
+      <div class="progress-mini">
+        <div class="bar"><i id="bar-top"></i></div>
+        <span id="progress-text">0/6 节</span>
+      </div>
+      <a class="icon-btn" href="第二阶段_课程包H_操作系统.html">返回课程包</a>
+            <div class="lang-toggle" id="lang-toggle">
+        <button data-lang="cpp" class="active">C++</button>
+        <button data-lang="python">Python</button>
+      </div>
+<button class="icon-btn" id="theme-btn" title="切换深色 / 浅色">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="crumbs">
+    <a href="index.html">课程主页</a>
+    <span>/</span>
+    <a href="第二阶段_课程包H_操作系统.html">课程包 H</a>
+    <span>/</span>
+    <span>模块 2：进程与线程</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">课程包 H · 模块 2</span>
+    <h1>进程与线程</h1>
+    <p>程序的多任务分身术</p>
+    <a class="start-btn" href="#lesson-1">开始模块 2 第 1 小节 →</a>
+    <span class="meta">模块 2 · 4 个小节 · 进度自动保存</span>
+  </div>
+  <section class="lesson" id="lesson-1">
+    <div class="lesson-head">
+      <div class="lesson-no">第 1 小节</div>
+      <h2>进程：程序的“一次执行”</h2>
+    </div>
+    <div class="lesson-body">
+      <p>当你双击打开一个程序，操作系统会创建一个新的<strong>进程（Process）</strong>。进程就是“运行中的程序”：它有自己的内存空间、代码、数据和当前执行到的位置。</p>
+      <p>每个进程都有一个唯一的编号，叫做 <strong>PID（Process ID）</strong>。你可以通过 PID 来查找、暂停或结束一个进程。在 Windows 任务管理器或 Linux 的 <code class="inline">ps</code> 命令里，PID 都是最常见的列之一。</p>
+      <p>进程之间默认是隔离的：一个进程崩溃，通常不会直接影响另一个进程。这也是现代系统稳定性的重要来源。</p>
+      <div class="code-block lang-py" data-file="process_demo.py" data-lang="python"><div class="code-title"><span class="dot"></span>process_demo.py</div><pre>import os
+
+# 当前进程自己的 PID
+print("我的 PID：", os.getpid())
+
+# 父进程的 PID（启动当前进程的进程）
+print("父 PID：", os.getppid())</pre></div>
+      <div class="code-block lang-cpp" data-file="process_demo.cpp" data-lang="cpp"><div class="code-title"><span class="dot"></span>process_demo.cpp</div><pre>#include &lt;iostream&gt;
+#ifdef _WIN32
+#include &lt;windows.h&gt;
+#else
+#include &lt;unistd.h&gt;
+#endif
+
+int main() {
+#ifdef _WIN32
+    std::cout &lt;&lt; "我的 PID： " &lt;&lt; GetCurrentProcessId() &lt;&lt; std::endl;
+    std::cout &lt;&lt; "父 PID： （Windows 需额外查询）" &lt;&lt; std::endl;
+#else
+    std::cout &lt;&lt; "我的 PID： " &lt;&lt; getpid() &lt;&lt; std::endl;
+    std::cout &lt;&lt; "父 PID： " &lt;&lt; getppid() &lt;&lt; std::endl;
+#endif
+    return 0;
+}</pre></div>
+      <button class="done-btn" data-lesson="lesson-1" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-2">
+    <div class="lesson-head">
+      <div class="lesson-no">第 2 小节</div>
+      <h2>线程：进程里的“小工人”</h2>
+    </div>
+    <div class="lesson-body">
+      <p>一个进程可以包含多个<strong>线程（Thread）</strong>。如果把进程比作一家工厂，线程就是工厂里的工人。它们共享同一间厂房（进程的内存空间），但各自执行不同的任务。</p>
+      <p>线程比进程更轻量：创建和切换线程的成本更低，因为它们不需要复制整个内存空间。但共享内存也意味着一个线程出错，可能影响同一进程里的其他线程。</p>
+      <p>多线程常用于：同时处理用户界面和后台计算、同时下载多个文件、并行处理数据等。</p>
+      <div class="code-block lang-py" data-file="thread_demo.py" data-lang="python"><div class="code-title"><span class="dot"></span>thread_demo.py</div><pre>import threading
+
+def say_hello(name):
+    print(f"线程 {name} 说：你好！")
+
+# 创建两个线程
+t1 = threading.Thread(target=say_hello, args=("A",))
+t2 = threading.Thread(target=say_hello, args=("B",))
+
+t1.start()
+t2.start()
+
+t1.join()
+t2.join()
+
+print("两个线程都执行完了")</pre></div>
+      <div class="code-block lang-cpp" data-file="thread_demo.cpp" data-lang="cpp"><div class="code-title"><span class="dot"></span>thread_demo.cpp</div><pre>#include &lt;iostream&gt;
+#include &lt;thread&gt;
+#include &lt;string&gt;
+
+void sayHello(const std::string &amp;name) {
+    std::cout &lt;&lt; "线程 " &lt;&lt; name &lt;&lt; " 说：你好！" &lt;&lt; std::endl;
+}
+
+int main() {
+    std::thread t1(sayHello, "A");
+    std::thread t2(sayHello, "B");
+
+    t1.join();
+    t2.join();
+
+    std::cout &lt;&lt; "两个线程都执行完了" &lt;&lt; std::endl;
+    return 0;
+}</pre></div>
+      <button class="done-btn" data-lesson="lesson-2" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-3">
+    <div class="lesson-head">
+      <div class="lesson-no">第 3 小节</div>
+      <h2>并发与并行</h2>
+    </div>
+    <div class="lesson-body">
+      <p><strong>并发（Concurrency）</strong>和<strong>并行（Parallelism）</strong>听起来很像，其实是两个概念。</p>
+      <p>并发是指“看起来同时做很多事”：操作系统快速切换线程，让它们交替执行。单核 CPU 也能实现并发。并行是指“真正同时做很多事”：多核 CPU 同时执行多个线程。</p>
+      <p>一个经典类比：并发是一个人同时吃三碗饭；并行是三个人同时吃三碗饭。</p>
+      <div class="code-block lang-py" data-file="concurrency_demo.py" data-lang="python"><div class="code-title"><span class="dot"></span>concurrency_demo.py</div><pre>import threading
+import time
+
+def cook(name, seconds):
+    print(f"{name} 开始制作，需要 {seconds} 秒")
+    time.sleep(seconds)
+    print(f"{name} 制作完成")
+
+# 并发：两个任务交替进行
+start = time.time()
+t1 = threading.Thread(target=cook, args=("煮面", 2))
+t2 = threading.Thread(target=cook, args=("煎蛋", 1))
+
+t1.start(); t2.start()
+t1.join();  t2.join()
+
+print(f"总共耗时：{time.time() - start:.2f} 秒")</pre></div>
+      <div class="code-block lang-cpp" data-file="concurrency_demo.cpp" data-lang="cpp"><div class="code-title"><span class="dot"></span>concurrency_demo.cpp</div><pre>#include &lt;iostream&gt;
+#include &lt;thread&gt;
+#include &lt;chrono&gt;
+
+void cook(const std::string &amp;name, int seconds) {
+    std::cout &lt;&lt; name &lt;&lt; " 开始制作，需要 " &lt;&lt; seconds &lt;&lt; " 秒" &lt;&lt; std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(seconds));
+    std::cout &lt;&lt; name &lt;&lt; " 制作完成" &lt;&lt; std::endl;
+}
+
+int main() {
+    auto start = std::chrono::steady_clock::now();
+
+    std::thread t1(cook, "煮面", 2);
+    std::thread t2(cook, "煎蛋", 1);
+
+    t1.join();
+    t2.join();
+
+    auto end = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast&lt;std::chrono::seconds&gt;(end - start).count();
+    std::cout &lt;&lt; "总共耗时：" &lt;&lt; elapsed &lt;&lt; " 秒" &lt;&lt; std::endl;
+    return 0;
+}</pre></div>
+      <button class="done-btn" data-lesson="lesson-3" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <section class="lesson" id="lesson-4">
+    <div class="lesson-head">
+      <div class="lesson-no">第 4 小节</div>
+      <h2>并发一定更快吗？——响应性与速度的真相</h2>
+      <div class="lesson-sub">破除“多线程 = 自动变快”的迷思</div>
+    </div>
+    <div class="lesson-body">
+      <p>很多新手以为：开了多线程，程序就自动变快了。这是一个常见误解。<strong>并发的核心价值是“提高响应性”，而不一定是“提高计算速度”。</strong></p>
+
+      <p><strong>并发是怎么“看起来”同时进行的？</strong> 在单核 CPU 上，操作系统通过<strong>快速切换线程</strong>（上下文切换）让多个任务交替执行。切换足够快，人（甚至程序逻辑）就以为它们在同时进行。这种“看起来同时”就是并发——它解决的是“等待”和“响应”的问题，而不是“算得更快”。</p>
+
+      <div style="border:1px solid var(--border);border-radius:12px;background:var(--bg-soft);padding:18px 20px;margin:18px 0;">
+        <p style="margin-bottom:10px;font-weight:800;color:#10b981;">✅ 什么情况下，并发真的会提高效率？</p>
+        <ul style="margin:0 0 6px 20px;line-height:1.9;">
+          <li><strong>I/O 密集型任务：</strong>当一个任务在等待网络或磁盘时，CPU 立刻切换到另一个任务去执行，减少空闲等待，提高资源利用率。</li>
+          <li><strong>提升系统响应性：</strong>界面在后台计算时仍能响应用户的点击，不会“卡死”假死。</li>
+        </ul>
+      </div>
+
+      <div style="border:1px solid var(--border);border-radius:12px;background:var(--bg-soft);padding:18px 20px;margin:18px 0;">
+        <p style="margin-bottom:10px;font-weight:800;color:#ef4444;">⚠️ 什么情况下，并发不会提高效率，甚至更慢？</p>
+        <ul style="margin:0 0 6px 20px;line-height:1.9;">
+          <li><strong>CPU 密集型任务：</strong>频繁的上下文切换本身就有开销（保存/恢复寄存器、缓存失效）。如果任务全是计算，切换反而浪费 CPU 周期。</li>
+          <li><strong>单核上的纯计算：</strong>并发执行两个计算任务，总时间往往比串行更长——切换开销叠加，却没有真正并行的计算资源。</li>
+        </ul>
+      </div>
+
+      <p>下面用“多任务下载模拟器”体会第一种情况。这里的“下载”用 <code class="inline">time.sleep</code> 模拟等待网络——这正是 I/O 密集型场景：线程在“等”的时候，CPU 可以去干别的，所以并发把多段等待重叠起来，总时间接近最慢的那个任务，而不是所有任务耗时相加。</p>
+      <div class="code-block lang-py" data-file="download_sim.py" data-lang="python"><div class="code-title"><span class="dot"></span>download_sim.py</div><pre>import threading
+import time
+
+def download(file, size):
+    print(f"开始下载 {file}（大小 {size} MB）")
+    time.sleep(size * 0.1)  # 每 MB 模拟 0.1 秒
+    print(f"下载完成：{file}")
+
+files = [("a.zip", 5), ("b.mp4", 8), ("c.pdf", 3)]
+
+start = time.time()
+threads = []
+for name, size in files:
+    t = threading.Thread(target=download, args=(name, size))
+    t.start()
+    threads.append(t)
+
+for t in threads:
+    t.join()
+
+print(f"全部完成，耗时 {time.time() - start:.2f} 秒")</pre></div>
+      <div class="code-block lang-cpp" data-file="download_sim.cpp" data-lang="cpp"><div class="code-title"><span class="dot"></span>download_sim.cpp</div><pre>#include &lt;iostream&gt;
+#include &lt;thread&gt;
+#include &lt;chrono&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+
+void download(const std::string &amp;file, int size) {
+    std::cout &lt;&lt; "开始下载 " &lt;&lt; file &lt;&lt; "（大小 " &lt;&lt; size &lt;&lt; " MB）" &lt;&lt; std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(size * 100));
+    std::cout &lt;&lt; "下载完成：" &lt;&lt; file &lt;&lt; std::endl;
+}
+
+int main() {
+    std::vector&lt;std::pair&lt;std::string, int&gt;&gt; files = {
+        {"a.zip", 5},
+        {"b.mp4", 8},
+        {"c.pdf", 3}
+    };
+
+    auto start = std::chrono::steady_clock::now();
+    std::vector&lt;std::thread&gt; threads;
+    for (auto &amp;f : files) {
+        threads.emplace_back(download, f.first, f.second);
+    }
+
+    for (auto &amp;t : threads) {
+        t.join();
+    }
+
+    auto end = std::chrono::steady_clock::now();
+    double elapsed = std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(end - start).count() / 1000.0;
+    std::cout &lt;&lt; "全部完成，耗时 " &lt;&lt; elapsed &lt;&lt; " 秒" &lt;&lt; std::endl;
+    return 0;
+}</pre></div>
+      <p>试着把线程版本改成顺序执行（去掉线程，直接调用 download）对比耗时——你会看到并发更快。但注意：这里的“快”来自<strong>等待时间的重叠</strong>，并不是计算被加速。如果把 <code class="inline">time.sleep</code> 换成一串纯计算（比如大数求和），在单核上多线程反而会更慢，正是上面第二个坑。</p>
+      <button class="done-btn" data-lesson="lesson-4" type="button">标记为已完成</button>
+    </div>
+  </section>
+  <div class="lesson" id="quiz">
+    <div class="lesson-head">
+      <div class="lesson-no">小测验</div>
+      <h2>检验一下</h2>
+    </div>
+    <div class="lesson-body">
+      <p>进程和线程最核心的区别是什么？</p>
+      <div class="quiz" data-answer="A">
+        <h4>下面说法正确的是？</h4>
+        <button class="quiz-opt" data-val="A" data-explain="正确。进程有独立的内存空间，线程共享进程内存" type="button">A. 进程有独立的内存空间，线程共享进程内存</button>
+        <button class="quiz-opt" data-val="B" data-explain="不对。线程是保存在硬盘上的程序文件 不是本题的正确答案。进程有独立的内存空间，线程共享进程内存 才是正确的。" type="button">B. 线程是保存在硬盘上的程序文件</button>
+        <button class="quiz-opt" data-val="C" data-explain="不对。进程和线程完全没有区别 不是本题的正确答案。进程有独立的内存空间，线程共享进程内存 才是正确的。" type="button">C. 进程和线程完全没有区别</button>
+        <div class="quiz-explain"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <p>写给新手的编程课 · 第二阶段 · 课程包 H · 模块 2</p>
+  <p>继续下一个模块，把代码变成真正的本领。</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var $  = function (sel) { return document.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  var THEME_KEY = "coding-101-theme";
+  var themeBtn = $("#theme-btn");
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+  }
+  var savedTheme = read(THEME_KEY);
+  var startDark = savedTheme !== null
+    ? savedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  applyTheme(startDark);
+  themeBtn.addEventListener("click", function () {
+    var dark = !document.documentElement.classList.contains("dark");
+    applyTheme(dark);
+    store(THEME_KEY, dark ? "dark" : "light");
+  });
+
+  /* C++ / Python 语言切换（与第一阶段共用 coding-101-language 键） */
+  var LANG_KEY = "coding-101-language";
+  var isDualLang = document.body.classList.contains("dual-lang");
+  function applyLang(lang) {
+    document.body.classList.toggle("lang-cpp", lang === "cpp");
+    document.body.classList.toggle("lang-py", lang === "python");
+    $$(".lang-toggle button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
+  }
+  var savedLang = read(LANG_KEY);
+  var startLang = savedLang === "python" ? "python" : "cpp";
+  applyLang(startLang);
+  $$(".lang-toggle button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!isDualLang) return;
+      applyLang(b.dataset.lang);
+      store(LANG_KEY, b.dataset.lang);
+    });
+  });
+
+  var PROGRESS_KEY = "coding-101-pkgH-m2-progress";
+  var TOTAL = 4;
+
+  function loadProgress() {
+    var data = {};
+    try { data = JSON.parse(read(PROGRESS_KEY) || "{}"); } catch (e) {}
+    return data;
+  }
+  function saveProgress(data) { store(PROGRESS_KEY, JSON.stringify(data)); }
+  function updateUI(data) {
+    var done = Object.keys(data).filter(function (k) { return data[k]; }).length;
+    var pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
+    $("#bar-top").style.width = pct + "%";
+    $("#progress-text").textContent = done + "/" + TOTAL + " 节";
+  }
+
+  var progress = loadProgress();
+
+  $$(".done-btn").forEach(function (btn) {
+    var lesson = btn.getAttribute("data-lesson");
+    if (progress[lesson]) { btn.classList.add("completed"); btn.textContent = "✓ 已完成"; }
+    btn.addEventListener("click", function () {
+      var completed = btn.classList.toggle("completed");
+      progress[lesson] = completed;
+      saveProgress(progress);
+      updateUI(progress);
+      btn.textContent = completed ? "✓ 已完成" : "标记为已完成";
+    });
+  });
+
+  updateUI(progress);
+
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  
+  /* ────────────────────────────────────────────────
+     小测验：点击选项后显示该选项的专属解析
+     ──────────────────────────────────────────────── */
+  $$(".quiz[data-answer]").forEach(function (quiz) {
+    var answer   = quiz.getAttribute("data-answer");
+    var explainBox = quiz.querySelector(".quiz-explain") || quiz.querySelector(".quiz-feedback");
+    var opts     = $$(".quiz-opt", quiz);
+
+    opts.forEach(function (opt, i) {
+      if (!opt.getAttribute("data-val")) opt.setAttribute("data-val", String(i));
+      opt.addEventListener("click", function () {
+        var val = opt.getAttribute("data-val");
+        var right = val === answer;
+        var explain = opt.getAttribute("data-explain") || (right ? "回答正确。" : "不对，再想想。");
+        opts.forEach(function (o) {
+          o.disabled = true;
+          var oVal = o.getAttribute("data-val");
+          o.classList.toggle("correct", oVal === answer);
+          if (oVal !== answer) o.classList.add("dim");
+        });
+        if (!right) opt.classList.add("wrong");
+        if (explainBox) {
+          explainBox.innerHTML = "<strong>" + (right ? "✅ 答对啦！" : "❌ 差一点点——") + "</strong> " + explain;
+          explainBox.classList.add("show", right ? "right" : "bad");
+        }
+      });
+    });
+  });
+
+
+})();
+</script>
+
+<script>
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("./sw.js").then(function(r){
+    r.addEventListener("updatefound",function(){
+      var w=r.installing;
+      w.addEventListener("statechange",function(){
+        if(w.state==="activated")location.reload();
+      });
+    });
+  });
+}
+</script></body>
+</html>
